@@ -70,3 +70,5 @@ Variáveis obrigatórias:
 
 Conecte também um Vercel Blob ao projeto. A Vercel cria `BLOB_STORE_ID` e as
 credenciais de integração automaticamente.
+
+<!-- deploy -->
