@@ -498,6 +498,28 @@ function withOcrTimeout(promise, milliseconds = 90000){
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
+/* Um único worker do Tesseract, criado sob demanda e reutilizado em todas as
+   leituras. Evita o cold-start (baixar motor + idioma a cada chamada) que fazia
+   a PRIMEIRA leitura falhar; as seguintes pegavam o cache e funcionavam. */
+let ivWorkerPromise = null;
+let ivProgressEl = null;
+let ivProgressLabel = "Lendo a imagem";
+function getIvWorker(){
+  if (!ivWorkerPromise) {
+    ivWorkerPromise = Tesseract.createWorker("por+eng", 1, {
+      workerPath: "/vplab/vendor/worker.min.js",
+      corePath: "/vplab/vendor/tesseract-core",
+      langPath: "/vplab/vendor/lang-data",
+      logger: (m) => {
+        if (m.status === "recognizing text" && ivProgressEl)
+          ivProgressEl.innerHTML = `<span class="scan-loading">${ivProgressLabel}… <b>${Math.round(m.progress*100)}%</b></span>`;
+      }
+    }).catch((e) => { ivWorkerPromise = null; throw e; });  // falhou: permite nova tentativa
+  }
+  return ivWorkerPromise;
+}
+/* Começa a baixar o leitor assim que possível, sem travar a página. */
+function prewarmIvWorker(){ if (window.Tesseract) getIvWorker().catch(() => {}); }
 async function scanIvImage(file){
   const status = $("#iv-scan-status");
   const picker = $("#iv-image");
@@ -509,27 +531,16 @@ async function scanIvImage(file){
   }
   pickerButton.textContent = "Lendo imagem…";
   pickerButton.classList.add("is-reading");
-  status.innerHTML = '<span class="scan-loading">Lendo a imagem… <b>0%</b></span>';
+  status.innerHTML = '<span class="scan-loading">Carregando o leitor…</span>';
   try {
-    const ocrPaths = {
-      workerPath: "/vplab/vendor/worker.min.js",
-      corePath: "/vplab/vendor/tesseract-core",
-      langPath: "/vplab/vendor/lang-data"
-    };
-    const result = await withOcrTimeout(Tesseract.recognize(file, "por+eng", {
-      ...ocrPaths,
-      logger: (m) => {
-        if (m.status === "recognizing text") status.innerHTML = `<span class="scan-loading">Lendo a imagem… <b>${Math.round(m.progress*100)}%</b></span>`;
-      }
-    }));
+    const worker = await getIvWorker();
+    ivProgressEl = status;
+    ivProgressLabel = "Lendo a imagem";
+    const result = await withOcrTimeout(worker.recognize(file));
     status.innerHTML = '<span class="scan-loading">Conferindo nível e qualidade…</span>';
     const headerImage = await makeHeaderCrop(file);
-    const headerResult = await withOcrTimeout(Tesseract.recognize(headerImage, "por+eng", {
-      ...ocrPaths,
-      logger: (m) => {
-        if (m.status === "recognizing text") status.innerHTML = `<span class="scan-loading">Conferindo cabeçalho… <b>${Math.round(m.progress*100)}%</b></span>`;
-      }
-    }));
+    ivProgressLabel = "Conferindo cabeçalho";
+    const headerResult = await withOcrTimeout(worker.recognize(headerImage));
     const header = headerValues(headerResult.data.text);
     const raw = result.data.text;
     /* Separa rótulo colado ao número ("HP23"->"HP 23", "SpA32"->"SpA 32") para o parsing. */
@@ -929,6 +940,7 @@ function selectTab(name){
   activeTab = name;
   $$(".main-tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === name ? "true" : "false"));
   $$(".panel").forEach((s) => s.classList.toggle("active", s.id === "tab-" + name));
+  if (name === "avaliar") prewarmIvWorker();  /* baixa o leitor enquanto o usuário prepara o print */
   syncUrl();
   renderActive();
 }
@@ -1176,6 +1188,7 @@ $("#clan-covers").addEventListener("change", renderClan);
   if (tab && ["perfil","pokedex","avaliar","rota","fipe","clas"].includes(tab)) activeTab = tab;
   $$(".main-tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === activeTab ? "true" : "false"));
   $$(".panel").forEach((s) => s.classList.toggle("active", s.id === "tab-" + activeTab));
+  if (activeTab === "avaliar") prewarmIvWorker();  /* já baixa o leitor ao abrir direto na aba */
   renderPerfil();
   renderActive();
 })();
