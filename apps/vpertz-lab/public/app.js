@@ -1041,6 +1041,29 @@ $("#x-species").addEventListener("change", () => setSpecies($("#x-species").valu
 STAT_NAMES.forEach((_, i) => $("#o" + i).addEventListener("input", renderAvaliar));
 $("#iv-image").addEventListener("change", (e) => scanIvImage(e.target.files[0]));
 
+/* Arrastar-e-soltar o print do card: usa o mesmo leitor do botão. */
+const ivScanCard = $("#iv-scan-card");
+if (ivScanCard) {
+  ["dragenter", "dragover"].forEach((ev) =>
+    ivScanCard.addEventListener(ev, (e) => {
+      if (![...(e.dataTransfer?.types || [])].includes("Files")) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      ivScanCard.classList.add("is-dragover");
+    })
+  );
+  ivScanCard.addEventListener("dragleave", (e) => {
+    if (!ivScanCard.contains(e.relatedTarget)) ivScanCard.classList.remove("is-dragover");
+  });
+  ivScanCard.addEventListener("drop", (e) => {
+    e.preventDefault();
+    ivScanCard.classList.remove("is-dragover");
+    const file = [...(e.dataTransfer?.files || [])].find((f) => f.type.startsWith("image/"));
+    if (file) scanIvImage(file);
+    else $("#iv-scan-status").innerHTML = '<span class="scan-error">Arraste um arquivo de imagem (PNG, JPG ou WebP).</span>';
+  });
+}
+
 const ivHelpModal = $("#iv-help-modal");
 function openIvHelp(){
   ivHelpModal.hidden = false;
