@@ -382,8 +382,10 @@ function renderAvaliar(){
 const cleanOcr = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 function ocrNumber(text, labels, decimal=false){
   for (const label of labels) {
-    /* Não atravessa linhas: evita que um rótulo capture o número do campo seguinte. */
-    const re = new RegExp(`(?:^|\\n)\\s*${label}[^\\n0-9]{0,120}([0-9]+(?:[.,][0-9]+)?)`, "im");
+    /* Rótulo em qualquer ponto da linha (não só no começo), com o número colado
+       ("SpA32") ou separado ("Poder 365"). [^\n0-9] impede atravessar a linha ou
+       capturar o número do campo seguinte. */
+    const re = new RegExp(`(?:^|[^a-z0-9])(?:${label})[^\\n0-9]{0,40}([0-9]+(?:[.,][0-9]+)?)`, "im");
     const hit = text.match(re);
     if (hit) return decimal ? hit[1].replace(",", ".") : hit[1].replace(/[^0-9]/g, "");
   }
@@ -434,14 +436,14 @@ function reconcileCardFields(p, stats, read){
   let power = +read.power || 0;
   let quality = +read.quality || 0;
   let level = +read.level || 0;
+  if (quality < .8 || quality > 1.8) quality = 0;   // leitura de qualidade fora da faixa é descartada
 
-  /* Power e soma dos stats revelam a qualidade mesmo quando ×1.78 falha no OCR. */
+  /* Power = soma dos stats × qualidade (matemática exata do jogo). Quando há Power,
+     ele revela a qualidade correta mesmo se o ×1.80 sair errado no OCR. */
   if (power > 0) {
     const derivedQ = power/sumStats;
-    if (derivedQ >= .8 && derivedQ <= 1.8 && (!quality || Math.abs(derivedQ-quality) <= .04)) {
-      quality = Math.round(derivedQ*1000)/1000;
-    }
-  } else if (quality >= .8 && quality <= 1.8) {
+    if (derivedQ >= .8 && derivedQ <= 1.8) quality = Math.round(derivedQ*100)/100;
+  } else if (quality > 0) {
     power = Math.round(sumStats*quality);
   }
 
@@ -530,7 +532,8 @@ async function scanIvImage(file){
     }));
     const header = headerValues(headerResult.data.text);
     const raw = result.data.text;
-    const text = cleanOcr(raw);
+    /* Separa rótulo colado ao número ("HP23"->"HP 23", "SpA32"->"SpA 32") para o parsing. */
+    const text = cleanOcr(raw).replace(/([a-z])(\d)/gi, "$1 $2");
     const found = findSpeciesInOcr(raw);
     if (found) setSpecies(found.slug);
 
@@ -539,7 +542,9 @@ async function scanIvImage(file){
       level: header.level || ocrNumber(text, ["nivel", "level", "nv\\.?", "lvl"]) || geo([/^nivel/,/^level$/,/^nv$/,/^lvl$/]),
       quality: header.quality || ocrNumber(text, ["qualidade", "quality"], true) || qualityFromCard(text) || geo([/^qual/,/^quality$/], true),
       power: header.power || ocrNumber(text, ["power", "poder"]),
-      total: ocrNumber(text, ["iv total", "total iv", "growth total"]) || geo([/^iv$/, /^growth$/]),
+      total: ocrNumber(text, ["iv total", "total iv", "growth total"])
+        || (text.match(/(?:^|[^a-z0-9])iv[^\n0-9]{0,6}(\d{1,3})\s*\/\s*\d{1,3}/) || [])[1]
+        || ocrNumber(text, ["iv"]) || geo([/^iv$/, /^growth$/]),
       stats: [
         ocrNumber(text,["hp", "vida"]) || geo([/^hp$/, /^vida$/]),
         ocrNumber(text,["atk\\b", "ataque(?! especial)", "attack(?! special)"]) || geo([/^ataque$/, /^attack$/, /^atk$/]),
