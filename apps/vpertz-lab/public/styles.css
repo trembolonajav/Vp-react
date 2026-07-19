@@ -665,3 +665,62 @@ footer{
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+/* ------------------------------------------------ Clãs · time por tipo
+   Tudo escopado sob .clan-times para não vazar sobre outros painéis */
+.clan-times .types{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.clan-times .tpill{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);background:rgba(255,255,255,.04);color:#c9b8ae;
+  border-radius:99px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:color .15s,background .15s,border-color .15s,box-shadow .15s;
+}
+.clan-times .tpill .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.clan-times .tpill:hover{color:#fff;border-color:var(--line-strong)}
+.clan-times .tpill.on{
+  color:#fff;border-color:var(--tc);
+  box-shadow:0 0 0 1px var(--tc),0 0 16px -6px var(--tc);
+  background:color-mix(in srgb,var(--tc) 16%,transparent);
+}
+.clan-times .clan-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.clan-times .clan-badge{
+  font-family:Cinzel,serif;font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  color:#1a0d0a;padding:7px 15px;border-radius:8px;box-shadow:0 0 18px -6px var(--tc);
+}
+.clan-times .clan-bonus{font-size:12px;color:var(--muted);line-height:1.45;flex:1;min-width:200px}
+.clan-times .clan-bonus b{color:var(--gold)}
+.clan-times .why{
+  background:rgba(229,179,79,.05);border:1px solid rgba(229,179,79,.2);border-radius:14px;
+  padding:13px 15px;margin-bottom:20px;font-size:13px;line-height:1.6;
+}
+.clan-times .why .row{display:flex;gap:9px;align-items:flex-start;margin-bottom:6px}
+.clan-times .why .row:last-child{margin-bottom:0}
+.clan-times .why .ic{flex:none}
+.clan-times .why b{color:var(--gold)}
+.clan-times .adv-tag{
+  display:inline-block;font-size:11px;font-weight:800;color:#1a0d0a;
+  padding:1px 9px;border-radius:99px;margin:0 3px 3px 0;
+}
+.clan-times .lbl-row{
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800;
+  margin:0 0 12px;display:flex;align-items:center;gap:10px;
+}
+.clan-times .lbl-row::after{content:"";flex:1;height:1px;background:var(--line)}
+.clan-times .team{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.clan-times .subs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.clan-times .mon{
+  position:relative;background:linear-gradient(160deg,rgba(30,18,16,.92),rgba(13,8,7,.92));
+  border:1px solid var(--line);border-radius:12px;padding:10px 6px 9px;text-align:center;
+  transition:border-color .15s,transform .15s var(--ease);
+}
+.clan-times .mon:hover{border-color:var(--tc);transform:translateY(-2px)}
+.clan-times .mon .rk{position:absolute;top:5px;left:7px;font-size:9px;font-weight:900;color:var(--tc)}
+.clan-times .mon .dex{position:absolute;top:5px;right:7px;font-size:8.5px;color:var(--faint);font-weight:700}
+.clan-times .mon .sp{width:62px;height:62px;object-fit:contain;image-rendering:pixelated;margin:6px auto 2px;display:block;filter:drop-shadow(0 3px 5px rgba(0,0,0,.5))}
+.clan-times .mon .nm{font-size:12px;font-weight:800;line-height:1.15;color:var(--cream)}
+.clan-times .mon .bst{font-size:10px;font-weight:700;color:var(--gold);margin-top:2px}
+.clan-times .mon .bst i{color:var(--muted);font-style:normal;font-weight:600}
+.clan-times .subs .mon{opacity:.92}
+.clan-times .subs .mon .sp{width:50px;height:50px}
+.clan-times .none{grid-column:1/-1;color:var(--faint);font-size:12.5px;text-align:center;padding:8px}
+@media(max-width:520px){ .clan-times .mon .nm{font-size:11px} }
