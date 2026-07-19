@@ -11,6 +11,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VP Store">
+<script src="/pwa.js" defer></script>
 </head>
 <body>
 
@@ -175,10 +182,10 @@
       <div class="iv-workspace">
         <div class="iv-entry-panel">
           <div class="workspace-label">Entrada de dados</div>
-          <div class="scan-card">
+          <div class="scan-card" id="iv-scan-card">
             <div>
               <strong>Preencher com uma imagem</strong>
-              <span>Envie um print do card. A imagem é processada somente no seu navegador.</span>
+              <span>Arraste o print aqui ou clique em selecionar. A imagem é processada somente no seu navegador.</span>
             </div>
             <label class="scan-button" id="iv-image-button" for="iv-image">Selecionar imagem</label>
             <input id="iv-image" type="file" accept="image/*" hidden>
