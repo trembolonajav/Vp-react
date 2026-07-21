@@ -5,7 +5,8 @@
   "redirects": [
     { "source": "/vplab", "destination": "/vplab/", "permanent": true },
     { "source": "/pokefipe", "destination": "/vplab/?tab=fipe", "permanent": true },
-    { "source": "/pokefipe.html", "destination": "/vplab/?tab=fipe", "permanent": true }
+    { "source": "/pokefipe.html", "destination": "/vplab/?tab=fipe", "permanent": true },
+    { "source": "/multi", "destination": "https://github.com/ekooll/poke-multi-labs/releases/latest/download/PokeMultiLabs-Test.zip", "permanent": false }
   ],
   "headers": [
     {
