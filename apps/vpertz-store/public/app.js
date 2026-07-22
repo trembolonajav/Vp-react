@@ -9,15 +9,32 @@
 
 const CFG = await vpFetchConfig();
 const esc = vpEsc;
-const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/IoAKGxlJLwK9WRM7W7TUcG";
 
 const isExternal = (url) => /^https?:\/\//i.test(url);
 const contactHref = (c) => (c.url && c.url.trim()) ? c.url : vpWaLink(CFG, CFG.msgNegociar);
 const targetAttr = (url) => isExternal(url) ? ' target="_blank" rel="noreferrer"' : "";
 
-/* ---------------------------------------------- botão "Negociar" do topo */
+/* ---------------------------------------------- navegação e ações do topo */
+document.querySelectorAll('.nav-links a[href="contato.html"]').forEach((link) => link.remove());
+document.querySelectorAll('a[href="contato.html"]').forEach((link) => {
+  if (link.textContent.trim() === "Contato") link.textContent = "Comunidade";
+});
+const headerCommunity = document.querySelector(".header-actions .btn-whats");
+if (headerCommunity) {
+  headerCommunity.removeAttribute("data-wa");
+  headerCommunity.removeAttribute("data-wa-message");
+  headerCommunity.removeAttribute("target");
+  headerCommunity.removeAttribute("rel");
+  headerCommunity.href = "contato.html";
+  headerCommunity.classList.remove("btn-whats");
+  headerCommunity.classList.add("btn-community");
+  if (location.pathname.endsWith("/contato.html")) headerCommunity.classList.add("active");
+  headerCommunity.innerHTML = "<span>Comunidade</span>";
+}
+
+/* ---------------------------------------------- botões diretos de WhatsApp */
 document.querySelectorAll("[data-wa]").forEach((a) => {
-  a.href = WHATSAPP_GROUP_URL;
+  a.href = vpWaLink(CFG, a.dataset.waMessage || CFG.msgNegociar);
   a.target = "_blank";
   a.rel = "noreferrer";
 });
@@ -106,7 +123,7 @@ document.querySelectorAll("[data-contact-grid]").forEach((grid) => {
   grid.innerHTML = CFG.contatos.map((c) => `
     <a class="contact-card" href="${esc(contactHref(c))}"${targetAttr(contactHref(c))}>
       <div class="icon">${vpIcon(c.icone)}</div>
-      <div><strong>${esc(c.nome)}</strong><span>${esc(c.info || "")}</span></div>
+      <div><strong>${esc(c.nome)}</strong><span>${esc(c.icone === "whatsapp" && !(c.url || "").trim() ? "Atendimento oficial da loja" : (c.info || ""))}</span></div>
       <span class="go" aria-hidden="true">→</span>
     </a>`).join("");
 });

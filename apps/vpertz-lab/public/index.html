@@ -11,13 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VP Store">
-<script src="/pwa.js" defer></script>
+<link rel="stylesheet" href="breeding.css">
+<link rel="stylesheet" href="professions.css">
 </head>
 <body>
 
@@ -33,20 +28,16 @@
       <span class="word"><strong>VPLab</strong><span>PokeIdle World</span></span>
     </a>
     <div class="main-tabs" role="tablist">
-      <button class="main-tab" role="tab" data-tab="perfil" aria-selected="true">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 0 1 7.75 6H15.9a4 4 0 0 0-7.8 0H4.25A8 8 0 0 1 12 4zm0 10.5A2.5 2.5 0 1 1 12 9.5a2.5 2.5 0 0 1 0 5zM4.25 14h3.85a4 4 0 0 0 7.8 0h3.85A8 8 0 0 1 4.25 14z"/></svg>
-        Perfil
-      </button>
-      <button class="main-tab" role="tab" data-tab="pokedex" aria-selected="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13a3 3 0 0 1 3 3v15H7a3 3 0 0 1-3-3zm3 2a1 1 0 0 0-1 1v9.2c.3-.1.7-.2 1-.2h11V6a1 1 0 0 0-1-1zm0 12a1 1 0 1 0 0 2h11v-2z"/></svg>
+      <button class="main-tab" role="tab" data-tab="pokedex" aria-selected="true">
+        <img class="tab-game-icon" src="assets/header/pokedex.png" alt="" width="32" height="32" aria-hidden="true">
         Pokédex
       </button>
       <button class="main-tab" role="tab" data-tab="avaliar" aria-selected="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 9l10 13L22 9zm0 2.5L19.5 9 12 18.8 4.5 9z"/></svg>
+        <img class="tab-game-icon" src="assets/header/evaluate-iv.webp" alt="" width="929" height="934" aria-hidden="true">
         Avaliar IV
       </button>
       <button class="main-tab" role="tab" data-tab="rota" aria-selected="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        <img class="tab-game-icon" src="assets/header/map.png" alt="" width="32" height="32" aria-hidden="true">
         Rota de caça
       </button>
       <button class="main-tab" role="tab" data-tab="fipe" aria-selected="false">
@@ -54,8 +45,16 @@
         PokeFipe
       </button>
       <button class="main-tab" role="tab" data-tab="clas" aria-selected="false">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5zm0 2.2 7 3.1V11c0 4.4-3 8.7-7 9.9-4-1.2-7-5.5-7-9.9V6.3z"/></svg>
+        <img class="tab-game-icon" src="assets/header/clans.png" alt="" width="32" height="32" aria-hidden="true">
         Clãs
+      </button>
+      <button class="main-tab" role="tab" data-tab="breeding" aria-selected="false">
+        <img class="tab-game-icon" src="assets/header/breeding.png" alt="" width="32" height="32" aria-hidden="true">
+        Breeding
+      </button>
+      <button class="main-tab" role="tab" data-tab="profissoes" aria-selected="false">
+        <img class="tab-game-icon" src="assets/header/professions.png" alt="" width="32" height="32" aria-hidden="true">
+        Profissões
       </button>
     </div>
     <div class="header-actions">
@@ -64,8 +63,7 @@
         <span>Live</span>
       </a>
       <a class="btn-icon-label btn-store" href="#" id="store-link" target="_blank" rel="noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 9l10 13L22 9zm0 2.5L19.5 9 12 18.8 4.5 9z"/></svg>
-        Comprar diamonds
+        <span>Comprar diamonds</span>
       </a>
     </div>
   </nav>
@@ -75,44 +73,9 @@
   <div class="container">
 
     <!-- contexto do perfil; cada ferramenta mantém seus próprios controles -->
-    <!-- ============ PERFIL ============ -->
-    <section class="panel card active" id="tab-perfil">
-      <div class="tool-controls" aria-label="Pesquisar e configurar Pokémon">
-        <div class="control-title"><strong>Buscar Pokémon</strong><span>Digite o nome ou o número da Pokédex</span></div>
-        <label class="field search-field">
-          <span class="lbl">Nome ou número</span>
-          <div class="search-input-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="species-search" autocomplete="off" placeholder="Buscar Pokémon por nome ou número..." role="combobox" aria-expanded="false" aria-controls="species-results"><button class="search-clear" type="button" aria-label="Limpar busca" hidden>×</button></div>
-          <div class="species-results" id="species-results" role="listbox" hidden></div>
-        </label>
-        <label class="field"><span class="lbl">Nível de referência</span><input class="mono" id="level" type="number" min="1" max="999" value="100"></label>
-        <label class="field"><span class="lbl">Qualidade (0.8 – 1.8)</span><input class="mono" id="quality" type="number" min="0.8" max="1.8" step="0.001" value="1.0"></label>
-        <div class="search-feedback" id="species-feedback" aria-live="polite"></div>
-      </div>
-      <div id="p_head"></div>
-      <hr class="divider">
-      <h2 class="sec">Stats base</h2>
-      <p class="sec-sub">O “corpão” da espécie — com a barra no teto de 255.</p>
-      <div class="stats" id="p_stats"></div>
-      <div class="badges" id="p_badges" style="margin-top:16px"></div>
-      <hr class="divider">
-      <h2 class="sec">Golpes</h2>
-      <p class="sec-sub">O golpe marcado com ★ é o que rende mais dano (poder × stat de ataque).</p>
-      <div class="moves" id="p_moves"></div>
-      <hr class="divider">
-      <h2 class="sec">Efetividade na hunt</h2>
-      <p class="sec-sub">Na hunt a vantagem elemental é 50% mais forte: ×2 vira ×2.5, ×4 vira ×5.5 — e resistências dividem por 1.5.</p>
-      <div id="p_eff"></div>
-      <hr class="divider">
-      <h2 class="sec">Linha evolutiva</h2>
-      <div class="evoline" id="p_evo"></div>
-      <hr class="divider">
-      <h2 class="sec">Drops</h2>
-      <p class="sec-sub">Chance por abate, direto do catálogo do jogo.</p>
-      <div class="drops" id="p_drops"></div>
-    </section>
 
     <!-- ============ POKÉDEX ============ -->
-    <section class="panel card" id="tab-pokedex">
+    <section class="panel card active" id="tab-pokedex">
       <span class="kicker">Catálogo do VPLab</span>
       <h2 class="sec">Pokédex</h2>
       <p class="sec-sub">Todas as 251 espécies da nossa base, com stats, golpes, evolução, hunt, preços e drops.</p>
@@ -146,8 +109,8 @@
               <h3>Preencher por imagem</h3>
               <ol class="help-steps">
                 <li><b>Abra o card completo</b> do Pokémon no jogo. Se necessário, aumente o zoom para deixar os números nítidos.</li>
-                <li><b>Tire um print sem cortes</b>, mostrando nome, nível, qualidade, Power, IV Total e os seis stats.</li>
-                <li>Clique em <b>Selecionar imagem</b> e escolha o arquivo. PNG, JPG e WebP são os formatos recomendados.</li>
+                <li><b>Tire um print sem cortes</b>, mostrando nome, nível, qualidade, Power, IV Total e os seis stats. O tooltip compacto (com IV no formato 131/192) também funciona.</li>
+                <li>Clique em <b>Selecionar imagem</b>, arraste o arquivo ou simplesmente <b>cole com Ctrl + V</b> depois de capturar a tela. PNG, JPG e WebP são os formatos aceitos.</li>
                 <li>O leitor preenche os campos automaticamente. <b>Confira os valores</b> antes de considerar o resultado.</li>
               </ol>
               <div class="privacy-note"><b>Privacidade:</b> a imagem é lida no seu navegador e não é enviada nem armazenada pelo VPLab.</div>
@@ -182,13 +145,17 @@
       <div class="iv-workspace">
         <div class="iv-entry-panel">
           <div class="workspace-label">Entrada de dados</div>
-          <div class="scan-card" id="iv-scan-card">
+          <div class="scan-card">
             <div>
               <strong>Preencher com uma imagem</strong>
-              <span>Arraste o print aqui ou clique em selecionar. A imagem é processada somente no seu navegador.</span>
+              <span>Selecione, arraste ou cole uma imagem com <b>Ctrl + V</b>.</span>
+              <small class="scan-hint">Use um print nítido do card do Pokémon — card completo ou tooltip compacto. A imagem é processada somente no seu navegador.</small>
             </div>
             <label class="scan-button" id="iv-image-button" for="iv-image">Selecionar imagem</label>
-            <input id="iv-image" type="file" accept="image/*" hidden>
+            <input id="iv-image" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            <div class="scan-preview" id="iv-preview-wrap" hidden>
+              <img id="iv-preview" alt="Prévia do print enviado">
+            </div>
             <div id="iv-scan-status" class="scan-status" aria-live="polite"></div>
           </div>
 
@@ -203,8 +170,8 @@
               </label>
               <select id="x-species" hidden aria-hidden="true" tabindex="-1"></select>
             </div>
-            <label class="field"><span class="lbl">Nível do Pokémon</span><input class="mono" id="x-level" type="number" min="1" max="999" placeholder="ex.: 302"></label>
-            <label class="field"><span class="lbl">Qualidade do Pokémon</span><input class="mono" id="x-qual" type="number" min="0.8" max="1.8" step="0.001" placeholder="ex.: 1.245"></label>
+            <label class="field"><span class="lbl">Nível do card</span><input class="mono" id="x-level" type="number" min="1" max="999" placeholder="ex.: 302"></label>
+            <label class="field"><span class="lbl">Qualidade do card</span><input class="mono" id="x-qual" type="number" min="0.8" max="1.8" step="0.001" placeholder="ex.: 1.245"></label>
             <label class="field"><span class="lbl">Power (opcional)</span><input class="mono" id="x-power" type="number" min="1" placeholder="ex.: 6661"></label>
             <label class="field"><span class="lbl">IV Total (opcional)</span><input class="mono" id="x-ivtotal" type="number" min="0" max="192" placeholder="ex.: 130"></label>
           </div>
@@ -218,7 +185,7 @@
 
       <hr class="divider">
       <h2 class="sec">Referência de qualidade</h2>
-      <p class="sec-sub">Etiquetas oficiais do jogo — e a chance de nascer em cada faixa.</p>
+      <p class="sec-sub">Faixas e probabilidades exatas da Poképedia oficial. Valores exibidos com pelo menos duas casas decimais.</p>
       <table class="rank-table">
         <thead><tr><th>Etiqueta</th><th>Qualidade</th><th>Chance na captura</th></tr></thead>
         <tbody id="x-qtable"></tbody>
@@ -267,7 +234,7 @@
     <!-- ============ POKEFIPE ============ -->
     <section class="panel card" id="tab-fipe">
       <div class="fipe-hero">
-        <div class="fipe-mark"><img src="assets/logo-pokefipe-transparente.png" alt="PokeFipe — Preço de referência"></div>
+        <div class="fipe-mark"><img src="assets/logo-pokefipe-transparente.webp" alt="PokeFipe — Preço de referência" width="300" height="300" loading="lazy" decoding="async"></div>
         <div>
           <span class="kicker">Referência da comunidade</span>
           <h2 class="sec fipe-hero-title">Descubra uma faixa justa para seu Pokémon</h2>
@@ -301,7 +268,7 @@
             <div><strong>Estimativa PokeFipe</strong><small>Faixa informativa baseada na planilha.</small></div>
           </div>
           <div class="fipe-empty" id="fipe-empty">
-            <img class="fipe-empty-logo" src="assets/logo-pokefipe-transparente.png" alt="" aria-hidden="true">
+            <img class="fipe-empty-logo" src="assets/logo-pokefipe-transparente.webp" alt="" aria-hidden="true" width="300" height="300" loading="lazy" decoding="async">
             <strong>Sua referência aparecerá aqui</strong>
             <span>Preencha os dados e clique em calcular.</span>
           </div>
@@ -339,67 +306,36 @@
       <h2 class="sec">Clãs: o que dão e como subir</h2>
       <p class="sec-sub">Regras oficiais da Pokepedia — 10 clãs, cada um cobrindo elementos. O bônus só vale para Pokémon dos elementos do seu clã.</p>
 
-      <div class="clan-cards clan-guide">
-        <div class="clan-card">
-          <h3>Como funciona</h3>
-          <div class="clan-facts">
-            <div><span class="fact-value">Nv 80</span><span>Entrada grátis no Rank 1</span></div>
-            <div><span class="fact-value">💎 40 → 60 → 80</span><span>Custo crescente para trocar</span></div>
-            <div><span class="fact-value">+6% por rank</span><span>Ataque, Atq. Esp., Defesa e Def. Esp.</span></div>
-            <div><span class="fact-value">+30%</span><span>Máximo no Rank 5, apenas nos elementos cobertos</span></div>
+      <details class="clan-rules">
+        <summary>Como funciona o sistema (entrada, custos e missões)</summary>
+        <div class="clan-cards clan-guide">
+          <div class="clan-card">
+            <h3>Como funciona</h3>
+            <div class="clan-facts">
+              <div><span class="fact-value">Nv 80</span><span>Entrada grátis no Rank 1</span></div>
+              <div><span class="fact-value">💎 40 → 60 → 80</span><span>Custo crescente para trocar</span></div>
+              <div><span class="fact-value">+6% por rank</span><span>Ataque, Atq. Esp., Defesa e Def. Esp.</span></div>
+              <div><span class="fact-value">+30%</span><span>Máximo no Rank 5, apenas nos elementos cobertos</span></div>
+            </div>
+          </div>
+          <div class="clan-card">
+            <h3>Subindo de rank (missões)</h3>
+            <ol class="rank-steps">
+              <li><b>Rank 2 · Nv 90</b><span>Pular: 1,5KK · recompensa: 210k XP</span></li>
+              <li><b>Rank 3 · Nv 100</b><span>Pular: 3KK · recompensa: 420k XP</span></li>
+              <li><b>Rank 4 · Nv 110</b><span>Pular: 4,5KK · recompensa: 630k XP</span></li>
+              <li><b>Rank 5 · Nv 120</b><span>Pular: 6KK · recompensa: 840k XP</span></li>
+            </ol>
+            <p class="clan-mission">Cada etapa pede itens do clã (consumidos), a captura de uma espécie específica e derrotas por elemento.</p>
           </div>
         </div>
-        <div class="clan-card">
-          <h3>Subindo de rank (missões)</h3>
-          <ol class="rank-steps">
-            <li><b>Rank 2 · Nv 90</b><span>Pular: 1,5KK · recompensa: 210k XP</span></li>
-            <li><b>Rank 3 · Nv 100</b><span>Pular: 3KK · recompensa: 420k XP</span></li>
-            <li><b>Rank 4 · Nv 110</b><span>Pular: 4,5KK · recompensa: 630k XP</span></li>
-            <li><b>Rank 5 · Nv 120</b><span>Pular: 6KK · recompensa: 840k XP</span></li>
-          </ol>
-          <p class="clan-mission">Cada etapa pede itens do clã (consumidos), a captura de uma espécie específica e derrotas por elemento.</p>
-        </div>
-      </div>
+      </details>
 
-      <hr class="divider">
-      <h2 class="sec">Time ideal por tipo</h2>
-      <p class="sec-sub">Escolha o tipo do seu clã — monto o melhor time de 6 + substitutos, e explico o porquê (vantagem, golpe de destaque e o bônus de clã).</p>
-      <div class="clan-times">
-        <div class="types" id="ct-types"></div>
-        <div id="ct-panel"></div>
-      </div>
-      <p class="note">No jogo você entra num clã no Nv 80; os Pokémon do tipo do clã ganham <b>+6%/rank (até +30%)</b> em Atk/Def. Time ranqueado por força total (base stats). Substitutos = próximos mais fortes do tipo.</p>
-
-      <!-- Simulador de bônus: escondido temporariamente; será reformulado -->
-      <div id="clan-simulator" hidden>
-      <hr class="divider">
-      <h2 class="sec">Quanto o clã turbina o seu Pokémon</h2>
-      <p class="sec-sub">Escolha abaixo o Pokémon que você quer simular. O cálculo considera IV 32.</p>
-      <div class="tool-controls clan-controls" aria-label="Configurar simulação de bônus do clã">
-        <div class="control-title"><strong>Simular bônus do clã</strong><span>Estes dados alteram somente o cálculo abaixo</span></div>
-        <label class="field search-field"><span class="lbl">Pokémon</span><div class="search-input-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="clan-species-search" autocomplete="off" placeholder="Buscar Pokémon por nome ou número..." role="combobox" aria-expanded="false" aria-controls="clan-species-results"><button class="search-clear" type="button" aria-label="Limpar busca" hidden>×</button></div><div class="species-results" id="clan-species-results" role="listbox" hidden></div></label>
-        <label class="field"><span class="lbl">Nível</span><input class="mono" id="clan-level" type="number" min="1" max="999" value="100"></label>
-        <label class="field"><span class="lbl">Qualidade</span><input class="mono" id="clan-quality" type="number" min="0.8" max="1.8" step="0.001" value="1.0"></label>
-        <div class="search-feedback" id="clan-species-feedback" aria-live="polite"></div>
-      </div>
-      <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
-        <div class="field">
-          <span class="lbl">Seu rank no clã</span>
-          <div class="seg" id="clan-rank" role="group" aria-label="Rank do clã">
-            <button data-r="0">Fora</button><button data-r="1">1</button><button data-r="2">2</button>
-            <button data-r="3">3</button><button data-r="4">4</button><button data-r="5" aria-pressed="true">5</button>
-          </div>
-        </div>
-        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer">
-          <input type="checkbox" id="clan-covers" checked style="width:auto;accent-color:var(--red-2);cursor:pointer">
-          <span id="clan-covers-lbl">Meu clã cobre o tipo deste Pokémon</span>
-        </label>
-      </div>
-      <div id="clan-out"></div>
-      <p class="note">Os nomes dos 10 clãs e seus elementos ficam atrás do login do jogo — confira no painel de clãs lá dentro qual cobre o tipo do seu Pokémon e marque acima.</p>
-      </div>
+      <div id="clan-app" aria-live="polite"><div class="clan-loading">Carregando os clãs…</div></div>
     </section>
 
+    <section class="panel card breeding-lab" id="tab-breeding" aria-label="Guia de Breeding"></section>
+    <section class="panel card professions-lab" id="tab-profissoes" aria-label="Guia de Profissões"></section>
   </div>
 </main>
 
@@ -422,8 +358,11 @@
 
 <script src="data.js"></script>
 <script src="vendor/tesseract.min.js"></script>
+<script src="iv-scan.js"></script>
 <script src="pokefipe-core.js"></script>
 <script src="app.js"></script>
-<script src="clan-times.js" defer></script>
+<script type="module" src="clan-ui.js"></script>
+<script src="breeding-ui.js"></script>
+<script src="professions-ui.js"></script>
 </body>
 </html>
