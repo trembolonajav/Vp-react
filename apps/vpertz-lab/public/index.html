@@ -346,15 +346,36 @@
         <img src="assets/logo-vplab.webp" alt="">
         VPLab — ferramenta da comunidade VP Store
       </span>
-      <div class="foot-links">
-        <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">Twitch</a>
-        <a href="https://www.instagram.com/vperts_ot/" target="_blank" rel="noreferrer">Instagram</a>
-        <a href="https://www.youtube.com/@vperts1" target="_blank" rel="noreferrer">YouTube</a>
+      <div class="foot-community">
+        <div class="foot-actions" aria-label="Formas opcionais de apoio">
+          <button class="foot-action-button" type="button" data-open-support aria-label="Abrir informações para apoiar o streamer">
+            <img src="assets/support-vplab.png" alt="Apoiar o streamer — 100% opcional, sem benefícios pagos" width="527" height="166">
+          </button>
+          <a class="foot-action-button" href="https://poke.idleworld.online/?ref=HJ94JAX" target="_blank" rel="noopener noreferrer sponsored" aria-label="Usar meu referral no PokeIdle World — abre em uma nova aba">
+            <img src="assets/referral-vplab.png" alt="Usar meu referral" width="1082" height="394">
+          </a>
+        </div>
+        <div class="foot-links">
+          <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">Twitch</a>
+          <a href="https://www.instagram.com/vperts_ot/" target="_blank" rel="noreferrer">Instagram</a>
+          <a href="https://www.youtube.com/@vperts1" target="_blank" rel="noreferrer">YouTube</a>
+        </div>
       </div>
       <p class="foot-note">Dados do catálogo oficial (Pokepedia do PokeIdle World), conferidos no mapa do jogo em julho/2026. Projeto independente da comunidade — sem vínculo com os desenvolvedores do jogo.</p>
     </div>
   </div>
 </footer>
+
+<dialog class="support-modal" id="support-modal" aria-labelledby="support-modal-title">
+  <div class="support-modal-card">
+    <button class="support-modal-close" type="button" data-close-support aria-label="Fechar modal">×</button>
+    <span class="support-modal-kicker">APOIO OPCIONAL</span>
+    <h2 id="support-modal-title">Apoie o streamer</h2>
+    <p>Se o conteúdo e as ferramentas do VPLab ajudam você, é possível apoiar diretamente o trabalho do streamer com uma contribuição voluntária.</p>
+    <img class="support-modal-qr" src="assets/apoio-streamer-qr.png" alt="QR Code para contribuição voluntária ao streamer" width="660" height="660">
+    <p class="support-modal-note">O apoio é 100% opcional e não oferece benefícios, vantagens ou acesso exclusivo. Antes de confirmar, confira no aplicativo bancário se os dados do destinatário estão corretos.</p>
+  </div>
+</dialog>
 
 <script src="data.js"></script>
 <script src="vendor/tesseract.min.js"></script>
@@ -364,5 +385,6 @@
 <script type="module" src="clan-ui.js"></script>
 <script src="breeding-ui.js"></script>
 <script src="professions-ui.js"></script>
+<script src="support-modal.js"></script>
 </body>
 </html>
