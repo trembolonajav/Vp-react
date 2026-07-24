@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 const STORE_ROOT = path.join(ROOT, "apps", "vpertz-store", "public");
 const LAB_ROOT = path.join(ROOT, "apps", "vpertz-lab", "public");
+const BAZAAR_ROOT = path.join(ROOT, "apps", "vpertz-bazaar", "public");
 const DIST_LAB_VENDOR = path.join(ROOT, "dist", "vplab", "vendor");
 const PORT = process.env.PORT || 8736;
 
@@ -72,6 +73,9 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/vplab") {
       res.writeHead(308, { Location: "/vplab/", ...SECURITY_HEADERS }); return res.end();
     }
+    if (pathname === "/bazaar") {
+      res.writeHead(308, { Location: "/bazaar/", ...SECURITY_HEADERS }); return res.end();
+    }
     if (pathname.startsWith("/vplab/vendor/")) {
       const vendorPath = pathname.slice("/vplab/vendor".length);
       const vendorFile = safeStatic(DIST_LAB_VENDOR, vendorPath);
@@ -79,9 +83,12 @@ const server = http.createServer(async (req, res) => {
         return sendFile(res, vendorFile);
       }
     }
+    /* Cada app tem sua raiz estática; o resto cai na Store. */
     const isLab = pathname.startsWith("/vplab/");
-    const staticPath = isLab ? pathname.slice("/vplab".length) : pathname;
-    const file = safeStatic(isLab ? LAB_ROOT : STORE_ROOT, staticPath, true);
+    const isBazaar = pathname.startsWith("/bazaar/");
+    const prefix = isLab ? "/vplab" : isBazaar ? "/bazaar" : "";
+    const appRoot = isLab ? LAB_ROOT : isBazaar ? BAZAAR_ROOT : STORE_ROOT;
+    const file = safeStatic(appRoot, pathname.slice(prefix.length), true);
     if (file && fs.existsSync(file) && fs.statSync(file).isFile()) return sendFile(res, file);
 
     res.writeHead(404, SECURITY_HEADERS); res.end("Não encontrado");
@@ -95,5 +102,6 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Vpertz Store: http://127.0.0.1:${PORT}`);
   console.log(`VPLab:       http://127.0.0.1:${PORT}/vplab/`);
+  console.log(`VP Bazaar:   http://127.0.0.1:${PORT}/bazaar/`);
   console.log(`Admin:       http://127.0.0.1:${PORT}/admin.html`);
 });

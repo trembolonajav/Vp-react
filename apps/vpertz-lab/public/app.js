@@ -11,10 +11,6 @@
 /* Troque quando a loja estiver publicada na Vercel: */
 const STORE_URL = "/";
 
-/* Espécies confirmadas nas hunts atuais de Kanto e Outland. */
-const AVAILABLE_DEX = new Set([
-  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,114,115,120,121,122,123,124,125,126,127,128,130,131,138,139,140,141,142,143,147,148,149,152,153,154,155,156,157,158,159,160,164,169,170,171,172,173,174,177,178,179,180,181,182,183,184,186,192,195,200,202,203,204,205,207,208,209,210,212,214,216,217,218,219,220,221,226,227,228,229,230,231,232,236,237,238,239,240,241,246,247,248
-]);
 function normalizeRarity(value) {
   const rarity = String(value || "");
   if (rarity.startsWith("Lend")) return "Lendário";
@@ -26,7 +22,9 @@ const ALL_DEX = window.VPLAB_DEX.map((pokemon) => ({
   ...pokemon,
   raridade: normalizeRarity(pokemon.raridade)
 }));
-const DEX = ALL_DEX.filter((p) => AVAILABLE_DEX.has(p.dexNo));
+/* A busca, a Pokédex e a rota usam o catálogo completo de espécies caçáveis.
+   A antiga whitelist deixava de fora Eevee, suas evoluções e várias hunts válidas. */
+const DEX = ALL_DEX.filter((p) => !p.boss);
 const CHART = window.VPLAB_TYPE_CHART;
 const EXP = [0.95, 0.80, 0.80, 0.80, 0.80, 0.95];
 const STAT_NAMES = ["HP", "Ataque", "Defesa", "Atq. Esp.", "Def. Esp.", "Velocid."];
@@ -171,8 +169,7 @@ const OUTLAND = OUTLAND_SPECS.map(([nome, slug], i) => {
   return base ? { ...base, nome, baseSlug:slug, slug:`outland-${slug}-${i}`, huntLevel:150, region:"outland" } : null;
 }).filter(Boolean);
 window.VPLAB_CLAN_CONTENT = {
-  /* Clãs avaliam todo o catálogo oficial, incluindo Pokémon obtidos por evolução.
-     A rota de caça continua separada e limitada a AVAILABLE_DEX + OUTLAND. */
+  /* Clãs e rota avaliam todo o catálogo utilizável, incluindo evoluções. */
   availableIds:ALL_DEX.map((pokemon) => pokemon.dexNo),
   outlandHunts:OUTLAND.map((enemy) => ({
     id:enemy.slug,name:enemy.nome,region:"outland",requiredLevel:enemy.huntLevel,
@@ -390,10 +387,10 @@ let ivScanChain = Promise.resolve();
 function scanIvImage(file){
   const ticket = ++ivScanTicket;
   ivScanChain = ivScanChain
-    .then(() => ticket === ivScanTicket ? runIvScan(file) : undefined)
+    .then(() => ticket === ivScanTicket ? runIvScan(file, ticket) : undefined)
     .catch(() => {});
 }
-async function runIvScan(file){
+async function runIvScan(file, ticket){
   const status = $("#iv-scan-status");
   const picker = $("#iv-image");
   const pickerButton = $("#iv-image-button");
@@ -419,9 +416,11 @@ async function runIvScan(file){
     const read = await IvScan.readCard(file, {
       paths: OCR_PATHS,
       onProgress: (label, progress) => {
+        if (ticket !== ivScanTicket) return;
         status.innerHTML = `<span class="scan-loading">${esc(label)}… <b>${Math.round(progress*100)}%</b></span>`;
       }
     });
+    if (ticket !== ivScanTicket) return;
     const found = findSpeciesInOcr(read.searchText);
     if (found) setSpecies(found.slug);
     const values = reconcileCardFields(found, read.fields.stats, { ...read.fields, sources:read.sources });
@@ -468,8 +467,10 @@ async function runIvScan(file){
       status.innerHTML = '<span class="scan-ok">✓ Leitura concluída.</span>';
     }
   } catch (err) {
+    if (ticket !== ivScanTicket) return;
     status.innerHTML = '<span class="scan-error">Não consegui ler este print. Tente uma imagem nítida, sem corte e com o card visível — ou preencha os campos manualmente.</span>';
   } finally {
+    if (ticket !== ivScanTicket) return;
     /* Limpar permite escolher imediatamente o mesmo arquivo outra vez. */
     picker.value = "";
     pickerButton.textContent = "Selecionar outra imagem";
@@ -510,12 +511,40 @@ function renderRota(){
     const stat = move.categoria === "fisico" ? p.baseStats[1] : p.baseStats[3];
     return { move, effect, score:move.poder * Math.max(1, stat) * effect };
   }).sort((a,b) => b.score-a.score || b.effect-a.effect || b.move.nivel-a.move.nivel)[0];
-  const theirVs = (target) => Math.max(...target.tipos.map((type) => effVs(type, p.tipos)));
+  const enemyMovesAgainst = (target) => {
+    const available = target.golpes.filter((move) => move.nivel <= target.huntLevel);
+    const moves = available.length ? available : target.golpes;
+    return moves.map((move) => {
+      const effect = huntAmp(effVs(move.tipo, p.tipos));
+      const stat = move.categoria === "fisico" ? target.baseStats[1] : target.baseStats[3];
+      return { move, effect, score:move.poder * Math.max(1, stat) * effect };
+    }).sort((a,b) => b.score-a.score || b.effect-a.effect || b.move.poder-a.move.poder);
+  };
+  const theirBestVs = (target) => enemyMovesAgainst(target)[0] || {
+    move:{ nome:"Ataque básico", tipo:target.tipos[0], poder:0 },
+    effect:huntAmp(effVs(target.tipos[0], p.tipos)),
+    score:0
+  };
+  const immunitiesAgainst = (target) => {
+    const seen = new Set();
+    return enemyMovesAgainst(target).filter((entry) => {
+      if (entry.effect !== 0 || seen.has(entry.move.tipo)) return false;
+      seen.add(entry.move.tipo);
+      return true;
+    });
+  };
 
   const list = rotaRegion === "outland" ? OUTLAND : rotaRegion === "all" ? [...HUNTABLE, ...OUTLAND] : HUNTABLE;
   const byLvl = {};
   list.forEach((x) => (byLvl[x.huntLevel] = byLvl[x.huntLevel] || []).push(x));
-  const lvls = Object.keys(byLvl).map(Number).sort((a,b) => a-b);
+  /* O nível informado é o ponto de partida da rota. */
+  const lvls = Object.keys(byLvl).map(Number).filter((level) => level >= trainerLevel).sort((a,b) => a-b);
+
+  if (!lvls.length) {
+    $("#rota-best").innerHTML = '<div class="route-summary"><div class="route-summary-empty">Não há hunts futuras nesta região para o nível informado. Tente outra região.</div></div>';
+    $("#rota-list").innerHTML = "";
+    return;
+  }
 
   const scored = lvls
     .map((lv) => ({ lv, se: byLvl[lv].filter((x) => bestAgainst(x).effect >= 2.5).length }))
@@ -533,20 +562,25 @@ function renderRota(){
       const ma = bestAgainst(a), mb = bestAgainst(b);
       if (ma.effect !== mb.effect) return mb.effect - ma.effect;
       if (ma.score !== mb.score) return mb.score - ma.score;
+      const dangerA = theirBestVs(a).effect, dangerB = theirBestVs(b).effect;
+      if (dangerA !== dangerB) return dangerA - dangerB;
       return (b.lootAvg||0) - (a.lootAvg||0) || a.dexNo - b.dexNo;
     });
-    /* peneira: só alvos super eficazes; sem nenhum, mostra a melhor opção da faixa */
+    /* Prioriza ataque super eficaz e também defesas imunes, que são vantagens
+       importantes mesmo quando o dano causado é apenas neutro. */
     const superEff = mons.filter((m) => bestAgainst(m).effect >= 2.5);
-    const shown = superEff.length ? superEff : mons.slice(0, 1);
-    const note = superEff.length
-      ? `${shown.length} de ${mons.length} Pokémon · só alvos com golpe super eficaz`
+    const safeImmune = mons.filter((m) => immunitiesAgainst(m).length && !superEff.includes(m));
+    const recommended = [...superEff, ...safeImmune];
+    const shown = recommended.length ? recommended : mons.slice(0, 1);
+    const note = recommended.length
+      ? `${shown.length} de ${mons.length} Pokémon · vantagens ofensivas ou defensivas`
       : mons.length === 1
-        ? "único Pokémon da faixa — sem golpe super eficaz"
-        : `sem alvo super eficaz nesta faixa — mostrando a melhor das ${mons.length} opções`;
+        ? "único Pokémon da faixa — sem vantagem direta"
+        : `sem vantagem direta — mostrando a melhor das ${mons.length} opções`;
     return `<div class="rotalvl">
       <div class="rotalvl-h"><span class="rotalvl-n">Hunt Nv ${lv}</span><span class="rotalvl-c">${note}</span></div>
       <div class="rotachips">${shown.map((m) => {
-        const best = bestAgainst(m), mv = best.effect, tv = theirVs(m);
+        const best = bestAgainst(m), mv = best.effect, retaliation = theirBestVs(m), tv = retaliation.effect;
         const cls = mv >= 5 ? "mt-4" : mv >= 2.5 ? "mt-2" : mv === 1 ? "mt-neu" : mv === 0 ? "mt-0" : mv <= 0.25 ? "mt-025" : "mt-05";
         const meter = clamp((mv / 5.5) * 100, 2, 100);
         return `<button class="rotachip ${cls}${(m.baseSlug || m.slug) === p.slug ? " me" : ""}" data-slug="${m.baseSlug || m.slug}">
@@ -631,7 +665,7 @@ function renderPokedex(){
       <div class="pokedex-actions"><button type="button" data-pokedex-action="avaliar">Avaliar IV</button><button type="button" data-pokedex-action="rota">Planejar rota</button></div></div>
     </div>
     <div class="pokedex-facts">
-      <span><small>Hunt</small><b>${pokemon.boss || !AVAILABLE_DEX.has(pokemon.dexNo) ? "Não disponível" : `Nv ${pokemon.huntLevel}`}</b></span>
+      <span><small>Hunt</small><b>${pokemon.boss ? "Não disponível" : `Nv ${pokemon.huntLevel}`}</b></span>
       <span><small>XP por abate</small><b>${fmt(pokemon.xp)}</b></span><span><small>Loot médio</small><b>$${fmt(pokemon.lootAvg)}</b></span>
       <span><small>Preço NPC</small><b>$${fmt(pokemon.priceNpc)}</b></span><span><small>Venda</small><b>$${fmt(pokemon.sellValue)}</b></span>
     </div>
@@ -1051,6 +1085,7 @@ $("#pokedex-species-search").parentElement.querySelector(".search-clear").addEve
   const u = new URL(location.href);
   const tab = u.searchParams.get("tab");
   const slug = u.searchParams.get("p");
+  const routeLevel = Math.max(1, Math.floor(num(u.searchParams.get("level")) || 1));
   cur = DEX.find((p) => p.slug === slug) || DEX.find((p) => p.slug === "scizor") || DEX[0];
   $("#iv-species-search").value = "";
   $("#route-species-search").value = "";
@@ -1059,6 +1094,12 @@ $("#pokedex-species-search").parentElement.querySelector(".search-clear").addEve
   $("#x-species-sprite").classList.add("is-placeholder");
   $("#x-species").value = "";
   if (tab && ["pokedex","avaliar","rota","fipe","clas","breeding","profissoes"].includes(tab)) activeTab = tab;
+  if (activeTab === "rota" && slug && DEX.some((pokemon) => pokemon.slug === slug)) {
+    routePokemonSelected = true;
+    $("#route-species-search").value = cur.nome;
+    $("#route-species-search").parentElement.querySelector(".search-clear").hidden = false;
+    $("#rota-level").value = routeLevel;
+  }
   $$(".main-tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === activeTab ? "true" : "false"));
   $$(".panel").forEach((s) => s.classList.toggle("active", s.id === "tab-" + activeTab));
   renderActive();

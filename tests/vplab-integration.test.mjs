@@ -236,13 +236,14 @@ test("13. Clãs, Breeding e Profissões continuam íntegros", () => {
   assert.equal(/(?:^|[};])header\{/.test(compacto), false);
 });
 
-test("14. nada foi alterado na loja nem na API por esta fase", () => {
-  /* estes caminhos têm mudanças alheias em andamento; a fase não pode encostar neles.
-     Comparamos contra o índice: os arquivos podem estar sujos, mas com o mesmo
-     conteúdo de antes — o que garantimos é que nenhuma linha nova veio daqui. */
+test("14. a loja e a API só mudam onde a fase atual precisa", () => {
+  /* Guarda contra respingo: nenhuma fase pode encostar em arquivo da loja ou da
+     API que não esteja declarado aqui. A lista acompanha a fase em andamento —
+     hoje, o lançamento do VP Bazaar (config + aba do painel + link na navegação). */
   const alterados = execFileSync("git", ["diff", "--name-only", "HEAD", "--", "apps/vpertz-store", "api"], { cwd: ROOT, encoding: "utf8" })
     .split("\n").map((s) => s.trim()).filter(Boolean);
   const esperados = [
+    /* fase anterior — VPLab */
     "api/_lib/defaults.mjs",
     "apps/vpertz-store/public/app.js",
     "apps/vpertz-store/public/contato.html",
@@ -250,9 +251,16 @@ test("14. nada foi alterado na loja nem na API por esta fase", () => {
     "apps/vpertz-store/public/index.html",
     "apps/vpertz-store/public/jogos.html",
     "apps/vpertz-store/public/negociar.html",
-    "apps/vpertz-store/public/styles.css"
+    "apps/vpertz-store/public/styles.css",
+    /* fase atual — VP Bazaar */
+    "api/_lib/validate.mjs",
+    "apps/vpertz-store/public/admin.html",
+    "apps/vpertz-store/public/admin.js",
+    "apps/vpertz-store/public/config.js",
+    "apps/vpertz-store/public/intermedio.html"
   ];
   for (const arquivo of alterados) {
-    assert.ok(esperados.includes(arquivo), `arquivo inesperado tocado fora do VPLab: ${arquivo}`);
+    const assetDoBazaar = arquivo.startsWith("apps/vpertz-store/public/assets/bazaar/");
+    assert.ok(esperados.includes(arquivo) || assetDoBazaar, `arquivo inesperado tocado fora do VPLab: ${arquivo}`);
   }
 });

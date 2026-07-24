@@ -23,3 +23,11 @@ poke_assets_capture.jsonl
 poke_assets_capture.stop
 poke_capture.pid
 *.pid
+
+# Arquivos locais de desenvolvimento, capturas e pacotes gerados.
+.claude/
+Yolo/
+tmp/
+*.rar
+*.traineddata
+dev-server.*.log

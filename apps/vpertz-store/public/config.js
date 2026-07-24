@@ -45,6 +45,19 @@ window.vpFetchConfig = async function () {
   });
 };
 
+/* Bloco do VP Bazaar com todos os campos garantidos — configurações salvas
+   antes do lançamento do bazaar não têm a chave, e backups antigos podem
+   ser reimportados no painel. */
+window.vpBazaar = (cfg) => ({
+  ativo: true,
+  msgInteresse: "Olá! Tenho interesse no anúncio {titulo} (#{id}).",
+  msgAnunciar: "Olá! Quero anunciar um item no marketplace.",
+  servidores: [],
+  categorias: [],
+  anuncios: [],
+  ...(cfg?.bazaar || {})
+});
+
 window.vpIcon = (name, cls) =>
   `<svg${cls ? ` class="${cls}"` : ""} viewBox="0 0 24 24" aria-hidden="true"><path d="${window.VP_ICONS[name] || window.VP_ICONS.site}"/></svg>`;
 

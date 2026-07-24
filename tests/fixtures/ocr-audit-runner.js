@@ -1,0 +1,34 @@
+(async () => {
+  const output = document.querySelector("#output");
+  const params = new URLSearchParams(location.search);
+  const fileName = params.get("file");
+  const started = performance.now();
+  try {
+    const response = await fetch(`/fixtures/ocr-audit/${encodeURIComponent(fileName)}`);
+    const blob = await response.blob();
+    const file = new File([blob], fileName, { type: blob.type || "image/png" });
+    const paths = {
+      workerPath: new URL("/vplab/vendor/worker.min.js", location.href).href,
+      corePath: new URL("/vplab/vendor/tesseract-core", location.href).href,
+      langPath: new URL("/vplab/vendor/lang-data", location.href).href
+    };
+    if (params.get("single") === "1") {
+      const worker = await Tesseract.createWorker("por+eng", 1, paths);
+      const initializedMs = Math.round(performance.now() - started);
+      await worker.setParameters({ tessedit_pageseg_mode: "6" });
+      const recognizedAt = performance.now();
+      const { data } = await worker.recognize(file);
+      await worker.terminate();
+      output.textContent = JSON.stringify({ initializedMs, recognizeMs: Math.round(performance.now() - recognizedAt), confidence: data.confidence, text: data.text });
+      document.title = "done";
+      return;
+    }
+    const result = await IvScan.readCard(file, { debug: true, diagnostic: true, paths });
+    result.elapsedMs = Math.round(performance.now() - started);
+    output.textContent = JSON.stringify(result);
+    document.title = "done";
+  } catch (error) {
+    output.textContent = JSON.stringify({ error: String(error), stack: error?.stack });
+    document.title = "error";
+  }
+})();

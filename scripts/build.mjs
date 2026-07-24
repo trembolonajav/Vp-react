@@ -5,6 +5,7 @@ const ROOT = process.cwd();
 const DIST = path.join(ROOT, "dist");
 const STORE = path.join(ROOT, "apps", "vpertz-store", "public");
 const LAB = path.join(ROOT, "apps", "vpertz-lab", "public");
+const BAZAAR = path.join(ROOT, "apps", "vpertz-bazaar", "public");
 const MODULES = path.join(ROOT, "node_modules");
 
 const insideRoot = (target) => target.startsWith(ROOT + path.sep);
@@ -16,6 +17,7 @@ await fs.rm(DIST, { recursive: true, force: true });
 await fs.mkdir(DIST, { recursive: true });
 await fs.cp(STORE, DIST, { recursive: true });
 await fs.cp(LAB, path.join(DIST, "vplab"), { recursive: true });
+await fs.cp(BAZAAR, path.join(DIST, "bazaar"), { recursive: true });
 
 const OCR_VENDOR = path.join(DIST, "vplab", "vendor");
 await fs.mkdir(path.join(OCR_VENDOR, "tesseract-core"), { recursive: true });
@@ -51,4 +53,5 @@ for (const language of ["por", "eng"]) {
 console.log("Build concluído:");
 console.log("  Store    -> dist/");
 console.log("  VPLab    -> dist/vplab/ (inclui a aba PokeFipe)");
+console.log("  Bazaar   -> dist/bazaar/");
 console.log("  OCR local -> dist/vplab/vendor/");

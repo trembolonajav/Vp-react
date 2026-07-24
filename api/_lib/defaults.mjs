@@ -2,6 +2,15 @@
    no armazenamento (primeiro deploy) e pelo botão "Restaurar padrão".
    Mantenha em sincronia com dados.js (fallback offline do frontend). */
 
+/* Tipagens do PokeIdle. Mesmas chaves usadas pelo VPLab (TYPE_LABEL em
+   apps/vpertz-lab/public/app.js) — os selos do card vêm de
+   assets/bazaar/types/<chave>.webp. */
+export const TYPE_KEYS = [
+  "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
+  "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark",
+  "steel", "fairy"
+];
+
 export const ICON_KEYS = [
   "instagram", "youtube", "twitch", "whatsapp", "tiktok", "discord",
   "x", "telegram", "facebook", "kick", "email", "site"
@@ -46,5 +55,17 @@ export const DEFAULT_CONFIG = {
     { icone: "youtube", nome: "YouTube", info: "@vperts1", url: "https://www.youtube.com/@vperts1" },
     { icone: "twitch", nome: "Twitch", info: "@vpertsz — live diária", url: "https://www.twitch.tv/vpertsz" },
     { icone: "whatsapp", nome: "WhatsApp", info: "Atendimento oficial da loja", url: "" }
-  ]
+  ],
+
+  /* VP Bazaar — marketplace entre jogadores, publicado em /bazaar/.
+     Fase 1: os anúncios são cadastrados aqui pelo painel e a negociação
+     acontece no WhatsApp, com intermédio opcional da VP. */
+  bazaar: {
+    ativo: true,
+    msgInteresse: "Olá, VP Bazaar! Tenho interesse no anúncio {titulo} (#{id}).",
+    msgAnunciar: "Olá, VP Bazaar! Quero anunciar um item no marketplace.",
+    servidores: ["Genesis", "Aurora", "Eclipse"],
+    categorias: ["Pokémon", "Itens", "Contas", "Diamonds", "Serviços"],
+    anuncios: []
+  }
 };

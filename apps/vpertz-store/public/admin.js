@@ -79,6 +79,15 @@ function bindFields(scope, getTarget) {
       let value = el.type === "checkbox" ? el.checked : el.value;
       if (el.dataset.type === "number") value = Number(value) || 0;
       if (el.dataset.type === "digits") value = value.replace(/\D/g, "");
+      /* lista separada por vírgula (servidores, categorias do bazaar) */
+      if (el.dataset.type === "list") {
+        value = value.split(",").map((v) => v.trim()).filter(Boolean);
+      }
+      /* IVs: "31/31/31/31/31/29" -> [31,...]; qualquer coisa diferente de 6 números limpa */
+      if (el.dataset.type === "ivs") {
+        const nums = value.split(/[\/\s,]+/).map(Number).filter((n) => Number.isFinite(n));
+        value = nums.length === 6 ? nums.map((n) => Math.min(31, Math.max(0, Math.round(n)))) : [];
+      }
       target[key] = value;
       markDirty();
     });
@@ -303,6 +312,377 @@ function renderContatos() {
   });
 }
 
+/* ---------------------------------------------- VP Bazaar */
+const BZ_STATUS = { ativo: "No ar", pausado: "Pausado (oculto)", vendido: "Vendido" };
+
+/* Mesmas chaves de TYPE_KEYS em api/_lib/defaults.mjs. */
+const BZ_TIPOS = [
+  ["normal", "Normal"], ["fire", "Fogo"], ["water", "Água"], ["electric", "Elétrico"],
+  ["grass", "Planta"], ["ice", "Gelo"], ["fighting", "Lutador"], ["poison", "Veneno"],
+  ["ground", "Terra"], ["flying", "Voador"], ["psychic", "Psíquico"], ["bug", "Inseto"],
+  ["rock", "Pedra"], ["ghost", "Fantasma"], ["dragon", "Dragão"], ["dark", "Sombrio"],
+  ["steel", "Aço"], ["fairy", "Fada"]
+];
+
+function bzOptions(lista, atual) {
+  return lista.map((v) =>
+    `<option value="${esc(v)}" ${v === atual ? "selected" : ""}>${esc(v)}</option>`).join("");
+}
+
+function renderBazaar() {
+  const bz = cfg.bazaar;
+
+  /* Anúncios salvos antes dos campos do card (ou vindos de backup antigo)
+     não têm essas chaves — o editor precisa delas para renderizar. */
+  bz.anuncios.forEach((a) => {
+    a.tipos = Array.isArray(a.tipos) ? a.tipos : [];
+    a.ivs = Array.isArray(a.ivs) && a.ivs.length === 6 ? a.ivs : [];
+    a.moves = Array.isArray(a.moves) ? a.moves : [];
+    a.dex ??= 0;
+    a.nivel ??= 0;
+    a.quantidade ??= 0;
+    a.shiny ??= false;
+    a.aceitaTroca ??= false;
+    a.natureza ??= ""; a.habilidade ??= ""; a.genero ??= ""; a.forma ??= ""; a.regras ??= "";
+    a.vendedorVerificado ??= false;
+    a.vendedorOnline ??= false;
+    a.vendedorNota ??= 0; a.vendedorVendas ??= 0; a.vendedorResposta ??= ""; a.vendedorAvatar ??= "";
+  });
+
+  const cardAnuncio = (a, i) => `
+    <div class="a-card ${a.status === "ativo" ? "" : "disabled"}" data-i="${i}"
+         data-busca="${esc((a.titulo + " " + a.servidor + " " + a.categoria + " " + a.vendedor).toLowerCase())}">
+      <div class="a-card-head">
+        <img class="a-thumb" src="${esc(a.img || "assets/logo-vp-store-quadrada.webp")}" alt="">
+        <div>
+          <div class="a-title">${esc(a.titulo) || "Novo anúncio"}</div>
+          <div class="sub" style="margin-top:4px">#${esc(a.id)}</div>
+        </div>
+        <div class="order">
+          <button class="mini-btn" data-act="up" title="Mover para cima" ${i === 0 ? "disabled" : ""}>↑</button>
+          <button class="mini-btn" data-act="down" title="Mover para baixo" ${i === bz.anuncios.length - 1 ? "disabled" : ""}>↓</button>
+        </div>
+      </div>
+
+      <div class="a-row single">
+        <div class="a-field">
+          <label>Título</label>
+          <input type="text" data-bind="titulo" maxlength="90" value="${esc(a.titulo)}" placeholder="Ex.: Charizard shiny lvl 100">
+        </div>
+      </div>
+
+      <div class="a-row three">
+        <div class="a-field">
+          <label>Situação</label>
+          <select data-bind="status">
+            ${Object.entries(BZ_STATUS).map(([k, v]) =>
+              `<option value="${k}" ${k === a.status ? "selected" : ""}>${v}</option>`).join("")}
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Intenção</label>
+          <select data-bind="intencao">
+            <option value="venda" ${a.intencao === "venda" ? "selected" : ""}>Vendendo</option>
+            <option value="compra" ${a.intencao === "compra" ? "selected" : ""}>Procurando comprar</option>
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Jogo</label>
+          <select data-bind="jogo">
+            ${cfg.games.map((g) =>
+              `<option value="${esc(g.id)}" ${g.id === a.jogo ? "selected" : ""}>${esc(g.nome)}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="a-row three">
+        <div class="a-field">
+          <label>Servidor</label>
+          <select data-bind="servidor">
+            <option value="">— nenhum —</option>
+            ${bzOptions(bz.servidores, a.servidor)}
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Categoria</label>
+          <select data-bind="categoria">
+            <option value="">— nenhuma —</option>
+            ${bzOptions(bz.categorias, a.categoria)}
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Anunciante (nick)</label>
+          <input type="text" data-bind="vendedor" maxlength="60" value="${esc(a.vendedor)}">
+        </div>
+      </div>
+
+      <div class="a-row three">
+        <div class="a-field">
+          <label>Preço (0 = a combinar)</label>
+          <input type="number" step="0.01" min="0" data-bind="preco" data-type="number" value="${a.preco}">
+        </div>
+        <div class="a-field">
+          <label>Moeda</label>
+          <select data-bind="moeda">
+            <option value="brl" ${a.moeda === "brl" ? "selected" : ""}>Reais (R$)</option>
+            <option value="diamonds" ${a.moeda === "diamonds" ? "selected" : ""}>Diamonds</option>
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Publicado em</label>
+          <input type="date" data-bind="criadoEm" value="${esc(a.criadoEm)}">
+          <div class="sub">Usado na ordenação "mais recentes".</div>
+        </div>
+      </div>
+
+      <div class="a-row three">
+        <div class="a-field">
+          <label>Nº na Pokédex</label>
+          <input type="number" min="0" max="1025" data-bind="dex" data-type="number" value="${a.dex}">
+          <div class="sub">Preenchido, o card mostra o sprite da espécie no lugar da imagem.</div>
+        </div>
+        <div class="a-field">
+          <label>Nível</label>
+          <input type="number" min="0" max="100" data-bind="nivel" data-type="number" value="${a.nivel}">
+        </div>
+        <div class="a-field">
+          <label>Quantidade (itens)</label>
+          <input type="number" min="0" data-bind="quantidade" data-type="number" value="${a.quantidade}">
+          <div class="sub">Aparece quando não há nível. Ex.: Ultra Ball x50.</div>
+        </div>
+      </div>
+
+      <div class="a-row">
+        <div class="a-field">
+          <label>Tipagem 1</label>
+          <select data-tipo="0">
+            <option value="">— nenhuma —</option>
+            ${BZ_TIPOS.map(([k, v]) =>
+              `<option value="${k}" ${k === a.tipos[0] ? "selected" : ""}>${v}</option>`).join("")}
+          </select>
+        </div>
+        <div class="a-field">
+          <label>Tipagem 2</label>
+          <select data-tipo="1">
+            <option value="">— nenhuma —</option>
+            ${BZ_TIPOS.map(([k, v]) =>
+              `<option value="${k}" ${k === a.tipos[1] ? "selected" : ""}>${v}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="a-row single">
+        <div class="a-field">
+          <label>Descrição</label>
+          <textarea data-bind="descricao" maxlength="1200" placeholder="Atributos, level, o que vai junto…">${esc(a.descricao)}</textarea>
+        </div>
+      </div>
+
+      <details class="bz-detalhe-fields" ${a.natureza || a.ivs.length || a.vendedorNota ? "open" : ""}>
+        <summary>Ficha detalhada da página do anúncio (opcional)</summary>
+
+        <div class="a-row three" style="margin-top:14px">
+          <div class="a-field">
+            <label>Natureza</label>
+            <input type="text" data-bind="natureza" maxlength="40" value="${esc(a.natureza)}" placeholder="Ex.: Modest">
+          </div>
+          <div class="a-field">
+            <label>Habilidade</label>
+            <input type="text" data-bind="habilidade" maxlength="40" value="${esc(a.habilidade)}" placeholder="Ex.: Synchronize">
+          </div>
+          <div class="a-field">
+            <label>Gênero</label>
+            <select data-bind="genero">
+              <option value="" ${!a.genero ? "selected" : ""}>— não informar —</option>
+              <option value="macho" ${a.genero === "macho" ? "selected" : ""}>Macho ♂</option>
+              <option value="femea" ${a.genero === "femea" ? "selected" : ""}>Fêmea ♀</option>
+              <option value="sem" ${a.genero === "sem" ? "selected" : ""}>Sem gênero</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="a-row">
+          <div class="a-field">
+            <label>IVs (HP/Atq/Def/AtqEsp/DefEsp/Vel)</label>
+            <input type="text" data-bind="ivs" data-type="ivs" value="${a.ivs.length === 6 ? a.ivs.join("/") : ""}" placeholder="31/31/31/31/31/29">
+            <div class="sub">Seis números de 0 a 31 separados por barra. Deixe vazio para ocultar.</div>
+          </div>
+          <div class="a-field">
+            <label>Golpes / moves (até 4, por vírgula)</label>
+            <input type="text" data-bind="moves" data-type="list" value="${esc(a.moves.join(", "))}" placeholder="Moonblast, Psychic, Calm Mind">
+          </div>
+        </div>
+
+        <div class="a-row three">
+          <div class="a-field">
+            <label>Forma</label>
+            <input type="text" data-bind="forma" maxlength="40" value="${esc(a.forma)}" placeholder="Ex.: Padrão, Mega">
+          </div>
+          <div class="a-field">
+            <label>Nota do vendedor (0–5)</label>
+            <input type="number" step="0.1" min="0" max="5" data-bind="vendedorNota" data-type="number" value="${a.vendedorNota}">
+          </div>
+          <div class="a-field">
+            <label>Vendas realizadas</label>
+            <input type="number" min="0" data-bind="vendedorVendas" data-type="number" value="${a.vendedorVendas}">
+          </div>
+        </div>
+
+        <div class="a-row">
+          <div class="a-field">
+            <label>Tempo de resposta</label>
+            <input type="text" data-bind="vendedorResposta" maxlength="40" value="${esc(a.vendedorResposta)}" placeholder="Ex.: 5 min">
+          </div>
+          <div class="a-field">
+            <label>Regras / observações do vendedor</label>
+            <textarea data-bind="regras" maxlength="800" placeholder="Negocie apenas pelo chat, não aceito pagamento fora…">${esc(a.regras)}</textarea>
+          </div>
+        </div>
+      </details>
+
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <label class="a-check">
+          <input type="checkbox" data-bind="destaque" ${a.destaque ? "checked" : ""}> Destaque
+        </label>
+        <label class="a-check">
+          <input type="checkbox" data-bind="shiny" ${a.shiny ? "checked" : ""}> Shiny
+        </label>
+        <label class="a-check">
+          <input type="checkbox" data-bind="negociavel" ${a.negociavel ? "checked" : ""}> Aceita propostas
+        </label>
+        <label class="a-check">
+          <input type="checkbox" data-bind="aceitaTroca" ${a.aceitaTroca ? "checked" : ""}> Aceita troca
+        </label>
+        <label class="a-check">
+          <input type="checkbox" data-bind="vendedorVerificado" ${a.vendedorVerificado ? "checked" : ""}> Anunciante verificado
+        </label>
+        <label class="a-check">
+          <input type="checkbox" data-bind="vendedorOnline" ${a.vendedorOnline ? "checked" : ""}> Online
+        </label>
+        <button class="a-btn small" data-act="img">Trocar imagem</button>
+        <span class="spacer" style="flex:1"></span>
+        <button class="a-btn small danger" data-act="del">Remover anúncio</button>
+      </div>
+    </div>`;
+
+  panel().innerHTML = `
+    <div class="a-card" id="bz-geral">
+      <div class="a-title" style="margin-bottom:16px">Configuração do marketplace</div>
+      <label class="a-check" style="margin-bottom:16px">
+        <input type="checkbox" data-bind="ativo" ${bz.ativo ? "checked" : ""}>
+        Bazaar visível para os visitantes
+      </label>
+      <div class="a-row">
+        <div class="a-field">
+          <label>Servidores (separados por vírgula)</label>
+          <input type="text" data-bind="servidores" data-type="list" value="${esc(bz.servidores.join(", "))}">
+        </div>
+        <div class="a-field">
+          <label>Categorias (separadas por vírgula)</label>
+          <input type="text" data-bind="categorias" data-type="list" value="${esc(bz.categorias.join(", "))}">
+        </div>
+      </div>
+      <div class="a-row single">
+        <div class="a-field">
+          <label>Mensagem do botão "Tenho interesse"</label>
+          <textarea data-bind="msgInteresse">${esc(bz.msgInteresse)}</textarea>
+          <div class="sub">Use <strong>{titulo}</strong> e <strong>{id}</strong> — são trocados pelo anúncio clicado.</div>
+        </div>
+      </div>
+      <div class="a-row single">
+        <div class="a-field">
+          <label>Mensagem do botão "Anunciar"</label>
+          <textarea data-bind="msgAnunciar">${esc(bz.msgAnunciar)}</textarea>
+        </div>
+      </div>
+      <p class="sub" style="margin:4px 0 0">
+        Servidores e categorias removidos daqui somem do filtro e são limpos dos
+        anúncios que os usavam ao salvar.
+      </p>
+    </div>
+
+    <div class="a-card">
+      <div class="a-field">
+        <label>Procurar anúncio</label>
+        <input type="search" id="bz-busca" placeholder="Título, servidor, categoria ou anunciante">
+      </div>
+    </div>
+
+    <div id="bz-lista">${bz.anuncios.map(cardAnuncio).join("")}</div>
+    <button class="a-btn a-add" id="add-anuncio">+ Adicionar anúncio</button>`;
+
+  bindFields($("#bz-geral"), () => cfg.bazaar);
+  bindFields($("#bz-lista"), (el) => bz.anuncios[+el.closest(".a-card").dataset.i]);
+
+  /* As duas tipagens gravam num array só, sem posições vazias no meio. */
+  $$("#bz-lista [data-tipo]").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const card = sel.closest(".a-card");
+      const anuncio = bz.anuncios[+card.dataset.i];
+      const escolhidos = $$("[data-tipo]", card)
+        .sort((a, b) => a.dataset.tipo - b.dataset.tipo)
+        .map((s) => s.value);
+      anuncio.tipos = [...new Set(escolhidos.filter(Boolean))].slice(0, 2);
+      markDirty();
+    });
+  });
+
+  /* filtra sem re-renderizar, para não perder o que está sendo digitado */
+  $("#bz-busca").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    $$("#bz-lista .a-card").forEach((card) => {
+      card.hidden = Boolean(q) && !card.dataset.busca.includes(q);
+    });
+  });
+
+  $$("#bz-lista .a-card [data-act]").forEach((btn) => {
+    const i = +btn.closest(".a-card").dataset.i;
+    btn.addEventListener("click", () => {
+      const act = btn.dataset.act;
+      if (act === "up") move(bz.anuncios, i, -1);
+      if (act === "down") move(bz.anuncios, i, 1);
+      if (act === "del") {
+        if (confirm(`Remover o anúncio "${bz.anuncios[i].titulo}"?`)) {
+          bz.anuncios.splice(i, 1); markDirty(); render();
+        }
+      }
+      if (act === "img") pickImage((url) => { bz.anuncios[i].img = url; markDirty(); render(); });
+    });
+  });
+
+  $("#add-anuncio").addEventListener("click", () => {
+    bz.anuncios.unshift({
+      id: "an-" + Date.now().toString(36),
+      titulo: "",
+      jogo: cfg.games[0]?.id || "",
+      servidor: bz.servidores[0] || "",
+      categoria: bz.categorias[0] || "",
+      intencao: "venda",
+      moeda: "brl",
+      preco: 0,
+      negociavel: false,
+      destaque: false,
+      status: "pausado",
+      img: "",
+      descricao: "",
+      vendedor: "",
+      criadoEm: new Date().toISOString().slice(0, 10),
+      dex: 0,
+      nivel: 0,
+      tipos: [],
+      shiny: false,
+      quantidade: 0,
+      aceitaTroca: false,
+      natureza: "", habilidade: "", genero: "", forma: "", ivs: [], moves: [], regras: "",
+      vendedorVerificado: false,
+      vendedorOnline: false,
+      vendedorNota: 0, vendedorVendas: 0, vendedorResposta: "", vendedorAvatar: ""
+    });
+    markDirty(); render();
+    toast("Anúncio criado — preencha os dados e mude a situação para \"No ar\".");
+  });
+}
+
 function renderGeral() {
   panel().innerHTML = `
     <div class="a-card">
@@ -334,7 +714,10 @@ function renderGeral() {
   bindFields(panel(), () => cfg);
 }
 
-const SECTIONS = { banners: renderBanners, jogos: renderJogos, contatos: renderContatos, geral: renderGeral };
+const SECTIONS = {
+  banners: renderBanners, jogos: renderJogos, bazaar: renderBazaar,
+  contatos: renderContatos, geral: renderGeral
+};
 function render() { SECTIONS[activeTab](); }
 
 /* ---------------------------------------------- abas */
@@ -386,6 +769,7 @@ $("#import-file").addEventListener("change", () => {
       const data = JSON.parse(reader.result);
       if (!data.games || !data.banners || !data.contatos) throw new Error("estrutura inválida");
       cfg = data;
+      cfg.bazaar = vpBazaar(cfg);   // backups anteriores ao bazaar não têm a chave
       markDirty(); render();
       toast("Backup carregado — confira e clique em Salvar e publicar.");
     } catch (e) {
@@ -435,6 +819,7 @@ async function init() {
   const res = await api("/api/admin/config");
   if (res.ok) {
     cfg = res.data;
+    cfg.bazaar = vpBazaar(cfg);   // configs salvas antes do bazaar não têm a chave
     $("#login-view").hidden = true;
     $("#admin-view").hidden = false;
     $("#logout-btn").hidden = false;

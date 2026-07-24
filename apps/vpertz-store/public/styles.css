@@ -701,6 +701,17 @@ footer{
 .a-check{display:inline-flex;align-items:center;gap:9px;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer}
 .a-check input{width:17px;height:17px;accent-color:var(--red-2);cursor:pointer}
 
+/* bloco recolhível da ficha detalhada do anúncio (aba Bazaar) */
+.bz-detalhe-fields{margin:14px 0 4px;border:1px solid var(--line);border-radius:12px;padding:0 14px}
+.bz-detalhe-fields[open]{padding-bottom:14px}
+.bz-detalhe-fields>summary{
+  padding:12px 2px;cursor:pointer;list-style:none;
+  color:var(--gold-soft);font-size:12.5px;font-weight:700;letter-spacing:.02em;
+}
+.bz-detalhe-fields>summary::-webkit-details-marker{display:none}
+.bz-detalhe-fields>summary::before{content:"▸ ";color:var(--faint)}
+.bz-detalhe-fields[open]>summary::before{content:"▾ "}
+
 .a-thumb{
   width:86px;height:86px;flex:none;
   border:1px solid var(--line);border-radius:11px;

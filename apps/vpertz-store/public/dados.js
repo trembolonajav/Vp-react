@@ -56,5 +56,17 @@ window.VP_DEFAULT_CONFIG = {
     { icone: "youtube",  nome: "YouTube",  info: "@vperts1", url: "https://www.youtube.com/@vperts1" },
     { icone: "twitch",   nome: "Twitch",   info: "@vpertsz — live diária", url: "https://www.twitch.tv/vpertsz" },
     { icone: "whatsapp", nome: "WhatsApp", info: "Atendimento oficial da loja", url: "" }
-  ]
+  ],
+
+  /* VP Bazaar — marketplace entre jogadores (/bazaar/).
+     Os anúncios são cadastrados na aba "Bazaar" do painel. A negociação
+     acontece no WhatsApp; {titulo} e {id} são trocados pelo anúncio real. */
+  bazaar: {
+    ativo: true,
+    msgInteresse: "Olá, VP Bazaar! Tenho interesse no anúncio {titulo} (#{id}).",
+    msgAnunciar: "Olá, VP Bazaar! Quero anunciar um item no marketplace.",
+    servidores: ["Genesis", "Aurora", "Eclipse"],
+    categorias: ["Pokémon", "Itens", "Contas", "Diamonds", "Serviços"],
+    anuncios: []
+  }
 };
