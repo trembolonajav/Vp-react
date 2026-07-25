@@ -1,7 +1,7 @@
 {
-  "name": "VP Store",
-  "short_name": "VP Store",
-  "description": "Compra e venda de diamonds do PokeIdle World e ferramentas do VPLab.",
+  "name": "VPertsz",
+  "short_name": "VPertsz",
+  "description": "Hub oficial do VPertsz: VP Store, VP Bazaar, VPLab, PokeFipe, comunidade e a live diária do PokeIdle World.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

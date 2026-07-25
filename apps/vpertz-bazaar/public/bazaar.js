@@ -75,6 +75,17 @@ function normalizarAnuncio(a) {
   return a;
 }
 
+/* Anúncios criados pelo usuário no wizard (Fase 2: placeholder local, sem
+   backend). Ficam no localStorage e se juntam aos oficiais do painel para
+   aparecer no marketplace e abrir em anuncio.html deste navegador. */
+const MEUS_KEY = "vp-bazaar-meus";
+function carregarLocais() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(MEUS_KEY)) || [];
+    return arr.map((a) => { a.local = true; return normalizarAnuncio(a); });
+  } catch { return []; }
+}
+
 /* ---------------------------------------------- helpers de exibição */
 const jogoNome = (id) => cfg.games.find((g) => g.id === id)?.nome || "";
 
@@ -203,7 +214,8 @@ function cardHTML(a) {
       ? '<span class="bz-plate simples encerrado">Vendido</span>'
       : (!a.destaque && !a.shiny
           ? `<span class="bz-plate simples ${a.intencao}">${a.intencao === "compra" ? "Procura-se" : "À venda"}</span>`
-          : "")
+          : ""),
+    a.local ? '<span class="bz-plate seu">Seu anúncio</span>' : ""
   ].join("");
 
   /* dex > 0 usa o sprite da espécie; senão a imagem enviada no painel. */
@@ -263,6 +275,32 @@ function cardHTML(a) {
         ${vendido ? "Ver anúncio encerrado" : "Ver anúncio"}
       </button>
     </article>`;
+}
+
+/* Card horizontal e compacto usado na faixa de anúncios semelhantes. */
+function cardSemelhanteHTML(a) {
+  const arte = a.dex
+    ? `<img src="${spriteUrl(a.dex)}" alt="" loading="lazy" data-fallback>`
+    : a.img
+      ? `<img src="${esc(a.img)}" alt="" loading="lazy">`
+      : '<span class="bz-related-noart" aria-hidden="true">VP</span>';
+  const meta = [
+    a.nivel ? `Nv. ${a.nivel}` : "",
+    a.tipos[0] || a.categoria || ""
+  ].filter(Boolean).join(" · ");
+  const preco = precoTexto(a);
+
+  return `<a class="bz-related-card" href="${linkAnuncio(a.id)}" aria-label="Ver ${esc(a.titulo)}">
+    <span class="bz-related-art">${arte}</span>
+    <span class="bz-related-copy">
+      <strong>${esc(a.titulo)}</strong>
+      ${meta ? `<small>${esc(meta)}</small>` : ""}
+      <span class="bz-related-price">
+        ${a.moeda === "diamonds" && a.preco ? '<img src="/assets/bazaar/anuncio-diamond.png" alt="">' : ""}
+        <b>${esc(preco.valor)}${preco.unidade ? ` ${esc(preco.unidade)}` : ""}</b>
+      </span>
+    </span>
+  </a>`;
 }
 
 function renderGrid() {
@@ -383,7 +421,7 @@ function vendedorHTML(a) {
   if (!a.vendedor) return "";
   const avatar = a.vendedorAvatar
     ? `<img src="${esc(a.vendedorAvatar)}" alt="">`
-    : `<span aria-hidden="true">${esc(a.vendedor.slice(0, 1).toUpperCase())}</span>`;
+    : `<span class="bz-avatar-placeholder" aria-hidden="true">${ico("info")}</span>`;
 
   const reputacao = a.vendedorNota
     ? `<div class="bz-seller-rep">${estrelasHTML(a.vendedorNota)}
@@ -402,14 +440,21 @@ function vendedorHTML(a) {
         <div class="bz-avatar">${avatar}<span class="bz-crown" aria-hidden="true">♛</span></div>
         <div>
           <div class="bz-seller-name">
-            ${esc(a.vendedor)}${a.vendedorVerificado ? SVG_VERIFICADO : ""}
+            ${esc(a.vendedor)}
+            <span class="bz-seller-level">LVL 12</span>
+            ${a.vendedorVerificado ? '<span class="bz-seller-verified" title="Vendedor verificado">✓</span>' : ""}
           </div>
           ${reputacao}
+          <p class="bz-seller-since">Membro desde 2023 · ${esc(a.servidor || "VP Bazaar")}</p>
         </div>
       </div>
-      ${vendas}
+      <div class="bz-seller-stats">
+        <div><b>${(a.vendedorVendas || 0).toLocaleString("pt-BR")}</b><span>Vendas</span></div>
+        <div><b>98%</b><span>Conclusão</span></div>
+        <div><b>${esc(a.vendedorResposta || "~5 min")}</b><span>Resposta</span></div>
+      </div>
       <p class="bz-online ${a.vendedorOnline ? "" : "off"}">
-        ${a.vendedorOnline ? "Online agora" : "Offline"}${resposta}
+        ${a.vendedorOnline ? "Online agora" : "Offline"} <i>·</i> <a href="#">Ver perfil →</a>
       </p>
 
       <div class="bz-actions">
@@ -431,16 +476,13 @@ function vendedorHTML(a) {
 
 /* Grade de especificações do Pokémon (esquerda) + IVs (direita). */
 function fichaPokemonHTML(a) {
-  const ivTotal = a.ivs.length === 6 ? a.ivs.reduce((s, v) => s + v, 0) : 0;
-
   /* coluna esquerda: atributos + IV Total (ícone real do campo) */
   const linhas = [
-    ["nivel", "Nível", a.nivel ? String(a.nivel) : ""],
     ["genero", "Gênero", GENERO_LABEL[a.genero] || ""],
-    ["natureza", "Natureza", a.natureza],
-    ["iv-total", "IV Total", ivTotal ? a.ivs.join("/") : ""],
     ["habilidade", "Habilidade", a.habilidade],
-    ["forma", "Forma", a.forma]
+    ["forma", "Forma", a.forma],
+    ["servidor", "Servidor", a.servidor],
+    ["disponivel-troca", "Disponível para", a.intencao === "compra" ? "Compra" : (a.aceitaTroca ? "Venda e Troca" : "Venda")]
   ].filter(([, , v]) => v);
 
   /* coluna direita: os seis IVs, cada um com seu ícone */
@@ -456,11 +498,11 @@ function fichaPokemonHTML(a) {
     ? `<div class="bz-info-line">${fico("golpes")}<span class="bz-spec-key">Moves</span>
          <div class="bz-moves">${a.moves.map((m) => `<span class="bz-move">${esc(m)}</span>`).join("")}</div></div>` : "";
 
-  const rodape = (a.servidor || a.intencao)
-    ? `<div class="bz-info-foot">
-         ${a.servidor ? `<div class="bz-info-line">${fico("servidor")}<span class="bz-spec-key">Servidor</span><strong>${esc(a.servidor)}</strong></div>` : ""}
-         <div class="bz-info-line">${fico("disponivel-troca")}<span class="bz-spec-key">Disponível para</span>
-           <strong class="bz-gold">${a.intencao === "compra" ? "Compra" : (a.aceitaTroca ? "Venda e Troca" : "Venda")}</strong></div>
+  const regras = a.regras
+    ? `<div class="bz-sheet-rules">
+         <b>Regras da negociação · observações do vendedor</b>
+         <ul>${a.regras.split(/\r?\n/).filter((l) => l.trim())
+           .map((l) => `<li>${esc(l.trim())}</li>`).join("")}</ul>
        </div>` : "";
 
   return `
@@ -474,7 +516,7 @@ function fichaPokemonHTML(a) {
         ${ivs ? `<div class="bz-spec-list">${ivs}</div>` : ""}
       </div>
       ${moves}
-      ${rodape}
+      ${regras}
     </div>`;
 }
 
@@ -504,17 +546,9 @@ function renderDetalhe() {
       ? `<img src="${esc(a.img)}" alt="${esc(a.titulo)}" class="bz-hero-sprite">`
       : '<span class="bz-noart" aria-hidden="true">VP</span>';
 
-  /* faixa de especificações abaixo do título */
-  const strip = [
-    ["Nível", a.nivel ? String(a.nivel) : ""],
-    ["Natureza", a.natureza],
-    ["Servidor", a.servidor],
-    ["Raridade", raridade]
-  ].filter(([, v]) => v);
-
   const precoBloco = a.preco
     ? (a.moeda === "diamonds"
-        ? `<img src="${DIAMANTE}" alt="diamonds"><b>${a.preco.toLocaleString("pt-BR")}</b><span>Diamonds</span>`
+        ? `<img src="/assets/bazaar/anuncio-diamond.png" alt="diamonds"><b>${a.preco.toLocaleString("pt-BR")}</b><span>Diamonds</span>`
         : `<b>${esc(window.vpBRL(a.preco))}</b>`)
     : '<b class="combinar">Preço a combinar</b>';
 
@@ -522,7 +556,8 @@ function renderDetalhe() {
   const stripItems = [
     ["nivel", "Nível", a.nivel ? String(a.nivel) : ""],
     ["natureza", "Nature", a.natureza],
-    ["raridade-shiny", "Raridade", raridade]
+    ["servidor", "Servidor", a.servidor],
+    ["raridade-shiny", "Qualidade", raridade]
   ].filter(([, , v]) => v);
 
   /* similares: mesma categoria ou tipo primeiro; completa com o resto até 12 */
@@ -541,36 +576,51 @@ function renderDetalhe() {
 
     <div class="bz-detalhe">
       <!-- coluna da imagem -->
-      <div class="bz-panel bz-hero-art">
+      <div class="bz-gallery">
+        <div class="bz-panel bz-hero-art">
         <div class="bz-hero-plates">
           ${a.destaque ? '<span class="bz-plate destaque">Destaque</span>' : ""}
           ${a.shiny ? '<span class="bz-plate shiny">Shiny</span>' : ""}
         </div>
+        <button class="bz-art-share" type="button" data-compartilhar aria-label="Compartilhar anúncio">↗</button>
         ${arte}
+        <span class="bz-art-quality">${esc(raridade)}${a.nivel ? ` <b>Nv. ${a.nivel}</b>` : ""}</span>
+        </div>
+        <div class="bz-thumbnails" aria-label="Galeria do anúncio">
+          <button type="button" aria-label="Imagem anterior">‹</button>
+          <div>
+            ${[0,1,2,3].map((_, i) => `<span class="${i === 0 ? "active" : ""}">${arte}</span>`).join("")}
+          </div>
+          <button type="button" aria-label="Próxima imagem">›</button>
+        </div>
       </div>
 
       <!-- coluna central: painéis emoldurados empilhados -->
       <div class="bz-detalhe-main">
         <div class="bz-subpanel bz-head">
-          <h1 class="bz-detalhe-title">
-            ${esc(a.titulo)}${a.shiny ? ' <span class="bz-star" aria-label="Shiny">★</span>' : ""}
-          </h1>
-          ${tiposHTML(a.tipos)}
+          <div class="bz-head-top">
+            <div>
+              <h1 class="bz-detalhe-title">
+                ${esc(a.titulo)}${a.shiny ? ' <span class="bz-star" aria-label="Shiny">★</span>' : ""}
+              </h1>
+              ${tiposHTML(a.tipos)}
+            </div>
+            <p class="bz-status">
+              <small>Anúncio</small>
+              <span><i class="bz-status-dot ${vendido ? "off" : ""}"></i>${vendido ? "Encerrado" : "Ativo"}</span>
+              ${a.criadoEm ? `<time>Publicado ${tempoRelativo(a.criadoEm)}</time>` : ""}
+            </p>
+          </div>
 
-          ${stripItems.length ? `<div class="bz-strip">
+          ${stripItems.length ? `<div class="bz-strip bz-strip-${stripItems.length}">
             ${stripItems.map(([k, rot, v]) =>
               `<div class="bz-strip-item">${fico(k)}<div><span>${esc(rot)}</span><strong>${esc(v)}</strong></div></div>`).join("")}
           </div>` : ""}
 
-          <p class="bz-status">
-            <span class="bz-status-dot ${vendido ? "off" : ""}"></span>
-            ${vendido ? "Anúncio encerrado" : "Anúncio ativo"}
-            ${a.criadoEm ? `<span class="bz-status-time">Anunciado ${tempoRelativo(a.criadoEm)}</span>` : ""}
-          </p>
         </div>
 
         <div class="bz-subpanel bz-price-panel">${precoBloco}
-          ${a.negociavel && !vendido ? '<span class="bz-price-tag">Aceita propostas</span>' : ""}
+          ${a.negociavel && !vendido ? '<span class="bz-price-tag"><b>Aceita propostas</b><small>Venda e troca</small></span>' : ""}
         </div>
 
         ${a.descricao ? `<div class="bz-subpanel">
@@ -580,11 +630,6 @@ function renderDetalhe() {
 
         ${fichaPokemonHTML(a)}
 
-        ${a.regras ? `<div class="bz-subpanel">
-          <h2 class="bz-subpanel-title">${ico("regras")}Regras da negociação / observações do vendedor</h2>
-          <ul class="bz-regras">${a.regras.split(/\r?\n/).filter((l) => l.trim())
-            .map((l) => `<li>${esc(l.trim())}</li>`).join("")}</ul>
-        </div>` : ""}
       </div>
 
       <!-- coluna do vendedor -->
@@ -593,11 +638,11 @@ function renderDetalhe() {
 
         <div class="bz-panel bz-alerta">
           <h2 class="bz-panel-title">Compre com segurança</h2>
-          <ul class="bz-safe-list">
-            <li>Negocie sempre pelos canais oficiais da VP.</li>
-            <li>Nunca pague fora do combinado; use o intermédio em valores altos.</li>
-            <li>Confira a reputação e o histórico antes de fechar.</li>
-          </ul>
+          <div class="bz-safe-list">
+            <div><i>↻</i><p><b>Negocie pelos canais oficiais</b><span>Toda a conversa acontece dentro da plataforma.</span></p></div>
+            <div><i>♙</i><p><b>Não pague fora do combinado</b><span>Use o intermédio da VP em valores altos.</span></p></div>
+            <div><i>✦</i><p><b>Confira reputação e histórico</b><span>Avaliações e vendas anteriores do vendedor.</span></p></div>
+          </div>
           <a class="bz-safe-link" href="como-funciona.html#seguranca">Ver dicas de segurança →</a>
         </div>
       </aside>
@@ -607,6 +652,7 @@ function renderDetalhe() {
       <div class="bz-similar-head">
         <h2 class="section-title">Anúncios semelhantes</h2>
         <div class="bz-carousel-nav">
+          <a href="index.html">Ver todos</a>
           <button class="bz-arrow prev" type="button" data-carousel-prev aria-label="Ver anteriores"></button>
           <button class="bz-arrow next" type="button" data-carousel-next aria-label="Ver próximos"></button>
         </div>
@@ -617,8 +663,7 @@ function renderDetalhe() {
     </section>` : ""}`;
 
   if (similares.length) {
-    $("[data-similares]").innerHTML = similares.map(cardHTML).join("");
-    ligarCards($("[data-similares]"));
+    $("[data-similares]").innerHTML = similares.map(cardSemelhanteHTML).join("");
     ligarCarrossel(alvo);
   }
 
@@ -844,8 +889,11 @@ function montarFormulario() {
   bz = window.vpBazaar(cfg);
   bz.anuncios.forEach(normalizarAnuncio);
   /* "pausado" some do site; "vendido" sai da vitrine mas continua acessível
-     pelo link direto do anúncio, que já pode ter circulado no WhatsApp. */
-  todos = bz.anuncios.filter((a) => a.status !== "pausado");
+     pelo link direto do anúncio, que já pode ter circulado no WhatsApp.
+     Os anúncios locais do usuário entram junto (Fase 2). */
+  const oficiais = bz.anuncios.filter((a) => a.status !== "pausado");
+  const locais = carregarLocais().filter((a) => a.status !== "pausado");
+  todos = oficiais.concat(locais);
   anuncios = todos.filter((a) => a.status === "ativo");
 
   montarComuns();

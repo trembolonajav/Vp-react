@@ -1,0 +1,155 @@
+/* ============================================================
+   VPERTSZ — hub (página inicial)
+   Estende o design system da plataforma (styles.css). Só o que é
+   específico do hub mora aqui: marca com fallback, grade de
+   ferramentas (placas estilo "botão") e ajustes de rodapé.
+   ============================================================ */
+
+/* ------------------------------------------------ marca com fallback */
+.brand{display:flex;align-items:center;min-width:0}
+.brand .logo-wordmark{
+  display:none;
+  font-family:Cinzel,serif;font-weight:800;letter-spacing:.06em;
+  font-size:26px;line-height:1;
+  color:var(--gold);
+  text-shadow:0 2px 10px rgba(226,75,53,.35);
+}
+.brand.no-art .logo{display:none}
+.brand.no-art .logo-wordmark{display:inline-block}
+
+/* ------------------------------------------------ abertura do portal */
+.hub-intro{
+  display:grid;grid-template-columns:minmax(300px,.72fr) minmax(0,1.28fr);
+  gap:34px;align-items:center;min-height:360px;padding:28px 0 8px;
+}
+.hub-intro-copy{padding:24px 0}
+.hub-intro-copy h1{max-width:500px;font-size:clamp(34px,4vw,54px)}
+.hub-intro-copy>p{max-width:500px;margin:16px 0 24px;color:var(--muted);font-size:15px;line-height:1.65}
+.hub-intro-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.hub-community-btn{
+  display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;
+  border:1px solid var(--line-strong);border-radius:11px;background:rgba(255,255,255,.035);
+  color:#eadbd0;font-size:13px;font-weight:800;transition:background .2s,border-color .2s,transform .2s;
+}
+.hub-community-btn:hover{transform:translateY(-2px);border-color:var(--gold);background:rgba(229,179,79,.1);color:#fff}
+.hub-intro-copy>small{display:flex;align-items:center;gap:8px;margin-top:17px;color:var(--faint);font-size:11.5px}
+.hub-intro-copy>small i{width:7px;height:7px;border-radius:50%;background:#df4a37;box-shadow:0 0 8px #c23629}
+.hub-feature-label{display:block;margin:0 0 8px 3px;color:var(--gold-soft);font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.hub-feature .carousel{width:100%;aspect-ratio:2.05/1;border-radius:16px}
+
+/* ------------------------------------------------ grade de ferramentas */
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  align-items:center;gap:22px;
+  max-width:980px;margin-inline:auto;
+}
+.tool-card{
+  position:relative;
+  display:grid;place-items:center;width:100%;
+  background:transparent;border:0;border-radius:0;
+  filter:drop-shadow(0 14px 22px rgba(0,0,0,.48));
+  transition:transform .3s var(--ease),filter .3s var(--ease);
+}
+.tool-card:hover{
+  transform:translateY(-7px) scale(1.025);
+  filter:brightness(1.1) drop-shadow(0 20px 30px rgba(194,54,41,.32));
+}
+.tool-card:focus-visible{
+  outline:2px solid var(--gold);outline-offset:5px;border-radius:8px;
+}
+.tool-card>img{
+  display:block;width:100%;max-width:310px;height:auto;object-fit:contain;
+  transition:transform .35s var(--ease);
+}
+.tool-name{display:none;font-family:Cinzel,serif;font-weight:800;font-size:24px;color:var(--gold)}
+.tool-card.no-art{min-height:190px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--surface)}
+.tool-card.no-art>img{display:none}
+.tool-card.no-art .tool-name{display:block}
+
+/* atalhos secundários (PokeFipe, Intermédio) */
+.tool-links{
+  display:flex;flex-wrap:wrap;justify-content:center;gap:12px;
+  margin-top:26px;
+}
+.tool-link{
+  padding:10px 18px;border-radius:99px;
+  font-size:12.5px;font-weight:700;color:#e8d4c4;
+  background:rgba(255,255,255,.04);border:1px solid var(--line);
+  transition:transform .2s var(--ease),border-color .2s,background .2s,color .2s;
+}
+.tool-link:hover{transform:translateY(-2px);border-color:var(--gold);background:rgba(229,179,79,.12);color:#fff}
+
+/* ------------------------------------------------ comunidade resumida */
+.community-callout{
+  display:flex;align-items:center;justify-content:space-between;gap:36px;padding:26px 30px;
+  border:1px solid var(--line);border-radius:var(--radius-lg);
+  background:
+    radial-gradient(520px 180px at 8% 50%,rgba(194,54,41,.14),transparent 70%),
+    linear-gradient(135deg,rgba(31,18,15,.95),rgba(13,8,7,.95));
+}
+.community-callout .kicker{margin-bottom:6px}
+.community-callout h2{font-size:clamp(20px,2.4vw,28px)}
+.community-callout p{margin:7px 0 0;color:var(--muted);font-size:13.5px}
+.community-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:9px}
+.community-mini,.community-all{
+  min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:0 14px;border:1px solid var(--line);border-radius:10px;
+  background:rgba(255,255,255,.035);font-size:12px;font-weight:800;color:#eadbd0;
+}
+.community-mini svg{width:17px;height:17px;fill:currentColor}
+.community-mini.whatsapp{color:#67e99c;border-color:rgba(56,216,120,.3)}
+.community-mini.discord{color:#adb5ff;border-color:rgba(125,138,255,.34)}
+.community-all{color:var(--gold);border-color:transparent;background:transparent}
+.community-mini:hover,.community-all:hover{transform:translateY(-2px);filter:brightness(1.14)}
+
+/* ------------------------------------------------ página da comunidade */
+.community-page{padding-top:28px}
+.community-hero{
+  min-height:300px;display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:48px;align-items:center;
+  padding:30px 44px;border:1px solid var(--line-strong);border-radius:var(--radius-lg);
+  background:
+    radial-gradient(520px 260px at 15% 50%,rgba(194,54,41,.18),transparent 72%),
+    linear-gradient(135deg,rgba(30,17,14,.97),rgba(10,7,6,.97));
+  box-shadow:var(--shadow);
+}
+.community-hero h1{max-width:720px}
+.community-hero p{max-width:650px;margin:14px 0 0;color:var(--muted);font-size:15px;line-height:1.65}
+.community-hero>img{width:240px;height:240px;object-fit:cover;border-radius:26px;box-shadow:0 18px 42px rgba(0,0,0,.5)}
+.community-directory{margin-top:54px}
+.community-directory .community-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1000px}
+.community-directory .community-card:last-child{grid-column:auto}
+.community-streamer{margin-top:54px}
+
+/* ------------------------------------------------ faixa compacta do streamer */
+.streamer{grid-template-columns:190px 1fr;gap:32px;padding:28px 34px}
+.streamer-brand img{width:175px;height:175px;object-fit:cover;border-radius:24px;mix-blend-mode:normal;box-shadow:0 16px 34px rgba(0,0,0,.45)}
+
+/* ------------------------------------------------ rodapé (wordmark) */
+.footer-wordmark{
+  display:inline-block;
+  font-family:Cinzel,serif;font-weight:800;letter-spacing:.08em;
+  font-size:26px;color:var(--gold);
+  text-shadow:0 2px 12px rgba(226,75,53,.35);
+}
+.footer-logo{display:block;width:138px;height:auto;opacity:.82;filter:saturate(.82)}
+
+@media(max-width:900px){
+  .hub-intro{grid-template-columns:1fr;gap:8px;padding-top:12px}
+  .hub-intro-copy{text-align:center}
+  .hub-intro-copy h1,.hub-intro-copy>p{margin-inline:auto}
+  .hub-intro-actions,.hub-intro-copy>small{justify-content:center}
+  .community-callout{align-items:flex-start;flex-direction:column;gap:20px}
+  .community-actions{justify-content:flex-start}
+}
+@media(max-width:700px){
+  .tools-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:22px 16px}
+  .hub-intro-copy h1{font-size:34px}
+  .hub-feature .carousel{aspect-ratio:1.65/1}
+  .community-callout{padding:22px 20px}
+  .streamer{grid-template-columns:1fr}
+  .streamer-brand img{width:140px;height:140px;margin:auto}
+  .community-hero{grid-template-columns:1fr;padding:26px 22px;text-align:center}
+  .community-hero>img{grid-row:1;width:150px;height:150px;margin:auto}
+  .community-directory .community-grid{grid-template-columns:1fr}
+}

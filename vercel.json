@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "redirects": [
+    { "source": "/store", "destination": "/store/", "permanent": true },
     { "source": "/vplab", "destination": "/vplab/", "permanent": true },
     { "source": "/bazaar", "destination": "/bazaar/", "permanent": true },
     { "source": "/pokefipe", "destination": "/vplab/?tab=fipe", "permanent": true },

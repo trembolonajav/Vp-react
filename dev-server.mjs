@@ -4,6 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
+const HUB_ROOT = path.join(ROOT, "apps", "vpertz-hub", "public");
 const STORE_ROOT = path.join(ROOT, "apps", "vpertz-store", "public");
 const LAB_ROOT = path.join(ROOT, "apps", "vpertz-lab", "public");
 const BAZAAR_ROOT = path.join(ROOT, "apps", "vpertz-bazaar", "public");
@@ -70,11 +71,10 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(404, SECURITY_HEADERS); return res.end("Não encontrado");
     }
 
-    if (pathname === "/vplab") {
-      res.writeHead(308, { Location: "/vplab/", ...SECURITY_HEADERS }); return res.end();
-    }
-    if (pathname === "/bazaar") {
-      res.writeHead(308, { Location: "/bazaar/", ...SECURITY_HEADERS }); return res.end();
+    for (const [bare, slashed] of [["/vplab", "/vplab/"], ["/bazaar", "/bazaar/"], ["/store", "/store/"]]) {
+      if (pathname === bare) {
+        res.writeHead(308, { Location: slashed, ...SECURITY_HEADERS }); return res.end();
+      }
     }
     if (pathname.startsWith("/vplab/vendor/")) {
       const vendorPath = pathname.slice("/vplab/vendor".length);
@@ -83,13 +83,27 @@ const server = http.createServer(async (req, res) => {
         return sendFile(res, vendorFile);
       }
     }
-    /* Cada app tem sua raiz estática; o resto cai na Store. */
+
+    /* Apps com prefixo próprio: VPLab, Bazaar e agora a Store em /store/. */
     const isLab = pathname.startsWith("/vplab/");
     const isBazaar = pathname.startsWith("/bazaar/");
-    const prefix = isLab ? "/vplab" : isBazaar ? "/bazaar" : "";
-    const appRoot = isLab ? LAB_ROOT : isBazaar ? BAZAAR_ROOT : STORE_ROOT;
-    const file = safeStatic(appRoot, pathname.slice(prefix.length), true);
-    if (file && fs.existsSync(file) && fs.statSync(file).isFile()) return sendFile(res, file);
+    const isStore = pathname.startsWith("/store/");
+    const trySend = (root, rel) => {
+      const file = safeStatic(root, rel, true);
+      if (file && fs.existsSync(file) && fs.statSync(file).isFile()) { sendFile(res, file); return true; }
+      return false;
+    };
+
+    if (isLab || isBazaar || isStore) {
+      const prefix = isLab ? "/vplab" : isBazaar ? "/bazaar" : "/store";
+      const appRoot = isLab ? LAB_ROOT : isBazaar ? BAZAAR_ROOT : STORE_ROOT;
+      if (trySend(appRoot, pathname.slice(prefix.length))) return;
+    } else {
+      /* Raiz: o hub VPertsz assume o "/" e seus arquivos; os compartilhados
+         (config.js, dados.js, styles.css, assets/, PWA, admin) caem na Store. */
+      if (trySend(HUB_ROOT, pathname)) return;
+      if (trySend(STORE_ROOT, pathname)) return;
+    }
 
     res.writeHead(404, SECURITY_HEADERS); res.end("Não encontrado");
   } catch (error) {
@@ -100,7 +114,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Vpertz Store: http://127.0.0.1:${PORT}`);
+  console.log(`VPertsz hub: http://127.0.0.1:${PORT}`);
+  console.log(`VP Store:    http://127.0.0.1:${PORT}/store/`);
   console.log(`VPLab:       http://127.0.0.1:${PORT}/vplab/`);
   console.log(`VP Bazaar:   http://127.0.0.1:${PORT}/bazaar/`);
   console.log(`Admin:       http://127.0.0.1:${PORT}/admin.html`);

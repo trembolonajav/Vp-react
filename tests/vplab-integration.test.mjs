@@ -252,12 +252,16 @@ test("14. a loja e a API só mudam onde a fase atual precisa", () => {
     "apps/vpertz-store/public/jogos.html",
     "apps/vpertz-store/public/negociar.html",
     "apps/vpertz-store/public/styles.css",
-    /* fase atual — VP Bazaar */
+    /* fase anterior — VP Bazaar */
     "api/_lib/validate.mjs",
     "apps/vpertz-store/public/admin.html",
     "apps/vpertz-store/public/admin.js",
     "apps/vpertz-store/public/config.js",
-    "apps/vpertz-store/public/intermedio.html"
+    "apps/vpertz-store/public/intermedio.html",
+    /* fase atual — hub VPertsz: a Store migra para /store/ (caminhos
+       absolutos) e o PWA é re-tematizado para o VPertsz */
+    "apps/vpertz-store/public/manifest.json",
+    "apps/vpertz-store/public/sw.js"
   ];
   for (const arquivo of alterados) {
     const assetDoBazaar = arquivo.startsWith("apps/vpertz-store/public/assets/bazaar/");

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Anunciar no VP Bazaar</title>
-<meta name="description" content="Publique seu item, pokémon, conta ou diamonds no marketplace da comunidade Vpertz.">
+<title>Anunciar — VP Bazaar</title>
+<meta name="description" content="Crie seu anúncio no marketplace da comunidade Vpertz: pokémon ou item, venda ou compra, em diamonds ou PIX.">
 <meta name="theme-color" content="#0a0605">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
 
 <div class="topbar">
   <span class="live-dot" aria-hidden="true"></span>
-  <span>Anúncio gratuito — a VP revisa e publica no marketplace</span>
+  <span>Anuncie pokémon e itens do PokeIdle — negociação com intermédio da VP</span>
 </div>
 
 <header>
@@ -29,147 +29,20 @@
     <div class="nav-links">
       <a class="nav-link" href="index.html">Marketplace</a>
       <a class="nav-link active" href="anunciar.html">Anunciar</a>
+      <a class="nav-link" href="meus-anuncios.html">Meus anúncios</a>
       <a class="nav-link" href="como-funciona.html">Como funciona</a>
-      <a class="nav-link" href="/">VP Store</a>
+      <a class="nav-link" href="/store/">VP Store</a>
       <a class="nav-link" href="/vplab/">VPLab</a>
     </div>
-    <div class="header-actions">
-      <a class="btn-icon-label btn-twitch" href="index.html">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H3V5h18z"/></svg>
-        <span>Ver anúncios</span>
-      </a>
-    </div>
+    <div class="header-actions" data-conta></div>
   </nav>
 </header>
 
 <main class="page">
   <div class="container">
-
-    <div class="section-head center">
-      <div>
-        <span class="kicker">Publique no marketplace</span>
-        <h1>Anunciar no VP Bazaar</h1>
-        <p class="section-sub">Preencha os dados abaixo. Ao enviar, tudo chega organizado
-           no WhatsApp da VP — a gente confere, tira as fotos e publica o anúncio pra você.</p>
-        <div class="ornament" aria-hidden="true"></div>
-      </div>
+    <div class="bz-wizard" data-wizard>
+      <div class="bz-wizard-card"><p class="bz-wizard-loading">Carregando…</p></div>
     </div>
-
-    <section class="section" style="margin-top:40px">
-      <form class="bz-form" data-anunciar-form autocomplete="off">
-
-        <div class="bz-form-row">
-          <div class="bz-field">
-            <label for="a-intencao">O que você quer fazer</label>
-            <select class="bz-select" id="a-intencao" name="intencao">
-              <option value="venda">Quero vender</option>
-              <option value="compra">Quero comprar (procura-se)</option>
-            </select>
-          </div>
-          <div class="bz-field">
-            <label for="a-titulo">Título do anúncio</label>
-            <input class="bz-input" type="text" id="a-titulo" name="titulo" maxlength="90" required
-                   placeholder="Ex.: Charizard shiny lvl 100">
-          </div>
-        </div>
-
-        <div class="bz-form-row">
-          <div class="bz-field">
-            <label for="a-jogo">Jogo</label>
-            <select class="bz-select" id="a-jogo" name="jogo" data-a-jogo></select>
-          </div>
-          <div class="bz-field">
-            <label for="a-servidor">Servidor</label>
-            <select class="bz-select" id="a-servidor" name="servidor" data-a-servidor></select>
-          </div>
-        </div>
-
-        <div class="bz-form-row">
-          <div class="bz-field">
-            <label for="a-categoria">Categoria</label>
-            <select class="bz-select" id="a-categoria" name="categoria" data-a-categoria></select>
-          </div>
-          <div class="bz-field">
-            <label for="a-contato">Seu nick no jogo</label>
-            <input class="bz-input" type="text" id="a-contato" name="contato" maxlength="60"
-                   placeholder="Como te encontrar no jogo">
-          </div>
-        </div>
-
-        <div class="bz-form-row">
-          <div class="bz-field">
-            <label for="a-preco">Preço pedido</label>
-            <input class="bz-input" type="number" id="a-preco" name="preco" min="0" step="0.01"
-                   placeholder="Deixe vazio para 'a combinar'">
-          </div>
-          <div class="bz-field">
-            <label for="a-moeda">Moeda</label>
-            <select class="bz-select" id="a-moeda" name="moeda">
-              <option value="brl">Reais (R$)</option>
-              <option value="diamonds">Diamonds</option>
-            </select>
-            <div class="sub" style="margin-top:10px">
-              <label class="a-check" style="text-transform:none;letter-spacing:0;font-size:13px;color:var(--muted)">
-                <input type="checkbox" name="negociavel" value="1"> Aceito propostas
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="bz-form-row single">
-          <div class="bz-field">
-            <label for="a-descricao">Descrição</label>
-            <textarea id="a-descricao" name="descricao" maxlength="1200"
-                      placeholder="Atributos, level, o que vai junto, forma de entrega…"></textarea>
-            <div class="sub">Quanto mais detalhe, mais rápido o anúncio fecha. Você manda as
-              imagens direto no WhatsApp depois de enviar este formulário.</div>
-          </div>
-        </div>
-
-        <div class="bz-form-actions">
-          <button class="btn-icon-label btn-whats" type="submit">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-            Enviar pelo WhatsApp
-          </button>
-          <span style="color:var(--faint);font-size:12.5px">
-            Nada é publicado automaticamente — a VP confirma os dados com você antes.
-          </span>
-        </div>
-      </form>
-    </section>
-
-    <section class="section">
-      <div class="section-head center">
-        <div>
-          <span class="kicker">Depois do envio</span>
-          <h2>Como seu anúncio entra no ar</h2>
-          <div class="ornament" aria-hidden="true"></div>
-        </div>
-      </div>
-      <div class="bz-steps">
-        <div class="bz-step">
-          <b>1</b>
-          <strong>Você envia</strong>
-          <p>O formulário monta a mensagem e abre seu WhatsApp com tudo preenchido.</p>
-        </div>
-        <div class="bz-step">
-          <b>2</b>
-          <strong>A VP confere</strong>
-          <p>Conferimos o item, pedimos as imagens e alinhamos o preço com você.</p>
-        </div>
-        <div class="bz-step">
-          <b>3</b>
-          <strong>Vai pro ar</strong>
-          <p>O anúncio aparece no marketplace e os interessados chegam pelo botão de contato.</p>
-        </div>
-        <div class="bz-step">
-          <b>4</b>
-          <strong>Fecha com segurança</strong>
-          <p>Se quiser, a VP faz o intermédio: segura item e pagamento até os dois lados confirmarem.</p>
-        </div>
-      </div>
-    </section>
-
   </div>
 </main>
 
@@ -185,8 +58,9 @@
         <div class="footer-links">
           <a href="index.html">Marketplace</a>
           <a href="anunciar.html">Anunciar</a>
+          <a href="meus-anuncios.html">Meus anúncios</a>
           <a href="como-funciona.html">Como funciona</a>
-          <a href="/">VP Store</a>
+          <a href="/store/">VP Store</a>
         </div>
       </div>
       <div>
@@ -204,6 +78,10 @@
 
 <script src="/dados.js"></script>
 <script src="/config.js"></script>
+<script src="/vplab/data.js"></script>
+<script src="cards-data.js"></script>
 <script src="bazaar.js"></script>
+<script src="conta.js"></script>
+<script src="anunciar.js"></script>
 </body>
 </html>

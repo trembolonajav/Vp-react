@@ -4,7 +4,7 @@
    NÃO intercepta a API (/api/*) nem chamadas que mudam estado.
    NÃO cacheia dinamicamente — evita servir conteúdo velho no navegador. */
 
-const CACHE_NAME = "vp-shell-v1";
+const CACHE_NAME = "vp-shell-v2";
 const OFFLINE_URL = "/offline.html";
 
 /* Só o mínimo garantido que existe — se um item falhar, o install falha. */
