@@ -1,0 +1,12 @@
+# Perfil de desenvolvimento local.
+spring:
+  jpa:
+    show-sql: false
+logging:
+  level:
+    com.vpertz: DEBUG
+    org.hibernate.SQL: INFO
+app:
+  seed:
+    # Em dev, popula o banco a partir de seed/config.json quando estiver vazio.
+    enabled: true

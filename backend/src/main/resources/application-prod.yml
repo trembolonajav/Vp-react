@@ -1,0 +1,12 @@
+# Perfil de produção. Todos os segredos vêm do ambiente; nada hardcoded.
+spring:
+  jpa:
+    show-sql: false
+logging:
+  level:
+    root: INFO
+    com.vpertz: INFO
+app:
+  seed:
+    # Em produção não semeamos automaticamente: os dados são migrados de forma controlada.
+    enabled: false
