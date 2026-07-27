@@ -37,6 +37,10 @@ public class Listing {
     @Column(name = "public_id", nullable = false, length = 40, unique = true)
     private String publicId;
 
+    /** Dono do anúncio; nulo para os anúncios legados migrados do config. */
+    @Column(name = "seller_id", length = 64)
+    private String sellerId;
+
     @Column(nullable = false, length = 90)
     private String titulo;
 

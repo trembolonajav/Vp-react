@@ -1,15 +1,23 @@
 package com.vpertz.listings;
 
 import com.vpertz.common.exception.ResourceNotFoundException;
+import com.vpertz.common.security.AuthPrincipal;
 import com.vpertz.listings.dto.ListingFilter;
 import com.vpertz.listings.dto.ListingResponse;
+import com.vpertz.listings.dto.ListingWriteRequest;
 import com.vpertz.listings.dto.PageResponse;
+import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -51,6 +59,83 @@ public class ListingService {
         return repository.findAll(buildSort("recentes", null)).stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public ListingResponse create(ListingWriteRequest request, AuthPrincipal principal) {
+        Listing listing = new Listing();
+        listing.setPublicId(generatePublicId(request.titulo()));
+        listing.setSellerId(principal.userId());
+        listing.setVendedor(principal.username());
+        listing.setCriadoEm(LocalDate.now());
+        ListingSanitizer.apply(request, listing);
+        applyDestaque(listing, request, principal);
+        touch(listing);
+        return mapper.toResponse(repository.save(listing));
+    }
+
+    @Transactional
+    public ListingResponse update(String publicId, ListingWriteRequest request, AuthPrincipal principal) {
+        Listing listing = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
+        authorize(listing, principal);
+        // Dono, id público, data de criação e reputação são preservados.
+        ListingSanitizer.apply(request, listing);
+        applyDestaque(listing, request, principal);
+        touch(listing);
+        return mapper.toResponse(repository.save(listing));
+    }
+
+    @Transactional
+    public void delete(String publicId, AuthPrincipal principal) {
+        Listing listing = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
+        authorize(listing, principal);
+        repository.delete(listing);
+    }
+
+    /** Só o dono ou um admin gerenciam o anúncio; legados (sem dono) só o admin. */
+    private void authorize(Listing listing, AuthPrincipal principal) {
+        boolean admin = "ADMIN".equals(principal.role());
+        boolean owner = listing.getSellerId() != null && listing.getSellerId().equals(principal.userId());
+        if (!admin && !owner) {
+            throw new AccessDeniedException("Este anúncio não pertence à sua conta.");
+        }
+    }
+
+    /** destaque é um selo do painel: só o admin pode alterá-lo. */
+    private void applyDestaque(Listing listing, ListingWriteRequest request, AuthPrincipal principal) {
+        if ("ADMIN".equals(principal.role()) && request.destaque() != null) {
+            listing.setDestaque(request.destaque());
+        }
+    }
+
+    private void touch(Listing listing) {
+        listing.setUpdatedAt(OffsetDateTime.now());
+    }
+
+    private String generatePublicId(String titulo) {
+        String base = slugify(titulo);
+        if (base.isEmpty()) {
+            base = "anuncio";
+        }
+        if (base.length() > 34) {
+            base = base.substring(0, 34);
+        }
+        String candidate = base;
+        while (repository.existsByPublicId(candidate)) {
+            candidate = base + "-" + UUID.randomUUID().toString().substring(0, 5);
+        }
+        return candidate;
+    }
+
+    private static String slugify(String value) {
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-+)|(-+$)", "");
+        return normalized;
     }
 
     /**
