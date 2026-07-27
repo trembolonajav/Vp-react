@@ -9,6 +9,7 @@ import com.vpertz.config.dto.ContactDto;
 import com.vpertz.config.dto.GameDto;
 import com.vpertz.content.BannerRepository;
 import com.vpertz.content.ContactRepository;
+import com.vpertz.listings.ListingService;
 import com.vpertz.taxonomy.CategoryRepository;
 import com.vpertz.taxonomy.GameServerRepository;
 import java.util.List;
@@ -29,19 +30,22 @@ public class ConfigService {
     private final ContactRepository contactRepository;
     private final CategoryRepository categoryRepository;
     private final GameServerRepository serverRepository;
+    private final ListingService listingService;
 
     public ConfigService(SiteConfigRepository siteConfigRepository,
                          GameRepository gameRepository,
                          BannerRepository bannerRepository,
                          ContactRepository contactRepository,
                          CategoryRepository categoryRepository,
-                         GameServerRepository serverRepository) {
+                         GameServerRepository serverRepository,
+                         ListingService listingService) {
         this.siteConfigRepository = siteConfigRepository;
         this.gameRepository = gameRepository;
         this.bannerRepository = bannerRepository;
         this.contactRepository = contactRepository;
         this.categoryRepository = categoryRepository;
         this.serverRepository = serverRepository;
+        this.listingService = listingService;
     }
 
     @Transactional(readOnly = true)
@@ -74,7 +78,7 @@ public class ConfigService {
                 nullToEmpty(site.getBazaarMsgAnunciar()),
                 servidores,
                 categorias,
-                List.of());
+                listingService.allForConfig());
 
         return new ConfigResponse(
                 nullToEmpty(site.getWhatsapp()),

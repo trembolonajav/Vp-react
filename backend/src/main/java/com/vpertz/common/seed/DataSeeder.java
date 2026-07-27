@@ -10,12 +10,18 @@ import com.vpertz.content.Banner;
 import com.vpertz.content.BannerRepository;
 import com.vpertz.content.Contact;
 import com.vpertz.content.ContactRepository;
+import com.vpertz.listings.Listing;
+import com.vpertz.listings.ListingRepository;
 import com.vpertz.taxonomy.Category;
 import com.vpertz.taxonomy.CategoryRepository;
 import com.vpertz.taxonomy.GameServer;
 import com.vpertz.taxonomy.GameServerRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -42,6 +48,9 @@ public class DataSeeder implements CommandLineRunner {
     private final ContactRepository contactRepository;
     private final CategoryRepository categoryRepository;
     private final GameServerRepository serverRepository;
+    private final ListingRepository listingRepository;
+
+    private static final Pattern ISO_DATE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
     public DataSeeder(ObjectMapper objectMapper,
                      SiteConfigRepository siteConfigRepository,
@@ -49,7 +58,8 @@ public class DataSeeder implements CommandLineRunner {
                      BannerRepository bannerRepository,
                      ContactRepository contactRepository,
                      CategoryRepository categoryRepository,
-                     GameServerRepository serverRepository) {
+                     GameServerRepository serverRepository,
+                     ListingRepository listingRepository) {
         this.objectMapper = objectMapper;
         this.siteConfigRepository = siteConfigRepository;
         this.gameRepository = gameRepository;
@@ -57,6 +67,7 @@ public class DataSeeder implements CommandLineRunner {
         this.contactRepository = contactRepository;
         this.categoryRepository = categoryRepository;
         this.serverRepository = serverRepository;
+        this.listingRepository = listingRepository;
     }
 
     @Override
@@ -85,10 +96,11 @@ public class DataSeeder implements CommandLineRunner {
         JsonNode bazaar = root.path("bazaar");
         seedServers(bazaar.path("servidores"));
         seedCategories(bazaar.path("categorias"));
+        seedListings(bazaar.path("anuncios"));
 
-        log.info("Seed concluído: {} jogo(s), {} banner(s), {} contato(s), {} servidor(es), {} categoria(s).",
+        log.info("Seed concluído: {} jogo(s), {} banner(s), {} contato(s), {} servidor(es), {} categoria(s), {} anúncio(s).",
                 gameRepository.count(), bannerRepository.count(), contactRepository.count(),
-                serverRepository.count(), categoryRepository.count());
+                serverRepository.count(), categoryRepository.count(), listingRepository.count());
     }
 
     private void seedSiteConfig(JsonNode root) {
@@ -190,6 +202,105 @@ public class DataSeeder implements CommandLineRunner {
             category.setOrdering(order++);
             categoryRepository.save(category);
         }
+    }
+
+    private void seedListings(JsonNode anuncios) {
+        if (!anuncios.isArray()) {
+            return;
+        }
+        for (JsonNode a : anuncios) {
+            Listing listing = new Listing();
+            listing.setPublicId(text(a, "id", ""));
+            listing.setTitulo(text(a, "titulo", ""));
+            listing.setGameId(emptyToNull(text(a, "jogo", null)));
+            listing.setServidor(emptyToNull(text(a, "servidor", null)));
+            listing.setCategoria(emptyToNull(text(a, "categoria", null)));
+            listing.setIntencao(text(a, "intencao", "venda"));
+            listing.setMoeda(text(a, "moeda", "brl"));
+            listing.setPreco(decimal(a, "preco"));
+            listing.setNegociavel(a.path("negociavel").asBoolean(false));
+            listing.setDestaque(a.path("destaque").asBoolean(false));
+            listing.setStatus(text(a, "status", "ativo"));
+            listing.setImgUrl(emptyToNull(text(a, "img", null)));
+            listing.setDescricao(emptyToNull(text(a, "descricao", null)));
+            listing.setVendedor(emptyToNull(text(a, "vendedor", null)));
+
+            String criado = text(a, "criadoEm", "");
+            listing.setCriadoEm(ISO_DATE.matcher(criado).matches() ? LocalDate.parse(criado) : null);
+
+            int dex = a.path("dex").asInt(0);
+            listing.setDex(dex);
+            listing.setNivel(a.path("nivel").asInt(0));
+            listing.setPoder(a.path("poder").asInt(0));
+            listing.setShiny(a.path("shiny").asBoolean(false));
+            listing.setQuantidade(a.path("quantidade").asInt(0));
+            listing.setAceitaTroca(a.path("aceitaTroca").asBoolean(false));
+
+            listing.setNatureza(emptyToNull(text(a, "natureza", null)));
+            listing.setHabilidade(emptyToNull(text(a, "habilidade", null)));
+            listing.setGenero(emptyToNull(text(a, "genero", null)));
+            listing.setForma(emptyToNull(text(a, "forma", null)));
+            listing.setQualidade(decimal(a, "qualidade"));
+            listing.setDisponibilidade(emptyToNull(text(a, "disponibilidade", null)));
+            listing.setRegras(emptyToNull(text(a, "regras", null)));
+
+            List<Integer> ivs = intList(a.path("ivs"));
+            listing.setIvs(ivs);
+            listing.setIvTotal(ivs.size() == 6 ? ivs.stream().mapToInt(Integer::intValue).sum() : null);
+            listing.setMoves(strList(a.path("moves")));
+
+            List<String> tipos = strList(a.path("tipos"));
+            listing.setTipos(tipos);
+            listing.setTipo(deriveTipo(listing.getCategoria(), dex));
+
+            listing.setVendedorVerificado(a.path("vendedorVerificado").asBoolean(false));
+            listing.setVendedorOnline(a.path("vendedorOnline").asBoolean(false));
+            listing.setVendedorNota(decimal(a, "vendedorNota"));
+            listing.setVendedorVendas(a.path("vendedorVendas").asInt(0));
+            listing.setVendedorResposta(emptyToNull(text(a, "vendedorResposta", null)));
+            listing.setVendedorAvatar(emptyToNull(text(a, "vendedorAvatar", null)));
+
+            listingRepository.save(listing);
+        }
+    }
+
+    /** Mesma derivação do normalizarAnuncio() do frontend. */
+    private static String deriveTipo(String categoria, int dex) {
+        if ("Shiny Card".equals(categoria)) {
+            return "shinycard";
+        }
+        if ("Item".equals(categoria) || "Itens".equals(categoria)) {
+            return "item";
+        }
+        if (dex > 0 || "Pokémon".equals(categoria)) {
+            return "pokemon";
+        }
+        return null;
+    }
+
+    private static List<Integer> intList(JsonNode node) {
+        List<Integer> out = new ArrayList<>();
+        if (node.isArray()) {
+            node.forEach(v -> out.add(v.asInt(0)));
+        }
+        return out;
+    }
+
+    private static List<String> strList(JsonNode node) {
+        List<String> out = new ArrayList<>();
+        if (node.isArray()) {
+            node.forEach(v -> {
+                String s = v.asText("").trim();
+                if (!s.isEmpty()) {
+                    out.add(s);
+                }
+            });
+        }
+        return out;
+    }
+
+    private static String emptyToNull(String value) {
+        return value == null || value.isEmpty() ? null : value;
     }
 
     private static String text(JsonNode node, String field, String fallback) {

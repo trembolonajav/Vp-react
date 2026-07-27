@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import com.vpertz.catalog.Game;
 import com.vpertz.catalog.GameRepository;
 import com.vpertz.config.dto.ConfigResponse;
+import com.vpertz.listings.ListingService;
 import com.vpertz.content.BannerRepository;
 import com.vpertz.content.Contact;
 import com.vpertz.content.ContactRepository;
@@ -32,6 +33,7 @@ class ConfigServiceTest {
     @Mock private ContactRepository contactRepository;
     @Mock private CategoryRepository categoryRepository;
     @Mock private GameServerRepository serverRepository;
+    @Mock private ListingService listingService;
 
     @InjectMocks private ConfigService configService;
 
@@ -76,6 +78,8 @@ class ConfigServiceTest {
         Category category = new Category();
         category.setNome("Pokémon");
         when(categoryRepository.findAllByOrderByOrderingAscNomeAsc()).thenReturn(List.of(category));
+
+        when(listingService.allForConfig()).thenReturn(List.of());
 
         ConfigResponse config = configService.getPublicConfig();
 

@@ -1,17 +1,14 @@
 package com.vpertz.config.dto;
 
+import com.vpertz.listings.dto.ListingResponse;
 import java.util.List;
 
-/**
- * Bloco do bazaar. Nesta fase `anuncios` vem vazio — os anúncios ganham tabela
- * e endpoint próprios na fase de listings; até lá o /api/config legado segue
- * como fonte da vitrine.
- */
+/** Bloco do bazaar no formato consumido pelo frontend atual. */
 public record BazaarConfigDto(
         boolean ativo,
         String msgInteresse,
         String msgAnunciar,
         List<String> servidores,
         List<String> categorias,
-        List<Object> anuncios) {
+        List<ListingResponse> anuncios) {
 }
