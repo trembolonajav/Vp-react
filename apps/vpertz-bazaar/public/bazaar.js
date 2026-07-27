@@ -33,6 +33,22 @@ const spriteUrl = (dex) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dex}.png`;
 
 const DIAMANTE = "/assets/diamante-pokeidle-oficial.png";
+function etiquetaQualidade(valor) {
+  const q = Number(valor);
+  if (!Number.isFinite(q)) return "";
+  if (q < 1) return "Fraca";
+  if (q < 1.1) return "Comum";
+  if (q < 1.3) return "Incomum";
+  if (q < 1.5) return "Rara";
+  if (q < 1.7) return "Épica";
+  if (q < 2) return "Lendária";
+  if (q < 3) return "Mítica";
+  if (q < 4) return "Anciã";
+  return "Divina";
+}
+const qualidadeTexto = (valor) => Number.isFinite(Number(valor))
+  ? Number(valor).toLocaleString("pt-BR", { maximumFractionDigits: 3 })
+  : "";
 
 /* Favoritos são locais: nesta fase não há contas de usuário. */
 const FAV_KEY = "vp-bazaar-favoritos";
@@ -84,6 +100,9 @@ function normalizarAnuncio(a) {
   a.dex ??= 0; a.nivel ??= 0; a.quantidade ??= 0;
   a.shiny ??= false; a.aceitaTroca ??= false;
   a.natureza ??= ""; a.habilidade ??= ""; a.genero ??= ""; a.forma ??= ""; a.regras ??= "";
+  if (a.tipo === "pokemon" && !["Normal", "Shiny"].includes(a.forma)) {
+    a.forma = a.shiny ? "Shiny" : "Normal";
+  }
   a.qualidade ??= ""; a.disponibilidade ??= "";
   a.vendedorVerificado ??= false; a.vendedorOnline ??= false;
   a.vendedorNota ??= 0; a.vendedorVendas ??= 0; a.vendedorResposta ??= ""; a.vendedorAvatar ??= "";
@@ -153,22 +172,32 @@ function montarComuns() {
    ============================================================ */
 
 const filtros = {
-  q: "", intencao: "", moeda: "", jogo: "", servidor: "",
-  categoria: "", negociacao: "", min: "", max: "", sort: "recentes", page: 1
+  q: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
+  min: "", max: "", ivMin: "", ivMax: "", qualityMin: "", qualityMax: "",
+  sort: "recentes", page: 1
 };
 
 function aplicarFiltros() {
   const q = filtros.q.trim().toLowerCase();
   const min = filtros.min === "" ? null : Number(filtros.min);
   const max = filtros.max === "" ? null : Number(filtros.max);
+  const ivMin = filtros.ivMin === "" ? null : Number(filtros.ivMin);
+  const ivMax = filtros.ivMax === "" ? null : Number(filtros.ivMax);
+  const qualityMin = filtros.qualityMin === "" ? null : Number(filtros.qualityMin);
+  const qualityMax = filtros.qualityMax === "" ? null : Number(filtros.qualityMax);
 
   const lista = anuncios.filter((a) => {
     if (q && !a.titulo.toLowerCase().includes(q) && !a.descricao.toLowerCase().includes(q)) return false;
     if (filtros.intencao && a.intencao !== filtros.intencao) return false;
     if (filtros.moeda && a.moeda !== filtros.moeda) return false;
     if (filtros.jogo && a.jogo !== filtros.jogo) return false;
-    if (filtros.servidor && a.servidor !== filtros.servidor) return false;
     if (filtros.categoria && a.categoria !== filtros.categoria) return false;
+    const ivTotal = Array.isArray(a.ivs) ? a.ivs.reduce((sum, n) => sum + Number(n || 0), 0) : null;
+    const quality = Number(a.qualidade);
+    if (ivMin !== null && (ivTotal === null || ivTotal < ivMin)) return false;
+    if (ivMax !== null && (ivTotal === null || ivTotal > ivMax)) return false;
+    if (qualityMin !== null && (!Number.isFinite(quality) || quality < qualityMin)) return false;
+    if (qualityMax !== null && (!Number.isFinite(quality) || quality > qualityMax)) return false;
     if (filtros.negociacao === "fixo" && a.negociavel) return false;
     if (filtros.negociacao === "proposta" && !a.negociavel) return false;
     /* faixa de preço só faz sentido dentro de uma mesma moeda */
@@ -267,7 +296,6 @@ function cardHTML(a) {
           </h3>
           ${detalhe ? `<p class="bz-card-sub">${esc(detalhe)}</p>` : ""}
           ${tiposHTML(a.tipos)}
-          ${a.servidor ? `<p class="bz-card-sub">Servidor: <b>${esc(a.servidor)}</b></p>` : ""}
         </div>
       </div>
 
@@ -460,7 +488,7 @@ function vendedorHTML(a) {
             ${a.vendedorVerificado ? '<span class="bz-seller-verified" title="Vendedor verificado">✓</span>' : ""}
           </div>
           ${reputacao}
-          <p class="bz-seller-since">Membro desde 2023 · ${esc(a.servidor || "VP Bazaar")}</p>
+          <p class="bz-seller-since">Membro desde 2023 · VP Bazaar</p>
         </div>
       </div>
       <div class="bz-seller-stats">
@@ -469,21 +497,21 @@ function vendedorHTML(a) {
         <div><b>${esc(a.vendedorResposta || "~5 min")}</b><span>Resposta</span></div>
       </div>
       <p class="bz-online ${a.vendedorOnline ? "" : "off"}">
-        ${a.vendedorOnline ? "Online agora" : "Offline"} <i>·</i> <a href="#">Ver perfil →</a>
+        ${a.vendedorOnline ? "Online agora" : "Offline"} <i>·</i> <a href="perfil.html?user=${encodeURIComponent(a.vendedor)}">Ver perfil →</a>
       </p>
 
       <div class="bz-actions">
         ${a.status === "vendido" ? '<p class="bz-encerrado">Este anúncio já foi concluído.</p>' : `
-          <a class="bz-btn-negociar" href="${esc(linkInteresse(a))}" target="_blank" rel="noreferrer">
+          <button class="bz-btn-negociar" type="button" data-negociar="${esc(a.id)}">
             ${SVG_SWORDS}<span>Negociar agora</span>
-          </a>
+          </button>
           <div class="bz-actions-row">
             <button class="bz-btn-compartilhar" type="button" data-compartilhar>
               ${SVG_LINK}<span>Compartilhar</span>
             </button>
-            <a class="bz-btn-denunciar" href="${esc(linkDenuncia(a))}" target="_blank" rel="noreferrer">
+            <button class="bz-btn-denunciar" type="button" data-denunciar>
               ${SVG_WARN}<span>Denunciar</span>
-            </a>
+            </button>
           </div>`}
       </div>
     </div>`;
@@ -492,12 +520,11 @@ function vendedorHTML(a) {
 /* Grade de especificações do Pokémon (esquerda) + IVs (direita). */
 function fichaPokemonHTML(a) {
   if (a.tipo && a.tipo !== "pokemon") return "";
-  /* coluna esquerda: atributos + IV Total (ícone real do campo) */
+  const ivTotal = a.ivs.length === 6 ? a.ivs.reduce((s, v) => s + Number(v || 0), 0) : null;
   const linhas = [
-    ["genero", "Gênero", GENERO_LABEL[a.genero] || ""],
-    ["habilidade", "Habilidade", a.habilidade],
+    ["nivel", "Nível", a.nivel ? String(a.nivel) : ""],
+    ["natureza", "Natureza", a.natureza],
     ["forma", "Forma", a.forma],
-    ["servidor", "Servidor", a.servidor],
     ["disponivel-troca", "Disponível para", a.disponibilidade || (a.intencao === "compra" ? "Compra" : (a.aceitaTroca ? "Venda e Troca" : "Venda"))]
   ].filter(([, , v]) => v);
 
@@ -523,7 +550,10 @@ function fichaPokemonHTML(a) {
 
   return `
     <div class="bz-subpanel">
-      <h2 class="bz-subpanel-title">${ico("info")}Informações do Pokémon</h2>
+      <div class="bz-sheet-heading">
+        <h2 class="bz-subpanel-title">${ico("info")}Informações do Pokémon</h2>
+        ${ivTotal !== null ? `<span class="bz-sheet-iv-total">${fico("iv-total")}IV total <b>${ivTotal}</b> / 192</span>` : ""}
+      </div>
       <div class="bz-info-grid">
         <div class="bz-spec-list">
           ${linhas.map(([k, rot, v]) =>
@@ -534,6 +564,26 @@ function fichaPokemonHTML(a) {
       ${moves}
       ${regras}
     </div>`;
+}
+
+function fichaNaoPokemonHTML(a) {
+  if (a.tipo === "pokemon" || (!a.tipo && a.dex)) return "";
+  const card = a.tipo === "shinycard";
+  const quantidade = a.quantidade || 1;
+  const esquerda = card
+    ? [["Coleção","Shiny Cards"],["Tipo","Colecionável"],["Unidade",String(quantidade)]]
+    : [["Categoria",a.categoria || "Item"],["Quantidade",String(quantidade)],["Empilhável",quantidade > 1 ? "Sim" : "Não informado"]];
+  const direita = card
+    ? [["Origem","Abates da espécie"],["Entrega","In-game"],["Disponível para",a.intencao === "compra" ? "Compra" : "Venda"]]
+    : [["Categoria",a.categoria || "Item"],["Entrega","In-game"],["Disponível para",a.intencao === "compra" ? "Compra" : "Venda"]];
+  const coluna = (linhas) => `<div>${linhas.map(([k,v]) =>
+    `<div class="bz-nonpoke-row"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("")}</div>`;
+  return `<div class="bz-subpanel">
+    <h2 class="bz-subpanel-title">${card ? "Detalhes da Shiny Card" : "Detalhes do item"}</h2>
+    <div class="bz-nonpoke-details">
+      ${coluna(esquerda)}<div class="bz-nonpoke-divider"></div>${coluna(direita)}
+    </div>
+  </div>`;
 }
 
 function renderDetalhe() {
@@ -555,7 +605,12 @@ function renderDetalhe() {
   const vendido = a.status === "vendido";
   const preco = precoTexto(a);
   const ehPokemon = !a.tipo || a.tipo === "pokemon";
-  const raridade = a.qualidade || (a.shiny ? "Shiny" : "Padrão");
+  const kind = a.tipo === "shinycard" ? "shinycard" : a.tipo === "item" ? "item" : "pokemon";
+  const qualidadeLabel = etiquetaQualidade(a.qualidade);
+  const qualidadeNumero = qualidadeTexto(a.qualidade);
+  const ivTotal = ehPokemon && a.ivs.length === 6
+    ? a.ivs.reduce((s, v) => s + Number(v || 0), 0)
+    : null;
 
   const arte = a.dex
     ? `<img src="${spriteUrl(a.dex)}" alt="${esc(a.titulo)}" class="bz-hero-sprite" data-fallback>`
@@ -573,8 +628,8 @@ function renderDetalhe() {
   const stripItems = [
     ["nivel", "Nível", ehPokemon && a.nivel ? String(a.nivel) : ""],
     ["natureza", "Nature", ehPokemon ? a.natureza : ""],
-    ["servidor", "Servidor", a.servidor],
-    ["raridade-shiny", "Qualidade", ehPokemon ? raridade : ""]
+    ["iv-total", "IV Total", ivTotal !== null ? `${ivTotal} / 192` : ""],
+    ["raridade-shiny", "Qualidade", ehPokemon ? qualidadeLabel : "", qualidadeNumero]
   ].filter(([, , v]) => v);
 
   /* similares: mesma categoria ou tipo primeiro; completa com o resto até 12 */
@@ -591,7 +646,7 @@ function renderDetalhe() {
       <em>${esc(a.titulo)}</em>
     </nav>
 
-    <div class="bz-detalhe">
+    <div class="bz-detalhe kind-${kind}">
       <!-- coluna da imagem -->
       <div class="bz-gallery">
         <div class="bz-panel bz-hero-art">
@@ -600,16 +655,21 @@ function renderDetalhe() {
           ${a.shiny ? '<span class="bz-plate shiny">Shiny</span>' : ""}
         </div>
         <button class="bz-art-share" type="button" data-compartilhar aria-label="Compartilhar anúncio">↗</button>
+        ${!ehPokemon ? `<span class="bz-kind-badge">${kind === "shinycard" ? "Colecionável" : (a.intencao === "compra" ? "Procura-se" : "À venda")}</span>` : ""}
         ${arte}
-        ${ehPokemon ? `<span class="bz-art-quality">${esc(raridade)}${a.nivel ? ` <b>Nv. ${a.nivel}</b>` : ""}</span>` : ""}
+        ${ehPokemon ? `<span class="bz-art-quality">${esc(a.forma || (a.shiny ? "Shiny" : "Normal"))}${a.nivel ? ` <b>Nv. ${a.nivel}</b>` : ""}</span>` : ""}
         </div>
-        <div class="bz-thumbnails" aria-label="Galeria do anúncio">
+        ${ehPokemon ? `<div class="bz-thumbnails" aria-label="Galeria do anúncio">
           <button type="button" aria-label="Imagem anterior">‹</button>
           <div>
             ${[0,1,2,3].map((_, i) => `<span class="${i === 0 ? "active" : ""}">${arte}</span>`).join("")}
           </div>
           <button type="button" aria-label="Próxima imagem">›</button>
-        </div>
+        </div>` : `<div class="bz-gallery-stats">
+          <div><b>${a.quantidade || 1}</b><span>${kind === "shinycard" ? "Unidade" : "Unidades"}</span></div>
+          <div><b>${a.moeda === "diamonds" ? "◆ " : ""}${a.preco ? a.preco.toLocaleString("pt-BR") : "—"}</b><span>Valor</span></div>
+          <div><b>${esc(a.categoria || "Item")}</b><span>Categoria</span></div>
+        </div>`}
       </div>
 
       <!-- coluna central: painéis emoldurados empilhados -->
@@ -630,8 +690,8 @@ function renderDetalhe() {
           </div>
 
           ${stripItems.length ? `<div class="bz-strip bz-strip-${stripItems.length}">
-            ${stripItems.map(([k, rot, v]) =>
-              `<div class="bz-strip-item">${fico(k)}<div><span>${esc(rot)}</span><strong>${esc(v)}</strong></div></div>`).join("")}
+            ${stripItems.map(([k, rot, v, detalhe]) =>
+              `<div class="bz-strip-item">${fico(k)}<div><span>${esc(rot)}</span><strong>${esc(v)}${detalhe ? ` <small>${esc(detalhe)}</small>` : ""}</strong></div></div>`).join("")}
           </div>` : ""}
 
         </div>
@@ -645,7 +705,7 @@ function renderDetalhe() {
           <p class="bz-desc">${esc(a.descricao)}</p>
         </div>` : ""}
 
-        ${fichaPokemonHTML(a)}
+        ${ehPokemon ? fichaPokemonHTML(a) : fichaNaoPokemonHTML(a)}
 
       </div>
 
@@ -694,13 +754,25 @@ function renderDetalhe() {
     }));
   }, true);
 
-  /* compartilhar: Web Share quando houver, senão copia o link */
-  $("[data-compartilhar]", alvo)?.addEventListener("click", async () => {
-    const url = location.href;
+  $$("[data-compartilhar]", alvo).forEach((button) => button.addEventListener("click", () => abrirCompartilhamento(a)));
+  $$("[data-denunciar]", alvo).forEach((button) => button.addEventListener("click", () => abrirDenuncia(a)));
+  $("[data-negociar]", alvo)?.addEventListener("click", async () => {
+    const conta = await window.VPConta.exigirConta();
+    if (!conta) return;
     try {
-      if (navigator.share) await navigator.share({ title: a.titulo, url });
-      else { await navigator.clipboard.writeText(url); toast("Link copiado!"); }
-    } catch { /* usuário cancelou o compartilhamento */ }
+      const response = await fetch("/api/bazaar/chat", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "start", adId: a.id, title: a.titulo, seller: a.vendedor,
+          image: a.imagem || "", price: a.preco || 0, currency: a.moeda || "diamante",
+          details: [a.nivel ? `Nv. ${a.nivel}` : "", a.qualidadeRotulo || "", a.ivTotal ? `IV ${a.ivTotal}/192` : ""].filter(Boolean).join(" · ")
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível iniciar a conversa.");
+      location.href = `chat.html?id=${encodeURIComponent(data.conversation.id)}`;
+    } catch (error) { alert(error.message); }
   });
 }
 
@@ -738,10 +810,90 @@ function toast(msg) {
   toast._t = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
-/* Mensagem de denúncia pré-preenchida no WhatsApp. */
-function linkDenuncia(a) {
-  const msg = `Olá, VP Bazaar! Quero denunciar o anúncio ${a.titulo} (#${a.id}).`;
-  return window.vpWaLink(cfg, msg);
+function fecharDialog() {
+  document.querySelector(".bz-action-overlay")?.remove();
+}
+
+function abrirCompartilhamento(a) {
+  fecharDialog();
+  const url = `${location.origin}/api/bazaar/share?id=${encodeURIComponent(a.id)}`;
+  const valor = a.moeda === "pix"
+    ? `R$ ${Number(a.preco || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+    : `◆ ${Number(a.preco || 0).toLocaleString("pt-BR")}`;
+  const nivel = a.nivel ? `Lv. ${a.nivel}` : "";
+  const qualidade = [a.qualidadeRotulo, a.qualidade].filter(Boolean).join(" ");
+  const iv = a.ivTotal ? `IV ${a.ivTotal}/192` : "";
+  const texto = [a.titulo.toUpperCase(), [nivel, qualidade, iv].filter(Boolean).join(" · "), `${valor}${a.aceitaPropostas ? " — aceita propostas" : ""}`, url].filter(Boolean).join("\n");
+  const overlay = document.createElement("div");
+  overlay.className = "bz-action-overlay";
+  overlay.innerHTML = `<section class="bz-action-modal" role="dialog" aria-modal="true" aria-labelledby="bz-share-title">
+    <button class="bz-action-close" type="button" data-dialog-close aria-label="Fechar">×</button>
+    <span class="bz-modal-title" id="bz-share-title">Compartilhar anúncio</span>
+    <div class="bz-share-arrival"><header><b>Como chega para a pessoa</b><a href="${esc(url)}" target="_blank">Ver card →</a></header>
+      <div class="bz-share-preview">${a.imagem ? `<img src="${esc(a.imagem)}" alt="">` : ""}<div><strong>${esc(a.titulo)}${a.nivel ? ` · Lv. ${esc(a.nivel)}` : ""}</strong><span>${qualidade ? `<em>${esc(qualidade)}</em>` : ""}${iv ? `<em class="iv">${esc(iv)}</em>` : ""}</span><small>${esc(location.host)} · ${esc(valor)}</small></div></div>
+      <p>O link gera esse card automaticamente no WhatsApp, Discord e Telegram.</p>
+    </div>
+    <div class="bz-share-grid">
+      <a class="whatsapp" href="https://wa.me/?text=${encodeURIComponent(texto)}" target="_blank" rel="noreferrer"><b><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7a11.6 11.6 0 0 1-4.8-4.2c-.4-.5-1-1.4-1-2.7A2.9 2.9 0 0 1 7.3 7.5a1 1 0 0 1 .7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.5-.3.3c-.1.1-.2.3 0 .5a8.4 8.4 0 0 0 3.9 3.3c.3.1.4.1.6-.1l.9-1c.2-.2.3-.2.6-.1l2 1c.2.1.4.2.4.3a2 2 0 0 1-.3 1.1Z"></path></svg></b> WhatsApp</a>
+      <a class="discord" href="https://discord.com/invite/9M3HCdytt" target="_blank" rel="noreferrer"><b><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 5.4A16.9 16.9 0 0 0 15.1 4l-.2.4a15.6 15.6 0 0 1 3.7 1.5 13.1 13.1 0 0 0-11.2 0A15.6 15.6 0 0 1 11.1 4.4L10.9 4a16.9 16.9 0 0 0-4.2 1.4C4 9.4 3.3 13.2 3.6 17a17 17 0 0 0 5.1 2.6l1-1.7a11 11 0 0 1-1.7-.8l.4-.3a12.1 12.1 0 0 0 9.2 0l.4.3a11 11 0 0 1-1.7.8l1 1.7a17 17 0 0 0 5.1-2.6c.4-4.4-.6-8.2-3.1-11.6ZM9.5 14.7c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm5 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"></path></svg></b> Discord</a>
+      <a class="telegram" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(texto.replace(`\n${url}`, ""))}" target="_blank" rel="noreferrer"><b><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M21.7 4.3 2.9 11.6c-.9.4-.9 1.6.1 1.9l4.7 1.5 1.8 5.5c.3.8 1.3 1 1.8.3l2.6-3.1 4.8 3.5c.7.5 1.7.1 1.9-.7l3-14.4c.2-.9-.7-1.7-1.9-1.3ZM9.6 14.2l8.8-5.6-7.3 6.7-.3 3.3Z"></path></svg></b> Telegram</a>
+      <a class="twitter" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(texto)}" target="_blank" rel="noreferrer"><b><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L4.7 21H1.5l7.5-8.6L1.2 3h6.6l4.5 5.6Zm-1.1 16h1.8L7.7 4.8H5.8Z"></path></svg></b> X / Twitter</a>
+    </div>
+    <div class="bz-share-link"><input value="${esc(url)}" readonly><button type="button" data-copy-link>Copiar</button></div>
+    <p class="bz-share-footnote">O link abre o anúncio com imagem, preço e vendedor — funciona mesmo se o anúncio for pausado.</p>
+  </section>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click", async (event) => {
+    if (event.target === overlay || event.target.closest("[data-dialog-close]")) return fecharDialog();
+    if (event.target.closest("[data-copy-link]")) {
+      await navigator.clipboard.writeText(url); toast("Link copiado!"); fecharDialog();
+    }
+  });
+}
+
+async function abrirDenuncia(a) {
+  const conta = await window.VPConta.exigirConta();
+  if (!conta) return;
+  fecharDialog();
+  const motivos = ["Anúncio falso ou enganoso", "Preço ou informações incorretas", "Item proibido ou duplicado", "Tentativa de golpe", "Outro motivo"];
+  const overlay = document.createElement("div");
+  overlay.className = "bz-action-overlay";
+  overlay.innerHTML = `<section class="bz-action-modal bz-report-modal" role="dialog" aria-modal="true" aria-labelledby="bz-report-title">
+    <button class="bz-action-close" type="button" data-dialog-close aria-label="Fechar">×</button>
+    <span class="kicker">Moderação do Bazaar</span><h2 id="bz-report-title">Denunciar anúncio</h2>
+    <p>A denúncia será enviada para a administração. O vendedor não recebe seus dados.</p>
+    <form data-report-form>
+      <fieldset><legend>Qual é o problema?</legend>${motivos.map((motivo, i) => `<label><input type="radio" name="reason" value="${esc(motivo)}" ${i === 0 ? "required" : ""}>${esc(motivo)}</label>`).join("")}</fieldset>
+      <label class="bz-report-details">Detalhes <small>(opcional)</small><textarea name="details" maxlength="600" rows="4" placeholder="Explique o que aconteceu…"></textarea></label>
+      <p class="bz-report-status" data-report-status hidden></p>
+      <div class="bz-report-actions"><button type="button" data-dialog-close>Cancelar</button><button type="submit">Enviar denúncia</button></div>
+    </form>
+  </section>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay || event.target.closest("[data-dialog-close]")) fecharDialog();
+  });
+  overlay.querySelector("[data-report-form]").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const status = overlay.querySelector("[data-report-status]");
+    const submit = event.currentTarget.querySelector('[type="submit"]');
+    submit.disabled = true; status.hidden = true;
+    try {
+      const body = Object.fromEntries(new FormData(event.currentTarget));
+      const response = await fetch("/api/bazaar/report", {
+        method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...body, adId: a.id, title: a.titulo, seller: a.vendedor })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível enviar.");
+      status.textContent = "Denúncia enviada. Obrigado por ajudar a comunidade.";
+      status.className = "bz-report-status ok"; status.hidden = false;
+      setTimeout(fecharDialog, 1500);
+    } catch (error) {
+      status.textContent = error.message; status.className = "bz-report-status";
+      status.hidden = false; submit.disabled = false;
+    }
+  });
 }
 
 /* ---------------------------------------------- filtros: montagem e eventos */
@@ -766,7 +918,6 @@ function montarFiltros() {
   $("[data-f-jogo]").innerHTML = ['<option value="">Todos</option>']
     .concat(cfg.games.filter((g) => g.ativo)
       .map((g) => `<option value="${esc(g.id)}">${esc(g.nome)}</option>`)).join("");
-  $("[data-f-servidor]").innerHTML = opcoes(bz.servidores, filtros.servidor);
   $("[data-f-categoria]").innerHTML = opcoes(bz.categorias, filtros.categoria);
 
   const debounce = (fn, ms) => {
@@ -780,7 +931,7 @@ function montarFiltros() {
     mudou();
   }, 220));
 
-  [["jogo", "[data-f-jogo]"], ["servidor", "[data-f-servidor]"],
+  [["jogo", "[data-f-jogo]"],
    ["categoria", "[data-f-categoria]"]].forEach(([chave, sel]) => {
     $(sel).addEventListener("change", (e) => { filtros[chave] = e.target.value; mudou(); });
   });
@@ -790,6 +941,13 @@ function montarFiltros() {
       filtros[chave] = e.target.value;
       mudou();
     }, 300));
+  });
+  [["ivMin", "iv-min"], ["ivMax", "iv-max"],
+   ["qualityMin", "quality-min"], ["qualityMax", "quality-max"]].forEach(([chave, attr]) => {
+    $(`[data-f-${attr}]`).addEventListener("input", debounce((e) => {
+      filtros[chave] = e.target.value;
+      mudou();
+    }, 250));
   });
 
   $$("[data-seg]").forEach((grupo) => {
@@ -808,13 +966,14 @@ function montarFiltros() {
 
   $("[data-clear]").addEventListener("click", () => {
     Object.assign(filtros, {
-      q: "", intencao: "", moeda: "", jogo: "", servidor: "",
-      categoria: "", negociacao: "", min: "", max: "", page: 1
+      q: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
+      min: "", max: "", ivMin: "", ivMax: "", qualityMin: "", qualityMax: "", page: 1
     });
     $("[data-f-q]").value = "";
     $("[data-f-min]").value = "";
     $("[data-f-max]").value = "";
-    ["jogo", "servidor", "categoria"].forEach((k) => { $(`[data-f-${k}]`).value = ""; });
+    ["jogo", "categoria"].forEach((k) => { $(`[data-f-${k}]`).value = ""; });
+    ["iv-min", "iv-max", "quality-min", "quality-max"].forEach((k) => { $(`[data-f-${k}]`).value = ""; });
     $$("[data-seg]").forEach((grupo) => {
       $$("button", grupo).forEach((b) => b.classList.toggle("on", b.dataset.value === ""));
     });
@@ -838,10 +997,8 @@ function montarFiltros() {
 function lerURL() {
   const p = new URLSearchParams(location.search);
   const categoria = p.get("categoria");
-  const servidor = p.get("servidor");
   const busca = p.get("q");
   if (categoria && bz.categorias.includes(categoria)) filtros.categoria = categoria;
-  if (servidor && bz.servidores.includes(servidor)) filtros.servidor = servidor;
   if (busca) filtros.q = busca;
 }
 
@@ -925,7 +1082,6 @@ function montarFormulario() {
   montarFiltros();
   travarFaixaDePreco();
   $("[data-f-q]").value = filtros.q;
-  $("[data-f-servidor]").value = filtros.servidor;
   $("[data-f-categoria]").value = filtros.categoria;
   renderEstatisticas();
   renderGrid();

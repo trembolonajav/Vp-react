@@ -83,10 +83,10 @@ function bindFields(scope, getTarget) {
       if (el.dataset.type === "list") {
         value = value.split(",").map((v) => v.trim()).filter(Boolean);
       }
-      /* IVs: "31/31/31/31/31/29" -> [31,...]; qualquer coisa diferente de 6 números limpa */
+      /* IVs: "32/32/32/32/32/32" -> [32,...]; qualquer coisa diferente de 6 números limpa */
       if (el.dataset.type === "ivs") {
         const nums = value.split(/[\/\s,]+/).map(Number).filter((n) => Number.isFinite(n));
-        value = nums.length === 6 ? nums.map((n) => Math.min(31, Math.max(0, Math.round(n)))) : [];
+        value = nums.length === 6 ? nums.map((n) => Math.min(32, Math.max(0, Math.round(n)))) : [];
       }
       target[key] = value;
       markDirty();
@@ -504,7 +504,7 @@ function renderBazaar() {
         <div class="a-row">
           <div class="a-field">
             <label>IVs (HP/Atq/Def/AtqEsp/DefEsp/Vel)</label>
-            <input type="text" data-bind="ivs" data-type="ivs" value="${a.ivs.length === 6 ? a.ivs.join("/") : ""}" placeholder="31/31/31/31/31/29">
+            <input type="text" data-bind="ivs" data-type="ivs" value="${a.ivs.length === 6 ? a.ivs.join("/") : ""}" placeholder="32/32/32/32/32/32">
             <div class="sub">Seis números de 0 a 31 separados por barra. Deixe vazio para ocultar.</div>
           </div>
           <div class="a-field">
@@ -516,7 +516,7 @@ function renderBazaar() {
         <div class="a-row three">
           <div class="a-field">
             <label>Forma</label>
-            <input type="text" data-bind="forma" maxlength="40" value="${esc(a.forma)}" placeholder="Ex.: Padrão, Mega">
+            <input type="text" data-bind="forma" maxlength="40" value="${esc(a.forma)}" placeholder="Ex.: Normal ou Shiny">
           </div>
           <div class="a-field">
             <label>Nota do vendedor (0–5)</label>

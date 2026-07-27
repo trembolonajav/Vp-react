@@ -25,7 +25,8 @@ const BASE = {
   criadoEm: "2026-07-22",
   dex: 6, nivel: 88, tipos: ["fire", "flying"], shiny: true,
   quantidade: 0, aceitaTroca: false,
-  natureza: "Modest", habilidade: "Blaze", genero: "macho", forma: "Padrão",
+  natureza: "Modest", habilidade: "Blaze", genero: "macho", forma: "Normal",
+  qualidade: 1.8, disponibilidade: "Venda e Troca",
   ivs: [31, 31, 31, 31, 31, 29], moves: ["Flamethrower", "Air Slash"], regras: "Só pelo chat.",
   vendedorVerificado: true, vendedorOnline: true,
   vendedorNota: 4.9, vendedorVendas: 42, vendedorResposta: "5 min", vendedorAvatar: ""
@@ -157,7 +158,7 @@ test("o card usa as artes 9-slice e o diamante azul existente", () => {
     assert.match(css, new RegExp(`border-image:url\\('/assets/bazaar/${arte}\\.webp'\\)`),
       `${arte} deveria ser aplicada como border-image (9-slice)`);
   }
-  assert.match(read("bazaar.js"), /diamante-pokeidle\.webp/);
+  assert.match(read("bazaar.js"), /diamante-pokeidle-oficial\.png/);
 });
 
 test("as artes do card e da página existem e são leves", () => {
@@ -173,12 +174,17 @@ test("as artes do card e da página existem e são leves", () => {
   assert.ok(total < 160 * 1024, `artes pesam ${(total / 1024).toFixed(0)} KB`);
 });
 
-test("IVs só valem com os 6 valores, cada um de 0 a 31", () => {
-  assert.deepEqual(comAnuncio({ ...BASE, ivs: [31, 31, 31, 31, 31, 29] }).anuncios[0].ivs,
-    [31, 31, 31, 31, 31, 29]);
+test("IVs só valem com os 6 valores, cada um de 0 a 32", () => {
+  assert.deepEqual(comAnuncio({ ...BASE, ivs: [32, 32, 32, 32, 32, 32] }).anuncios[0].ivs,
+    [32, 32, 32, 32, 32, 32]);
   assert.deepEqual(comAnuncio({ ...BASE, ivs: [31, 31, 31] }).anuncios[0].ivs, []);
   assert.deepEqual(comAnuncio({ ...BASE, ivs: [99, -5, 31, 31, 31, 31] }).anuncios[0].ivs,
-    [31, 0, 31, 31, 31, 31]);
+    [32, 0, 31, 31, 31, 31]);
+});
+
+test("qualidade numérica preserva decimais e é limitada com segurança", () => {
+  assert.equal(comAnuncio({ ...BASE, qualidade: 3.2 }).anuncios[0].qualidade, 3.2);
+  assert.equal(comAnuncio({ ...BASE, qualidade: -1 }).anuncios[0].qualidade, 0);
 });
 
 test("moves limitam a quatro e o gênero cai no vazio se inválido", () => {
@@ -270,7 +276,7 @@ test("as páginas do bazaar carregam o design system da loja", () => {
 test("o marketplace tem os filtros e não abre mais em modal", () => {
   const html = read("index.html");
   for (const marcador of [
-    "data-grid", "data-f-q", "data-f-servidor", "data-f-categoria",
+    "data-grid", "data-f-q", "data-f-iv-min", "data-f-quality-min", "data-f-categoria",
     "data-f-jogo", "data-f-sort", "data-seg=\"intencao\"", "data-seg=\"moeda\"",
     "data-pager"
   ]) {

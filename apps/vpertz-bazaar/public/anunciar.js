@@ -33,6 +33,26 @@
     .map((p) => ({ dex: p.dexNo, nome: p.nome, tipos: Array.isArray(p.tipos) ? p.tipos : [] }))
     .sort((a, b) => a.dex - b.dex);
   const IV_LABELS = ["HP IV", "Ataque IV", "Defesa IV", "Atq. Esp. IV", "Def. Esp. IV", "Velocidade IV"];
+  const NATUREZAS = [
+    "Hardy", "Lonely", "Brave", "Adamant", "Naughty",
+    "Bold", "Docile", "Relaxed", "Impish", "Lax",
+    "Timid", "Hasty", "Serious", "Jolly", "Naive",
+    "Modest", "Mild", "Quiet", "Bashful", "Rash",
+    "Calm", "Gentle", "Sassy", "Careful", "Quirky"
+  ];
+  const etiquetaQualidade = (valor) => {
+    const q = Number(valor);
+    if (!Number.isFinite(q)) return "";
+    if (q < 1) return "Fraca";
+    if (q < 1.1) return "Comum";
+    if (q < 1.3) return "Incomum";
+    if (q < 1.5) return "Rara";
+    if (q < 1.7) return "Épica";
+    if (q < 2) return "Lendária";
+    if (q < 3) return "Mítica";
+    if (q < 4) return "Anciã";
+    return "Divina";
+  };
 
   const MEUS_KEY = "vp-bazaar-meus";
   const lerMeus = () => { try { return JSON.parse(localStorage.getItem(MEUS_KEY)) || []; } catch { return []; } };
@@ -44,16 +64,16 @@
   const st = {
     tipo: null, intencao: null,
     dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, forma: "",
-    disponibilidade: "", qualidade: "", quantidade: "",
-    ivs: ["", "", "", "", "", ""], img: "",
-    moeda: null, preco: "", servidor: "", negociavel: false, descricao: ""
+    disponibilidade: "", qualidade: "", natureza: "", quantidade: "",
+    ivs: ["", "", "", "", "", ""], moves: ["", "", "", ""], img: "",
+    moeda: null, preco: "", negociavel: false, descricao: ""
   };
   let buscaSel = "";
 
   const resetSelecao = () => Object.assign(st, {
     dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, forma: "",
-    disponibilidade: "", qualidade: "", quantidade: "",
-    ivs: ["", "", "", "", "", ""], img: ""
+    disponibilidade: "", qualidade: "", natureza: "", quantidade: "",
+    ivs: ["", "", "", "", "", ""], moves: ["", "", "", ""], img: ""
   });
 
   /* ---------------------------------------------- ícones inline */
@@ -108,7 +128,7 @@
         <button type="button" class="bz-choice on" data-choice="pokeidle">
           <img class="bz-choice-art bz-game-logo" src="/assets/logo-pokeidle-world.png" alt="PokeIdle World">
           <b>PokeIdle World</b>
-          <small>Servidores da comunidade</small>
+          <small>Marketplace oficial da comunidade</small>
         </button>
       </div>`,
       wire() { wireEscolha(() => setStep(3)); }
@@ -175,8 +195,9 @@
   function extrasHTML() {
     if (st.tipo === "pokemon") {
       const show = st.dex ? "" : "hidden";
-      const ivTotal = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31)
+      const ivTotal = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 32)
         ? st.ivs.reduce((s, v) => s + Number(v), 0) : null;
+      const moves = movesDoPokemon();
       return `<div class="bz-sel-extras" ${show} data-extras>
         <div class="bz-form-2">
           <label class="bz-field">
@@ -192,6 +213,13 @@
             </select>
           </label>
           <label class="bz-field">
+            <span>Natureza <b>*</b></span>
+            <select class="bz-input" required data-natureza>
+              <option value="">Selecione</option>
+              ${NATUREZAS.map((v) => `<option value="${v}" ${st.natureza === v ? "selected" : ""}>${v}</option>`).join("")}
+            </select>
+          </label>
+          <label class="bz-field">
             <span>Disponível para <b>*</b></span>
             <select class="bz-input" required data-disponibilidade>
               <option value="">Selecione</option>
@@ -202,22 +230,27 @@
           </label>
           <label class="bz-field">
             <span>Qualidade <b>*</b></span>
-            <select class="bz-input" required data-qualidade>
-              <option value="">Selecione</option>
-              ${["Comum","Incomum","Rara","Épica","Lendária"].map((v) => `<option value="${v}" ${st.qualidade === v ? "selected" : ""}>${v}</option>`).join("")}
-            </select>
+            <input class="bz-input" required type="number" min="0" step="0.001" data-qualidade
+                   value="${esc(st.qualidade)}" placeholder="Ex.: 3.2">
+            <small class="bz-quality-preview" data-quality-preview>${st.qualidade !== "" ? `${etiquetaQualidade(st.qualidade)} · ${Number(st.qualidade).toLocaleString("pt-BR", { maximumFractionDigits: 3 })}` : "A etiqueta será calculada automaticamente"}</small>
           </label>
         </div>
         <div class="bz-ivs-wrap">
           <div class="bz-ivs-head">
-            <span class="bz-ivs-title">Atributos obrigatórios <b>*</b> <i>(0–31)</i></span>
+            <span class="bz-ivs-title">Atributos obrigatórios <b>*</b> <i>(0–32)</i></span>
             <output class="bz-iv-total ${ivTotal === null ? "" : "ok"}" data-iv-total>
-              ${ivTotal === null ? "IV total: preencha os 6 atributos" : `IV total: ${ivTotal}/186 ✓`}
+              ${ivTotal === null ? "IV total: preencha os 6 atributos" : `IV total: ${ivTotal}/192 ✓`}
             </output>
           </div>
           <div class="bz-ivs">
             ${IV_LABELS.map((l, i) => `<label class="bz-iv"><span>${l}</span>
-              <input required type="number" min="0" max="31" data-iv="${i}" value="${esc(st.ivs[i])}" placeholder="0–31"></label>`).join("")}
+              <input required type="number" min="0" max="32" data-iv="${i}" value="${esc(st.ivs[i])}" placeholder="0–32"></label>`).join("")}
+          </div>
+        </div>
+        <div class="bz-moves-editor">
+          <span class="bz-ivs-title">Últimos 4 moves aprendidos</span>
+          <div class="bz-auto-moves">
+            ${moves.length ? moves.map((move) => `<span>${esc(move)}</span>`).join("") : "<small>Informe o nível para carregar os moves automaticamente.</small>"}
           </div>
         </div>
       </div>`;
@@ -229,6 +262,40 @@
         <input class="bz-input" type="number" min="1" data-qtd value="${esc(st.quantidade)}" placeholder="Ex.: 1">
       </label>
     </div>`;
+  }
+
+  function movesDoPokemon() {
+    const poke = DEX.find((p) => Number(p.dexNo) === Number(st.dex));
+    if (!poke || !Array.isArray(poke.golpes)) return [];
+    const nivel = Number(st.nivel) || 0;
+    return poke.golpes
+      .filter((g) => !nivel || Number(g.nivel || 0) <= nivel)
+      .slice(-4)
+      .map((g) => g.nome)
+      .filter(Boolean);
+  }
+
+  function selectionPreviewHTML() {
+    const arte = st.dex
+      ? `<img src="${spriteUrl(st.dex)}" alt="${esc(st.titulo)}">`
+      : st.img
+        ? `<img src="${esc(st.img)}" alt="${esc(st.titulo)}">`
+        : `<span class="bz-noart">VP</span>`;
+    const resumo = st.tipo === "pokemon"
+      ? [st.nivel && `Nível ${st.nivel}`, st.natureza, st.forma, st.qualidade !== "" && `${etiquetaQualidade(st.qualidade)} ${st.qualidade}`].filter(Boolean).join(" · ")
+      : st.tipo === "shinycard" ? "Colecionável de abate" : (st.quantidade ? `Quantidade: ${st.quantidade}` : "Item do PokeIdle");
+    return `<aside class="bz-selection-preview">
+      <small>Prévia do anúncio</small>
+      <div class="bz-selection-preview-art">${arte}</div>
+      <h3>${esc(st.titulo || "Selecione no catálogo")}</h3>
+      <p>${esc(resumo || "Preencha os dados obrigatórios")}</p>
+      ${st.tipo === "pokemon" ? tiposHTML(st.tipos) : ""}
+      <div class="bz-selection-preview-price">
+        <img src="/assets/diamante-pokeidle-oficial.png" alt="">
+        <b>${st.preco ? esc(st.preco) : "—"}</b>
+        <span>Diamonds</span>
+      </div>
+    </aside>`;
   }
 
   function stepSelecao() {
@@ -244,10 +311,15 @@
       titulo: modo === "pokemon" ? "Qual pokémon?" : modo === "item" ? "Qual item?" : "Qual shiny card?",
       sub: `Você está ${acao}. Busque e selecione.`,
       body: `
-        <input class="bz-input bz-sel-busca" type="text" data-busca autocomplete="off"
-               placeholder="${placeholder}" value="${esc(buscaSel)}">
-        <div class="${gridClass}" data-resultados>${resultados}</div>
-        ${extrasHTML()}`,
+        <div class="bz-wizard-select-grid">
+          <div class="bz-wizard-select-main">
+            <input class="bz-input bz-sel-busca" type="text" data-busca autocomplete="off"
+                   placeholder="${placeholder}" value="${esc(buscaSel)}">
+            <div class="${gridClass}" data-resultados>${resultados}</div>
+            ${extrasHTML()}
+          </div>
+          ${selectionPreviewHTML()}
+        </div>`,
       footer: navFooter(selecionado),
       wire() {
         const busca = q("[data-busca]");
@@ -288,18 +360,30 @@
 
   function wireExtras() {
     const atualizarPokemon = () => atualizarFooter(pokemonCompleto());
-    const nivel = q("[data-nivel]"); if (nivel) nivel.addEventListener("input", () => { st.nivel = nivel.value; atualizarPokemon(); });
+    const nivel = q("[data-nivel]"); if (nivel) nivel.addEventListener("input", () => {
+      st.nivel = nivel.value;
+      st.moves = movesDoPokemon();
+      render();
+    });
     const forma = q("[data-forma]"); if (forma) forma.addEventListener("change", () => {
       st.forma = forma.value;
       st.shiny = forma.value === "Shiny";
+      atualizarPokemon();
+    });
+    const natureza = q("[data-natureza]"); if (natureza) natureza.addEventListener("change", () => {
+      st.natureza = natureza.value;
       atualizarPokemon();
     });
     const disponibilidade = q("[data-disponibilidade]"); if (disponibilidade) disponibilidade.addEventListener("change", () => {
       st.disponibilidade = disponibilidade.value;
       atualizarPokemon();
     });
-    const qualidade = q("[data-qualidade]"); if (qualidade) qualidade.addEventListener("change", () => {
+    const qualidade = q("[data-qualidade]"); if (qualidade) qualidade.addEventListener("input", () => {
       st.qualidade = qualidade.value;
+      const preview = q("[data-quality-preview]");
+      if (preview) preview.textContent = qualidade.value === ""
+        ? "A etiqueta será calculada automaticamente"
+        : `${etiquetaQualidade(qualidade.value)} · ${Number(qualidade.value).toLocaleString("pt-BR", { maximumFractionDigits: 3 })}`;
       atualizarPokemon();
     });
     const qtd = q("[data-qtd]"); if (qtd) qtd.addEventListener("input", () => { st.quantidade = qtd.value; });
@@ -307,10 +391,10 @@
       inp.addEventListener("input", () => {
         st.ivs[Number(inp.dataset.iv)] = inp.value;
         const total = q("[data-iv-total]");
-        const validos = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31);
+        const validos = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 32);
         if (total) {
           total.textContent = validos
-            ? `IV total: ${st.ivs.reduce((s, v) => s + Number(v), 0)}/186 ✓`
+            ? `IV total: ${st.ivs.reduce((s, v) => s + Number(v), 0)}/192 ✓`
             : "IV total: preencha os 6 atributos";
           total.classList.toggle("ok", validos);
         }
@@ -322,14 +406,15 @@
   function pokemonCompleto() {
     return st.tipo !== "pokemon" || (
       st.dex > 0 && Number(st.nivel) >= 1 && Number(st.nivel) <= 1000 &&
-      Boolean(st.forma) && Boolean(st.disponibilidade) && Boolean(st.qualidade) &&
-      st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31)
+      Boolean(st.forma) && Boolean(st.natureza) && Boolean(st.disponibilidade) &&
+      st.qualidade !== "" && Number(st.qualidade) >= 0 &&
+      st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 32) &&
+      movesDoPokemon().length > 0
     );
   }
 
   /* ------- passo 5: moeda e valor ------- */
   function stepMoeda() {
-    const servidores = (bz.servidores || []);
     const podeAvancar = Boolean(st.moeda) && Number(st.preco) > 0;
     return {
       titulo: "Moeda e valor",
@@ -337,25 +422,18 @@
       body: `
         <div class="bz-moeda" data-moeda>
           <button type="button" class="bz-choice mini${st.moeda === "brl" ? " on" : ""}" data-moeda-op="brl">
-            <span class="bz-choice-ic bz-pix-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>PIX</b><small>Reais (R$)</small>
+            <span class="bz-choice-ic" aria-hidden="true"><img src="/assets/pix-oficial.png" alt="" class="bz-pix-official"></span><b>PIX</b><small>Reais (R$)</small>
           </button>
           <button type="button" class="bz-choice mini${st.moeda === "diamonds" ? " on" : ""}" data-moeda-op="diamonds">
             <span class="bz-choice-ic"><img src="/assets/diamante-pokeidle-oficial.png" alt="" class="bz-diamond-icon"></span>
             <b>Diamante</b><small>Diamonds do jogo</small>
           </button>
         </div>
-        <div class="bz-form-2">
+        <div class="bz-form-1">
           <label class="bz-field">
             <span>Valor do anúncio</span>
             <input class="bz-input" type="number" min="0" step="${st.moeda === "diamonds" ? "1" : "0.01"}"
                    data-preco value="${esc(st.preco)}" placeholder="${st.moeda === "diamonds" ? "Ex.: 500" : "Ex.: 25,00"}">
-          </label>
-          <label class="bz-field">
-            <span>Servidor <i>(opcional)</i></span>
-            <select class="bz-input" data-servidor>
-              <option value="">Não informar</option>
-              ${servidores.map((s) => `<option value="${esc(s)}" ${st.servidor === s ? "selected" : ""}>${esc(s)}</option>`).join("")}
-            </select>
           </label>
         </div>
         <label class="bz-field">
@@ -373,7 +451,6 @@
           render();
         });
         const preco = q("[data-preco]"); preco.addEventListener("input", () => { st.preco = preco.value; atualizarFooter(Boolean(st.moeda) && Number(st.preco) > 0); });
-        q("[data-servidor]").addEventListener("change", (e) => { st.servidor = e.target.value; });
         q("[data-descricao]").addEventListener("input", (e) => { st.descricao = e.target.value; });
         q("[data-negociavel]").addEventListener("change", (e) => { st.negociavel = e.target.checked; });
         wireFooter();
@@ -406,7 +483,6 @@
             <h3 class="bz-card-title"><span>${esc(st.titulo)}</span></h3>
             <p class="bz-card-sub">${esc(detalhe)}</p>
             ${tiposHTML(st.tipos)}
-            ${st.servidor ? `<p class="bz-card-sub">Servidor: <b>${esc(st.servidor)}</b></p>` : ""}
           </div>
         </div>
         <div class="bz-card-price">
@@ -470,7 +546,7 @@
       return;
     }
     const ivs = st.tipo === "pokemon"
-      ? st.ivs.map((v) => Math.max(0, Math.min(31, Number(v))))
+      ? st.ivs.map((v) => Math.max(0, Math.min(32, Number(v))))
       : [];
     const categoria = st.tipo === "pokemon" ? "Pokémon" : st.tipo === "shinycard" ? "Shiny Card" : "Itens";
 
@@ -479,7 +555,6 @@
       id, local: true, tipo: st.tipo,
       intencao: st.intencao,
       jogo: "pokeidle",
-      servidor: st.servidor || "",
       categoria,
       titulo: st.titulo,
       descricao: st.descricao || "",
@@ -488,10 +563,12 @@
       nivel: st.tipo === "pokemon" && st.nivel ? Number(st.nivel) : 0,
       shiny: st.tipo === "pokemon" && st.forma === "Shiny",
       forma: st.tipo === "pokemon" ? st.forma : "",
+      natureza: st.tipo === "pokemon" ? st.natureza : "",
       disponibilidade: st.tipo === "pokemon" ? st.disponibilidade : "",
-      qualidade: st.tipo === "pokemon" ? st.qualidade : "",
+      qualidade: st.tipo === "pokemon" ? Number(st.qualidade) : "",
       tipos: st.tipo === "pokemon" ? (st.tipos || []) : [],
       ivs,
+      moves: st.tipo === "pokemon" ? st.moves.map((v) => String(v).trim()) : [],
       quantidade: st.tipo !== "pokemon" && st.quantidade ? Number(st.quantidade) : 0,
       moeda: st.moeda,
       preco: Number(st.preco) || 0,
@@ -514,7 +591,12 @@
       <div class="bz-wizard-card">
         <div class="bz-wizard-head">
           ${step > 1 ? '<button type="button" class="bz-wizard-back" data-back>← Voltar</button>' : "<span></span>"}
-          <span class="bz-wizard-count">Passo ${step} de ${TOTAL}</span>
+          <div class="bz-wizard-progress">
+            <div class="bz-wizard-bars" aria-hidden="true">
+              ${Array.from({length:TOTAL},(_,i) => `<i class="${i < step ? "done" : ""}"></i>`).join("")}
+            </div>
+            <span class="bz-wizard-count">Passo ${step} de ${TOTAL}</span>
+          </div>
         </div>
         <div class="bz-wizard-title">
           <span class="logo-wordmark" aria-hidden="true"><b>VP</b> BAZAAR</span>
@@ -524,7 +606,8 @@
         </div>
         <div class="bz-wizard-body">${s.body}</div>
         ${s.footer || ""}
-      </div>`;
+      </div>
+      `;
     const back = q("[data-back]");
     if (back) back.addEventListener("click", () => setStep(step - 1));
     if (s.wire) s.wire();

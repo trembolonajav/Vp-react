@@ -27,17 +27,17 @@ const { document } = parseHTML(HTML);
 
 /* ---------------------------------------------- remoção da aba Perfil */
 
-test("1. a Pokédex é a aba padrão e a Perfil não existe mais", () => {
+test("1. Avaliar IV é a aba padrão e a Perfil não existe mais", () => {
   const ativos = [...document.querySelectorAll(".panel.active")];
   assert.equal(ativos.length, 1, "exatamente um painel começa ativo");
-  assert.equal(ativos[0].id, "tab-pokedex");
-  assert.match(APP, /let activeTab = "pokedex"/, "o estado inicial precisa ser a Pokédex");
+  assert.equal(ativos[0].id, "tab-avaliar");
+  assert.match(APP, /let activeTab = "avaliar"/, "o estado inicial precisa ser Avaliar IV");
 
   assert.equal(document.querySelector("#tab-perfil"), null, "o painel do Perfil foi removido do DOM");
   assert.equal(document.querySelector('[data-tab="perfil"]'), null, "nenhuma navegação aponta para o Perfil");
-  /* a aba que sobrou marcada como selecionada é a Pokédex */
+  /* a aba marcada como selecionada é Avaliar IV */
   const selecionada = document.querySelector('.main-tab[aria-selected="true"]');
-  assert.equal(selecionada.dataset.tab, "pokedex");
+  assert.equal(selecionada.dataset.tab, "avaliar");
 });
 
 test("2. ?tab=perfil faz fallback para a Pokédex", () => {

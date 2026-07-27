@@ -49,7 +49,6 @@
             <h3 class="bz-card-title"><span>${esc(a.titulo)}</span>${a.shiny ? '<span class="bz-star">★</span>' : ""}</h3>
             <p class="bz-card-sub">${esc(detalhe(a))}</p>
             ${tiposHTML(a.tipos || [])}
-            ${a.servidor ? `<p class="bz-card-sub">Servidor: <b>${esc(a.servidor)}</b></p>` : ""}
           </div>
         </div>
         <div class="bz-card-price">${precoHTML(a)}</div>

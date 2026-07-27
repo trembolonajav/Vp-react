@@ -125,9 +125,11 @@ function sanitizeBazaar(input, games) {
       habilidade: str(a?.habilidade, 40),
       genero: ["macho", "femea", "sem"].includes(a?.genero) ? a.genero : "",
       forma: str(a?.forma, 40),
+      qualidade: num(a?.qualidade, 0, 999, 3),
+      disponibilidade: ["Venda", "Troca", "Venda e Troca"].includes(a?.disponibilidade) ? a.disponibilidade : "",
       /* IVs: ou os 6 valores (HP, Atq, Def, AtqEsp, DefEsp, Vel) ou nada */
       ivs: Array.isArray(a?.ivs) && a.ivs.length === 6
-        ? a.ivs.map((v) => int(v, 0, 31))
+        ? a.ivs.map((v) => int(v, 0, 32))
         : [],
       moves: Array.isArray(a?.moves)
         ? a.moves.map((m) => str(m, 40)).filter(Boolean).slice(0, 4)
