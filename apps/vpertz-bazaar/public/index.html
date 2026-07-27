@@ -78,6 +78,16 @@
         </div>
 
         <div class="bz-group">
+          <span class="bz-group-title">Tipo de anúncio</span>
+          <div class="bz-seg" data-seg="tipo">
+            <button type="button" data-value="" class="on">Todos</button>
+            <button type="button" data-value="pokemon">Pokémon</button>
+            <button type="button" data-value="item">Itens</button>
+            <button type="button" data-value="shinycard" class="bz-seg-wide">Shiny Cards</button>
+          </div>
+        </div>
+
+        <div class="bz-group">
           <span class="bz-group-title">Intenção</span>
           <div class="bz-seg" data-seg="intencao">
             <button type="button" data-value="" class="on">Todas</button>
@@ -93,10 +103,6 @@
             <button type="button" data-value="brl">Reais</button>
             <button type="button" data-value="diamonds">Diamonds</button>
           </div>
-        </div>
-
-        <div class="bz-group">
-          <span class="bz-group-title">Faixa de preço</span>
           <p class="bz-aviso" data-preco-aviso>Escolha uma moeda acima para filtrar por valor.</p>
           <div class="bz-range">
             <input class="bz-input" type="number" min="0" step="0.01" data-f-min placeholder="Mín." aria-label="Preço mínimo">
@@ -105,36 +111,53 @@
         </div>
 
         <div class="bz-group">
-          <span class="bz-group-title">Negociação</span>
-          <div class="bz-seg" data-seg="negociacao">
-            <button type="button" data-value="" class="on">Todas</button>
-            <button type="button" data-value="fixo">Preço fixo</button>
-            <button type="button" data-value="proposta">Propostas</button>
+          <span class="bz-group-title">Qualidade</span>
+          <div class="bz-qual-chips" data-qual-chips></div>
+          <div class="bz-qual-legend">
+            <span>0,80</span><span class="bz-qual-legend-mid">escala de qualidade</span><span>3,60</span>
           </div>
-        </div>
-
-        <div class="bz-group">
-          <label for="f-jogo">Jogo</label>
-          <select class="bz-select" id="f-jogo" data-f-jogo></select>
-        </div>
-
-        <div class="bz-group">
-          <label for="f-categoria">Categoria</label>
-          <select class="bz-select" id="f-categoria" data-f-categoria></select>
-        </div>
-
-        <div class="bz-group">
-          <span class="bz-group-title">Informações do Pokémon</span>
-          <label>IV total <small>(0–192)</small></label>
+          <div class="bz-qual-scale">
+            <span class="bz-qual-mask" data-qual-mask-lo></span>
+            <span class="bz-qual-mask" data-qual-mask-hi></span>
+            <span class="bz-qual-knob" data-qual-knob-lo></span>
+            <span class="bz-qual-knob" data-qual-knob-hi></span>
+          </div>
           <div class="bz-range">
-            <input class="bz-input" type="number" min="0" max="192" data-f-iv-min placeholder="Mín.">
-            <input class="bz-input" type="number" min="0" max="192" data-f-iv-max placeholder="Máx.">
+            <input class="bz-input" type="text" inputmode="decimal" data-f-quality-min placeholder="Mín." aria-label="Qualidade mínima">
+            <input class="bz-input" type="text" inputmode="decimal" data-f-quality-max placeholder="Máx." aria-label="Qualidade máxima">
           </div>
-          <label>Qualidade</label>
+        </div>
+
+        <div class="bz-group">
+          <span class="bz-group-title">IV total (0–192)</span>
           <div class="bz-range">
-            <input class="bz-input" type="number" min="0" step="0.001" data-f-quality-min placeholder="Mín.">
-            <input class="bz-input" type="number" min="0" step="0.001" data-f-quality-max placeholder="Máx.">
+            <input class="bz-input" type="number" min="0" max="192" data-f-iv-min placeholder="Mín. 0">
+            <input class="bz-input" type="number" min="0" max="192" data-f-iv-max placeholder="Máx. 192">
           </div>
+        </div>
+
+        <div class="bz-group">
+          <span class="bz-group-title">Nível</span>
+          <div class="bz-range">
+            <input class="bz-input" type="number" min="1" data-f-nivel-min placeholder="Mín. 1">
+            <input class="bz-input" type="number" min="1" data-f-nivel-max placeholder="Máx. 1000">
+          </div>
+        </div>
+
+        <div class="bz-group">
+          <span class="bz-group-title">Poder</span>
+          <div class="bz-range">
+            <input class="bz-input" type="number" min="0" data-f-poder-min placeholder="Mín.">
+            <input class="bz-input" type="number" min="0" data-f-poder-max placeholder="Máx.">
+          </div>
+        </div>
+
+        <div class="bz-group">
+          <div class="bz-group-head">
+            <span class="bz-group-title bz-group-title-inline">Tipo</span>
+            <button type="button" class="bz-type-count" data-type-count hidden></button>
+          </div>
+          <div class="bz-type-grid" data-type-grid></div>
         </div>
       </aside>
 

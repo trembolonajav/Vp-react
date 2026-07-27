@@ -28,6 +28,26 @@ const TYPE_COLOR = {
   dark: "#584538", steel: "#8a8aa0", fairy: "#c96f9e"
 };
 
+/* Escala de qualidade (0,80–3,60) e ordem das tipagens: mesmos valores do
+   redesign "VP Bazaar — Telas" (aba de filtros do marketplace). */
+const QUALIDADES = [
+  { nome: "Fraca",    lo: 0.80, hi: 1.00, ponto: "#6b5a52" },
+  { nome: "Comum",    lo: 1.00, hi: 1.10, ponto: "#8a7a70" },
+  { nome: "Incomum",  lo: 1.10, hi: 1.30, ponto: "#7fd9a2" },
+  { nome: "Rara",     lo: 1.30, hi: 1.50, ponto: "#5b9bd6" },
+  { nome: "Épica",    lo: 1.50, hi: 1.70, ponto: "#9a6fbb" },
+  { nome: "Lendária", lo: 1.70, hi: 1.80, ponto: "#e5b34f" },
+  { nome: "Mítica",   lo: 1.80, hi: 2.20, ponto: "#e8654a" },
+  { nome: "Anciã",    lo: 2.20, hi: 2.90, ponto: "#d84f9e" },
+  { nome: "Divina",   lo: 2.90, hi: 3.60, ponto: "#f2f0e6" }
+];
+const QUAL_MIN = 0.80, QUAL_MAX = 3.60;
+const TIPOS_ORDEM = [
+  "normal", "fire", "water", "grass", "electric", "ice",
+  "fighting", "poison", "ground", "flying", "psychic", "bug",
+  "rock", "ghost", "dragon", "dark", "steel", "fairy"
+];
+
 /* Mesma fonte de sprites que o VPLab já usa. */
 const spriteUrl = (dex) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dex}.png`;
@@ -97,7 +117,7 @@ function normalizarAnuncio(a) {
   a.tipos = Array.isArray(a.tipos) ? a.tipos : [];
   a.ivs = Array.isArray(a.ivs) && a.ivs.length === 6 ? a.ivs : [];
   a.moves = Array.isArray(a.moves) ? a.moves : [];
-  a.dex ??= 0; a.nivel ??= 0; a.quantidade ??= 0;
+  a.dex ??= 0; a.nivel ??= 0; a.poder ??= 0; a.quantidade ??= 0;
   a.shiny ??= false; a.aceitaTroca ??= false;
   a.natureza ??= ""; a.habilidade ??= ""; a.genero ??= ""; a.forma ??= ""; a.regras ??= "";
   if (a.tipo === "pokemon" && !["Normal", "Shiny"].includes(a.forma)) {
@@ -172,8 +192,9 @@ function montarComuns() {
    ============================================================ */
 
 const filtros = {
-  q: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
+  q: "", tipo: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
   min: "", max: "", ivMin: "", ivMax: "", qualityMin: "", qualityMax: "",
+  nivelMin: "", nivelMax: "", poderMin: "", poderMax: "", tipos: [],
   sort: "recentes", page: 1
 };
 
@@ -185,19 +206,30 @@ function aplicarFiltros() {
   const ivMax = filtros.ivMax === "" ? null : Number(filtros.ivMax);
   const qualityMin = filtros.qualityMin === "" ? null : Number(filtros.qualityMin);
   const qualityMax = filtros.qualityMax === "" ? null : Number(filtros.qualityMax);
+  const nivelMin = filtros.nivelMin === "" ? null : Number(filtros.nivelMin);
+  const nivelMax = filtros.nivelMax === "" ? null : Number(filtros.nivelMax);
+  const poderMin = filtros.poderMin === "" ? null : Number(filtros.poderMin);
+  const poderMax = filtros.poderMax === "" ? null : Number(filtros.poderMax);
 
   const lista = anuncios.filter((a) => {
     if (q && !a.titulo.toLowerCase().includes(q) && !a.descricao.toLowerCase().includes(q)) return false;
+    if (filtros.tipo && a.tipo !== filtros.tipo) return false;
     if (filtros.intencao && a.intencao !== filtros.intencao) return false;
     if (filtros.moeda && a.moeda !== filtros.moeda) return false;
     if (filtros.jogo && a.jogo !== filtros.jogo) return false;
     if (filtros.categoria && a.categoria !== filtros.categoria) return false;
+    /* tipagem elementar: casa quando o anúncio tem ao menos um dos tipos marcados */
+    if (filtros.tipos.length && !filtros.tipos.some((t) => a.tipos.includes(t))) return false;
     const ivTotal = Array.isArray(a.ivs) ? a.ivs.reduce((sum, n) => sum + Number(n || 0), 0) : null;
     const quality = Number(a.qualidade);
     if (ivMin !== null && (ivTotal === null || ivTotal < ivMin)) return false;
     if (ivMax !== null && (ivTotal === null || ivTotal > ivMax)) return false;
     if (qualityMin !== null && (!Number.isFinite(quality) || quality < qualityMin)) return false;
     if (qualityMax !== null && (!Number.isFinite(quality) || quality > qualityMax)) return false;
+    if (nivelMin !== null && (!a.nivel || a.nivel < nivelMin)) return false;
+    if (nivelMax !== null && (!a.nivel || a.nivel > nivelMax)) return false;
+    if (poderMin !== null && (!a.poder || a.poder < poderMin)) return false;
+    if (poderMax !== null && (!a.poder || a.poder > poderMax)) return false;
     if (filtros.negociacao === "fixo" && a.negociavel) return false;
     if (filtros.negociacao === "proposta" && !a.negociavel) return false;
     /* faixa de preço só faz sentido dentro de uma mesma moeda */
@@ -909,47 +941,34 @@ function travarFaixaDePreco() {
   $("[data-preco-aviso]").hidden = liberado;
 }
 
+const debounce = (fn, ms) => {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+};
+const mudouFiltro = () => { filtros.page = 1; renderGrid(); };
+
+/* posição (0–100%) de um valor de qualidade na escala 0,80–3,60 */
+const posQualidade = (v) =>
+  Math.max(0, Math.min(100, (v - QUAL_MIN) / (QUAL_MAX - QUAL_MIN) * 100));
+const fmtQual = (v) => Number(v).toFixed(2).replace(".", ",");
+
 function montarFiltros() {
-  const opcoes = (lista, atual) =>
-    ['<option value="">Todos</option>']
-      .concat(lista.map((v) => `<option value="${esc(v)}" ${v === atual ? "selected" : ""}>${esc(v)}</option>`))
-      .join("");
-
-  $("[data-f-jogo]").innerHTML = ['<option value="">Todos</option>']
-    .concat(cfg.games.filter((g) => g.ativo)
-      .map((g) => `<option value="${esc(g.id)}">${esc(g.nome)}</option>`)).join("");
-  $("[data-f-categoria]").innerHTML = opcoes(bz.categorias, filtros.categoria);
-
-  const debounce = (fn, ms) => {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-  };
-  const mudou = () => { filtros.page = 1; renderGrid(); };
-
+  /* busca */
   $("[data-f-q]").addEventListener("input", debounce((e) => {
-    filtros.q = e.target.value;
-    mudou();
+    filtros.q = e.target.value; mudouFiltro();
   }, 220));
 
-  [["jogo", "[data-f-jogo]"],
-   ["categoria", "[data-f-categoria]"]].forEach(([chave, sel]) => {
-    $(sel).addEventListener("change", (e) => { filtros[chave] = e.target.value; mudou(); });
+  /* faixas numéricas diretas: preço, IV, nível e poder */
+  [["min", "min"], ["max", "max"],
+   ["ivMin", "iv-min"], ["ivMax", "iv-max"],
+   ["nivelMin", "nivel-min"], ["nivelMax", "nivel-max"],
+   ["poderMin", "poder-min"], ["poderMax", "poder-max"]].forEach(([chave, attr]) => {
+    const el = $(`[data-f-${attr}]`);
+    if (!el) return;
+    el.addEventListener("input", debounce((e) => { filtros[chave] = e.target.value; mudouFiltro(); }, 280));
   });
 
-  ["min", "max"].forEach((chave) => {
-    $(`[data-f-${chave}]`).addEventListener("input", debounce((e) => {
-      filtros[chave] = e.target.value;
-      mudou();
-    }, 300));
-  });
-  [["ivMin", "iv-min"], ["ivMax", "iv-max"],
-   ["qualityMin", "quality-min"], ["qualityMax", "quality-max"]].forEach(([chave, attr]) => {
-    $(`[data-f-${attr}]`).addEventListener("input", debounce((e) => {
-      filtros[chave] = e.target.value;
-      mudou();
-    }, 250));
-  });
-
+  /* segmentados: tipo de anúncio, intenção e moeda */
   $$("[data-seg]").forEach((grupo) => {
     const chave = grupo.dataset.seg;
     grupo.addEventListener("click", (e) => {
@@ -958,28 +977,15 @@ function montarFiltros() {
       filtros[chave] = btn.dataset.value;
       $$("button", grupo).forEach((b) => b.classList.toggle("on", b === btn));
       if (chave === "moeda") travarFaixaDePreco();
-      mudou();
+      mudouFiltro();
     });
   });
 
-  $("[data-f-sort]").addEventListener("change", (e) => { filtros.sort = e.target.value; mudou(); });
+  montarQualidade();
+  montarTipos();
 
-  $("[data-clear]").addEventListener("click", () => {
-    Object.assign(filtros, {
-      q: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
-      min: "", max: "", ivMin: "", ivMax: "", qualityMin: "", qualityMax: "", page: 1
-    });
-    $("[data-f-q]").value = "";
-    $("[data-f-min]").value = "";
-    $("[data-f-max]").value = "";
-    ["jogo", "categoria"].forEach((k) => { $(`[data-f-${k}]`).value = ""; });
-    ["iv-min", "iv-max", "quality-min", "quality-max"].forEach((k) => { $(`[data-f-${k}]`).value = ""; });
-    $$("[data-seg]").forEach((grupo) => {
-      $$("button", grupo).forEach((b) => b.classList.toggle("on", b.dataset.value === ""));
-    });
-    travarFaixaDePreco();
-    renderGrid();
-  });
+  $("[data-f-sort]").addEventListener("change", (e) => { filtros.sort = e.target.value; mudouFiltro(); });
+  $("[data-clear]").addEventListener("click", limparFiltros);
 
   $("[data-prev]").addEventListener("click", () => { filtros.page--; renderGrid(); window.scrollTo({ top: 0, behavior: "smooth" }); });
   $("[data-next]").addEventListener("click", () => { filtros.page++; renderGrid(); window.scrollTo({ top: 0, behavior: "smooth" }); });
@@ -991,6 +997,121 @@ function montarFiltros() {
     painel.dataset.collapsed = fechado ? "0" : "1";
     toggle.setAttribute("aria-expanded", String(fechado));
   });
+}
+
+/* ---- Qualidade: chips + escala + inputs, todos sincronizados ---- */
+function montarQualidade() {
+  const chips = $("[data-qual-chips]");
+  chips.innerHTML = QUALIDADES.map((q) =>
+    `<button type="button" class="bz-qual" data-qual data-lo="${q.lo}" data-hi="${q.hi}">
+       <span class="dot" style="background:${q.ponto}"></span>${esc(q.nome)}
+     </button>`).join("");
+
+  /* clicar num chip define a faixa daquele tier; clicar de novo limpa */
+  chips.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-qual]");
+    if (!chip) return;
+    const lo = chip.dataset.lo, hi = chip.dataset.hi;
+    const igual = filtros.qualityMin === lo && filtros.qualityMax === hi;
+    filtros.qualityMin = igual ? "" : lo;
+    filtros.qualityMax = igual ? "" : hi;
+    escreverInputsQualidade();
+    sincronizarEscalaQualidade();
+    mudouFiltro();
+  });
+
+  /* digitar aceita vírgula ou ponto e normaliza para número */
+  [["qualityMin", "quality-min"], ["qualityMax", "quality-max"]].forEach(([chave, attr]) => {
+    $(`[data-f-${attr}]`).addEventListener("input", debounce((e) => {
+      const txt = e.target.value.trim().replace(",", ".");
+      filtros[chave] = txt === "" || Number.isNaN(Number(txt)) ? "" : txt;
+      sincronizarEscalaQualidade();
+      mudouFiltro();
+    }, 280));
+  });
+
+  sincronizarEscalaQualidade();
+}
+
+function escreverInputsQualidade() {
+  $("[data-f-quality-min]").value = filtros.qualityMin === "" ? "" : fmtQual(filtros.qualityMin);
+  $("[data-f-quality-max]").value = filtros.qualityMax === "" ? "" : fmtQual(filtros.qualityMax);
+}
+
+function sincronizarEscalaQualidade() {
+  const filtrando = filtros.qualityMin !== "" || filtros.qualityMax !== "";
+  const lo = filtros.qualityMin === "" ? QUAL_MIN : Number(filtros.qualityMin);
+  const hi = filtros.qualityMax === "" ? QUAL_MAX : Number(filtros.qualityMax);
+  const pLo = posQualidade(lo), pHi = posQualidade(hi);
+
+  $("[data-qual-mask-lo]").style.cssText = `left:0;right:${(100 - pLo).toFixed(2)}%`;
+  $("[data-qual-mask-hi]").style.cssText = `left:${pHi.toFixed(2)}%;right:0`;
+  $("[data-qual-knob-lo]").style.left = `calc(${pLo.toFixed(2)}% - 5px)`;
+  $("[data-qual-knob-hi]").style.left = `calc(${pHi.toFixed(2)}% - 6px)`;
+
+  /* chip aceso quando sua faixa intersecta a faixa filtrada (bordas exclusivas) */
+  $$("[data-qual]").forEach((chip) => {
+    const clo = Number(chip.dataset.lo), chi = Number(chip.dataset.hi);
+    chip.classList.toggle("on", filtrando && clo < hi && chi > lo);
+  });
+}
+
+/* ---- Tipagem elementar: grade de ícones com múltipla seleção ---- */
+function montarTipos() {
+  const grid = $("[data-type-grid]");
+  grid.innerHTML = TIPOS_ORDEM.map((t) =>
+    `<button type="button" class="bz-type-cell" data-type="${t}" title="${esc(TYPE_LABEL[t] || t)}" aria-label="${esc(TYPE_LABEL[t] || t)}" aria-pressed="false">
+       <i style="background-image:url(/assets/bazaar/types/${t}.webp)"></i>
+     </button>`).join("");
+
+  grid.addEventListener("click", (e) => {
+    const cell = e.target.closest("[data-type]");
+    if (!cell) return;
+    const t = cell.dataset.type;
+    const i = filtros.tipos.indexOf(t);
+    if (i >= 0) filtros.tipos.splice(i, 1); else filtros.tipos.push(t);
+    const ativo = filtros.tipos.includes(t);
+    cell.classList.toggle("on", ativo);
+    cell.setAttribute("aria-pressed", String(ativo));
+    atualizarContadorTipos();
+    mudouFiltro();
+  });
+
+  $("[data-type-count]").addEventListener("click", () => {
+    filtros.tipos = [];
+    $$("[data-type]", grid).forEach((c) => { c.classList.remove("on"); c.setAttribute("aria-pressed", "false"); });
+    atualizarContadorTipos();
+    mudouFiltro();
+  });
+}
+
+function atualizarContadorTipos() {
+  const count = $("[data-type-count]");
+  const n = filtros.tipos.length;
+  count.hidden = n === 0;
+  count.textContent = n ? `${n} ativo${n > 1 ? "s" : ""}` : "";
+}
+
+function limparFiltros() {
+  Object.assign(filtros, {
+    q: "", tipo: "", intencao: "", moeda: "", jogo: "", categoria: "", negociacao: "",
+    min: "", max: "", ivMin: "", ivMax: "", qualityMin: "", qualityMax: "",
+    nivelMin: "", nivelMax: "", poderMin: "", poderMax: "", tipos: [], page: 1
+  });
+  $("[data-f-q]").value = "";
+  ["min", "max", "iv-min", "iv-max", "nivel-min", "nivel-max",
+   "poder-min", "poder-max", "quality-min", "quality-max"].forEach((k) => {
+    const el = $(`[data-f-${k}]`); if (el) el.value = "";
+  });
+  $$("[data-seg]").forEach((grupo) => {
+    $$("button", grupo).forEach((b) => b.classList.toggle("on", b.dataset.value === ""));
+  });
+  $$("[data-qual]").forEach((c) => c.classList.remove("on"));
+  $$("[data-type]").forEach((c) => { c.classList.remove("on"); c.setAttribute("aria-pressed", "false"); });
+  atualizarContadorTipos();
+  sincronizarEscalaQualidade();
+  travarFaixaDePreco();
+  renderGrid();
 }
 
 /* Atalhos por link: /bazaar/?categoria=Itens */
@@ -1082,7 +1203,6 @@ function montarFormulario() {
   montarFiltros();
   travarFaixaDePreco();
   $("[data-f-q]").value = filtros.q;
-  $("[data-f-categoria]").value = filtros.categoria;
   renderEstatisticas();
   renderGrid();
 })();
