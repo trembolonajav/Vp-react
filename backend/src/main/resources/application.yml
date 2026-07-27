@@ -31,6 +31,14 @@ server:
 app:
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  jwt:
+    # Em produção SEMPRE via ambiente. O default é apenas para dev local.
+    secret: ${JWT_SECRET:dev-jwt-secret-troque-em-producao-min-32-bytes-ok}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:720}
+  admin:
+    # Semente do administrador do painel (dev). Em produção use variáveis reais.
+    username: ${ADMIN_USER:vpadmin}
+    password: ${ADMIN_PASS:vpadmin123}
 
 management:
   endpoints:

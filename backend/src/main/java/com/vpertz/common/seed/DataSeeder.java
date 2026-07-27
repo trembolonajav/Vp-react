@@ -8,6 +8,7 @@ import com.vpertz.config.SiteConfig;
 import com.vpertz.config.SiteConfigRepository;
 import com.vpertz.content.Banner;
 import com.vpertz.content.BannerRepository;
+import com.vpertz.common.security.PasswordService;
 import com.vpertz.content.Contact;
 import com.vpertz.content.ContactRepository;
 import com.vpertz.listings.Listing;
@@ -16,14 +17,19 @@ import com.vpertz.taxonomy.Category;
 import com.vpertz.taxonomy.CategoryRepository;
 import com.vpertz.taxonomy.GameServer;
 import com.vpertz.taxonomy.GameServerRepository;
+import com.vpertz.users.Role;
+import com.vpertz.users.User;
+import com.vpertz.users.UserRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ClassPathResource;
@@ -49,6 +55,10 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final GameServerRepository serverRepository;
     private final ListingRepository listingRepository;
+    private final UserRepository userRepository;
+    private final PasswordService passwordService;
+    private final String adminUsername;
+    private final String adminPassword;
 
     private static final Pattern ISO_DATE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
@@ -59,7 +69,11 @@ public class DataSeeder implements CommandLineRunner {
                      ContactRepository contactRepository,
                      CategoryRepository categoryRepository,
                      GameServerRepository serverRepository,
-                     ListingRepository listingRepository) {
+                     ListingRepository listingRepository,
+                     UserRepository userRepository,
+                     PasswordService passwordService,
+                     @Value("${app.admin.username}") String adminUsername,
+                     @Value("${app.admin.password}") String adminPassword) {
         this.objectMapper = objectMapper;
         this.siteConfigRepository = siteConfigRepository;
         this.gameRepository = gameRepository;
@@ -68,6 +82,10 @@ public class DataSeeder implements CommandLineRunner {
         this.categoryRepository = categoryRepository;
         this.serverRepository = serverRepository;
         this.listingRepository = listingRepository;
+        this.userRepository = userRepository;
+        this.passwordService = passwordService;
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
     }
 
     @Override
@@ -97,10 +115,53 @@ public class DataSeeder implements CommandLineRunner {
         seedServers(bazaar.path("servidores"));
         seedCategories(bazaar.path("categorias"));
         seedListings(bazaar.path("anuncios"));
+        seedUsers();
 
-        log.info("Seed concluído: {} jogo(s), {} banner(s), {} contato(s), {} servidor(es), {} categoria(s), {} anúncio(s).",
+        log.info("Seed concluído: {} jogo(s), {} banner(s), {} contato(s), {} servidor(es), {} categoria(s), {} anúncio(s), {} usuário(s).",
                 gameRepository.count(), bannerRepository.count(), contactRepository.count(),
-                serverRepository.count(), categoryRepository.count(), listingRepository.count());
+                serverRepository.count(), categoryRepository.count(), listingRepository.count(), userRepository.count());
+    }
+
+    /** Contas do bazaar (hash scrypt legado) + admin do painel (bcrypt). */
+    private void seedUsers() throws Exception {
+        ClassPathResource resource = new ClassPathResource("seed/bazaar-accounts.json");
+        if (resource.exists()) {
+            JsonNode db;
+            try (InputStream in = resource.getInputStream()) {
+                db = objectMapper.readTree(in);
+            }
+            for (JsonNode u : db.path("users")) {
+                String username = text(u, "username", "");
+                String email = text(u, "email", "");
+                if (username.isEmpty() || userRepository.existsByUsernameIgnoreCase(username)
+                        || userRepository.existsByEmailIgnoreCase(email)) {
+                    continue;
+                }
+                User user = new User();
+                user.setId(text(u, "id", UUID.randomUUID().toString()));
+                user.setUsername(username);
+                user.setEmail(email);
+                user.setPasswordHash(text(u, "passwordHash", ""));
+                user.setPasswordSalt(text(u, "salt", null));
+                user.setPasswordAlgo(PasswordService.ALGO_SCRYPT);
+                user.setRole(Role.USER);
+                user.setAvatar(emptyToNull(text(u, "avatar", null)));
+                userRepository.save(user);
+            }
+        }
+
+        // Admin do painel: só cria se o username ainda não existir.
+        if (adminUsername != null && !adminUsername.isBlank()
+                && !userRepository.existsByUsernameIgnoreCase(adminUsername)) {
+            User admin = new User();
+            admin.setId(UUID.randomUUID().toString());
+            admin.setUsername(adminUsername);
+            admin.setEmail(adminUsername.toLowerCase() + "@painel.vpertz.local");
+            admin.setPasswordHash(passwordService.encode(adminPassword));
+            admin.setPasswordAlgo(PasswordService.ALGO_BCRYPT);
+            admin.setRole(Role.ADMIN);
+            userRepository.save(admin);
+        }
     }
 
     private void seedSiteConfig(JsonNode root) {

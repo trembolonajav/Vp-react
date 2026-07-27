@@ -1,0 +1,75 @@
+{
+  "users": [
+    {
+      "id": "user-moonlight",
+      "username": "moonlight",
+      "email": "demo@vpertsz.com.br",
+      "salt": "e336c68990972fdde31fcbd94468b686",
+      "passwordHash": "49bf9a6eebaae46db48af23c2618ab0e7daf88994c00526ade622027fe856f882f35a5e11691f84fc0aa3b24f0bc7ce29bf96ea17a5c65669d5c258d28a0fb60",
+      "createdAt": "2026-07-27T05:08:31.539Z"
+    },
+    {
+      "id": "fde5bf4e-6c97-4506-99a1-7fb5cfce65fd",
+      "username": "comprador74442",
+      "email": "comprador74442@teste.local",
+      "salt": "6d8e0f6e0ef516f891ec92ec01c9cd70",
+      "passwordHash": "94797783572b8bfbfd0994690690133a067d4789e2fc8bfe14a708702c62e67f5e48a48d5bfc8abba2a72706ce28df9dc1339bd3d6355055058d0c15c82405c1",
+      "createdAt": "2026-07-27T05:09:01.568Z"
+    },
+    {
+      "id": "a2473086-c827-48d4-8b0a-c7e43c1e33a8",
+      "username": "admin",
+      "email": "teste@hotmail.com",
+      "salt": "20dbc24077d386720bded57e5426f2c0",
+      "passwordHash": "a96b82c0f4d9830e0b0d306d8b8346afa9855bf10b63027078e19ee6772f4647c9e25d79bb9c05b9ff9c70745725aeb8a2e88b16c7c2b56bfc88ff9e7ce67636",
+      "createdAt": "2026-07-27T15:11:46.081Z"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "0fe9e6f5-2fa7-4886-8149-c5a00251a850",
+      "adId": "an-1",
+      "title": "Gardevoir Shiny",
+      "buyer": "comprador74442",
+      "seller": "moonlight",
+      "participants": [
+        "fde5bf4e-6c97-4506-99a1-7fb5cfce65fd",
+        "user-moonlight"
+      ],
+      "createdAt": "2026-07-27T05:09:01.578Z"
+    },
+    {
+      "id": "8222c6d1-fd6f-4d09-a7e5-e66fe6c26db7",
+      "adId": "an-1",
+      "title": "Gardevoir Shiny",
+      "buyer": "admin",
+      "seller": "moonlight",
+      "participants": [
+        "a2473086-c827-48d4-8b0a-c7e43c1e33a8",
+        "user-moonlight"
+      ],
+      "createdAt": "2026-07-27T15:11:46.147Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "6f2d42d6-d711-4fdc-8df2-3cf0b748f2a4",
+      "conversationId": "0fe9e6f5-2fa7-4886-8149-c5a00251a850",
+      "authorId": "fde5bf4e-6c97-4506-99a1-7fb5cfce65fd",
+      "author": "comprador74442",
+      "text": "Ol�, tenho interesse.",
+      "createdAt": "2026-07-27T05:09:01.587Z"
+    },
+    {
+      "id": "76adfd9c-8916-454c-946d-912e51fef76a",
+      "conversationId": "8222c6d1-fd6f-4d09-a7e5-e66fe6c26db7",
+      "authorId": "a2473086-c827-48d4-8b0a-c7e43c1e33a8",
+      "author": "admin",
+      "text": "teste",
+      "createdAt": "2026-07-27T18:50:42.912Z",
+      "readBy": [
+        "a2473086-c827-48d4-8b0a-c7e43c1e33a8"
+      ]
+    }
+  ]
+}
