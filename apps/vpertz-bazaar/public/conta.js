@@ -97,7 +97,7 @@
              <span class="bz-conta-nick" title="Conta local">${esc(c.nick)}</span>
              <button type="button" class="bz-conta-sair" data-conta-sair>Sair</button>
            </span>`
-        : `<button type="button" class="bz-conta-entrar" data-conta-entrar>Entrar</button>`;
+        : `<button type="button" class="bz-conta-entrar" data-conta-entrar>Login / Registrar</button>`;
     });
   }
 

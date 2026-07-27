@@ -34,16 +34,14 @@
       <span class="logo-wordmark" aria-hidden="true">VPERTSZ</span>
     </a>
     <div class="nav-links">
-      <a class="nav-link active" href="/">Início</a>
-      <a class="nav-link" href="#ferramentas">Projetos</a>
-      <a class="nav-link" href="/comunidade.html">Comunidade</a>
+      <a class="nav-link" href="/vplab/">Ferramentas</a>
       <a class="nav-link" href="/store/">VP Store</a>
       <a class="nav-link" href="/bazaar/">VP Bazaar</a>
+      <a class="nav-link" href="/comunidade.html">Comunidade</a>
     </div>
     <div class="header-actions">
-      <a class="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0 1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
-        <span>Assistir live</span>
+      <a class="header-live-asset" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" aria-label="Assistir à live do VPertsz na Twitch">
+        <img src="/assets/btn-assistir-live.webp" alt="Assistir live">
       </a>
     </div>
   </nav>
@@ -55,17 +53,15 @@
     <!-- Apresentação + destaques -->
     <section class="hub-intro" aria-labelledby="hub-title">
       <div class="hub-intro-copy">
-        <span class="kicker">Hub oficial do VPertsz</span>
-        <h1 id="hub-title">Tudo da comunidade VP em um só lugar.</h1>
+        <h1 id="hub-title">O ponto de encontro da comunidade Vpertsz.</h1>
         <p>Live, ferramentas para PokeIdle, marketplace, loja e os canais oficiais da comunidade.</p>
         <div class="hub-intro-actions">
           <a class="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0 1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
             <span>Assistir à live</span>
           </a>
-          <a class="hub-community-btn" href="/comunidade.html">Entrar na comunidade</a>
+          <a class="hub-community-btn" href="/comunidade.html">Grupos e canais</a>
         </div>
-        <small><i></i> Ao vivo todos os dias, das 18h às 22h</small>
       </div>
       <div class="hub-feature">
         <span class="hub-feature-label">Destaques da live</span>
@@ -78,36 +74,22 @@
       </div>
     </section>
 
-    <!-- Ferramentas -->
-    <section class="section" id="ferramentas">
-      <div class="section-head center">
-        <div>
-          <span class="kicker">Acessos rápidos</span>
-          <h2>Projetos principais</h2>
-          <p class="section-sub">Escolha um projeto para acessar. Cada área tem uma função própria.</p>
-          <div class="ornament" aria-hidden="true"></div>
-        </div>
-      </div>
-      <div class="tools-grid" data-tools-grid></div>
-      <div class="tool-links">
-        <a class="tool-link" href="/vplab/?tab=fipe">PokeFipe — tabela de preços</a>
-        <a class="tool-link" href="/store/intermedio.html">Intermédio seguro da VP</a>
-      </div>
-    </section>
-
-    <!-- Chamada compacta da comunidade -->
-    <section class="section community-callout" id="comunidade">
-      <div>
-        <span class="kicker">Comunidade VP</span>
-        <h2>Jogue, converse e acompanhe as novidades.</h2>
-        <p>Grupos, Discord, eventos, sorteios e os canais oficiais do VPertsz.</p>
-      </div>
-      <div class="community-actions">
-        <a class="community-mini whatsapp" href="https://chat.whatsapp.com/D4Rc9rKPt1uLSu3vC9Ui4N" target="_blank" rel="noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#whatsapp-mark"/></svg> WhatsApp
+    <!-- Serviços -->
+    <section class="services-strip" id="servicos">
+      <p class="services-title">O que você procura?</p>
+      <div class="services-grid">
+        <a class="asset-service-card" href="/store/" aria-label="Acessar VP Store">
+          <img src="/assets/tool-store.webp" alt="VP Store">
+          <span>Compra e venda com atendimento direto.</span>
         </a>
-        <a class="community-mini discord" href="https://discord.gg/9M3HCdytt" target="_blank" rel="noreferrer">Discord</a>
-        <a class="community-all" href="/comunidade.html">Ver comunidade →</a>
+        <a class="asset-service-card" href="/bazaar/" aria-label="Acessar VP Bazaar">
+          <img src="/assets/tool-bazaar.webp" alt="VP Bazaar">
+          <span>Veja anúncios e negocie com outros jogadores.</span>
+        </a>
+        <a class="asset-service-card" href="/vplab/" aria-label="Acessar VPLab">
+          <img src="/assets/tool-vplab.webp" alt="VPLab">
+          <span>Pokédex, IV, PokeFipe, hunts e outras utilidades.</span>
+        </a>
       </div>
     </section>
 
@@ -142,22 +124,20 @@
       <div>
         <div class="footer-title">Navegação</div>
         <div class="footer-links">
-          <a href="#ferramentas">Ferramentas</a>
-          <a href="#comunidade">Comunidade</a>
+          <a href="/vplab/">Ferramentas</a>
+          <a href="/comunidade.html">Comunidade</a>
           <a href="/store/">VP Store</a>
           <a href="/bazaar/">VP Bazaar</a>
           <a href="/vplab/">VPLab</a>
         </div>
       </div>
-      <div>
+      <div class="footer-social-column">
         <div class="footer-title">Acompanhe o VPertsz</div>
         <div class="socials" data-socials></div>
-        <p class="footer-note">Confirme sempre os contatos oficiais antes de qualquer pagamento.</p>
       </div>
     </div>
     <div class="footer-bottom">
       <span>© 2026 VPertsz — todos os direitos reservados.</span>
-      <span>Comunidade independente do PokeIdle World. Valores sujeitos a confirmação no atendimento.</span>
     </div>
   </div>
 </footer>

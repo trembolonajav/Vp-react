@@ -179,7 +179,7 @@ window.VPLAB_CLAN_CONTENT = {
 
 /* ---------------------------------------------- estado */
 let cur = null;
-let activeTab = "pokedex";
+let activeTab = "avaliar";
 let rotaRegion = "kanto", rotaManual = false, routePokemonSelected = false;
 let pokedexSelected = null;
 
@@ -833,7 +833,7 @@ function selectTab(name){
 }
 
 $$(".main-tab").forEach((b) => b.addEventListener("click", () => selectTab(b.dataset.tab)));
-$("#home-link").addEventListener("click", (e) => { e.preventDefault(); selectTab("pokedex"); });
+$("#home-link").addEventListener("click", (e) => { e.preventDefault(); selectTab("avaliar"); });
 function speciesFromSearch(value, pool = DEX){
   const term = cleanOcr(value).replace(/^#/, "").trim();
   if (!term) return null;

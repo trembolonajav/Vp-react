@@ -151,6 +151,8 @@ body>header .container{width:min(1560px,calc(100% - 44px))}
 }
 .btn-icon-label svg{width:15px;height:15px;fill:currentColor;flex:none}
 .btn-icon-label:hover{transform:translateY(-2px)}
+.btn-home{color:var(--gold-soft);background:rgba(229,179,79,.07);border-color:rgba(229,179,79,.3)}
+.btn-home:hover{color:#fff4d4;background:rgba(229,179,79,.14);box-shadow:0 8px 22px rgba(229,179,79,.12)}
 .btn-twitch{color:#cbb3ff;background:rgba(145,70,255,.1);border-color:rgba(145,70,255,.38)}
 .btn-twitch:hover{background:rgba(145,70,255,.2)}
 .btn-store{

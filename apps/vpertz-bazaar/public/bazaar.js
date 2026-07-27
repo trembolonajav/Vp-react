@@ -32,7 +32,7 @@ const TYPE_COLOR = {
 const spriteUrl = (dex) =>
   `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dex}.png`;
 
-const DIAMANTE = "/assets/diamante-pokeidle.webp";
+const DIAMANTE = "/assets/diamante-pokeidle-oficial.png";
 
 /* Favoritos são locais: nesta fase não há contas de usuário. */
 const FAV_KEY = "vp-bazaar-favoritos";
@@ -64,12 +64,27 @@ let todos = [];      // inclui os já vendidos, para abrir por link direto
 /* Garante todos os campos do card/ficha mesmo em configs salvas antes desta
    fase (o /api/config público devolve o JSON como está, sem sanitizar). */
 function normalizarAnuncio(a) {
+  if (!a.tipo && a.categoria === "Shiny Card") a.tipo = "shinycard";
+  if (!a.tipo && (a.categoria === "Item" || a.categoria === "Itens")) a.tipo = "item";
+  if (!a.tipo && (a.dex || a.categoria === "Pokémon")) a.tipo = "pokemon";
+  if (a.tipo === "shinycard") {
+    if (!/^shiny\s.+\scard$/i.test(a.titulo || "")) a.titulo = `Shiny ${a.titulo} Card`;
+    a.dex = 0;
+    a.tipos = [];
+    a.shiny = false;
+  }
+  if (a.tipo === "item") {
+    a.dex = 0;
+    a.tipos = [];
+    a.shiny = false;
+  }
   a.tipos = Array.isArray(a.tipos) ? a.tipos : [];
   a.ivs = Array.isArray(a.ivs) && a.ivs.length === 6 ? a.ivs : [];
   a.moves = Array.isArray(a.moves) ? a.moves : [];
   a.dex ??= 0; a.nivel ??= 0; a.quantidade ??= 0;
   a.shiny ??= false; a.aceitaTroca ??= false;
   a.natureza ??= ""; a.habilidade ??= ""; a.genero ??= ""; a.forma ??= ""; a.regras ??= "";
+  a.qualidade ??= ""; a.disponibilidade ??= "";
   a.vendedorVerificado ??= false; a.vendedorOnline ??= false;
   a.vendedorNota ??= 0; a.vendedorVendas ??= 0; a.vendedorResposta ??= ""; a.vendedorAvatar ??= "";
   return a;
@@ -476,13 +491,14 @@ function vendedorHTML(a) {
 
 /* Grade de especificações do Pokémon (esquerda) + IVs (direita). */
 function fichaPokemonHTML(a) {
+  if (a.tipo && a.tipo !== "pokemon") return "";
   /* coluna esquerda: atributos + IV Total (ícone real do campo) */
   const linhas = [
     ["genero", "Gênero", GENERO_LABEL[a.genero] || ""],
     ["habilidade", "Habilidade", a.habilidade],
     ["forma", "Forma", a.forma],
     ["servidor", "Servidor", a.servidor],
-    ["disponivel-troca", "Disponível para", a.intencao === "compra" ? "Compra" : (a.aceitaTroca ? "Venda e Troca" : "Venda")]
+    ["disponivel-troca", "Disponível para", a.disponibilidade || (a.intencao === "compra" ? "Compra" : (a.aceitaTroca ? "Venda e Troca" : "Venda"))]
   ].filter(([, , v]) => v);
 
   /* coluna direita: os seis IVs, cada um com seu ícone */
@@ -538,7 +554,8 @@ function renderDetalhe() {
   document.title = `${a.titulo} — VP Bazaar`;
   const vendido = a.status === "vendido";
   const preco = precoTexto(a);
-  const raridade = a.shiny ? "Shiny" : "Padrão";
+  const ehPokemon = !a.tipo || a.tipo === "pokemon";
+  const raridade = a.qualidade || (a.shiny ? "Shiny" : "Padrão");
 
   const arte = a.dex
     ? `<img src="${spriteUrl(a.dex)}" alt="${esc(a.titulo)}" class="bz-hero-sprite" data-fallback>`
@@ -554,10 +571,10 @@ function renderDetalhe() {
 
   /* faixa de especificações com ícones reais (Nível / Nature / Raridade) */
   const stripItems = [
-    ["nivel", "Nível", a.nivel ? String(a.nivel) : ""],
-    ["natureza", "Nature", a.natureza],
+    ["nivel", "Nível", ehPokemon && a.nivel ? String(a.nivel) : ""],
+    ["natureza", "Nature", ehPokemon ? a.natureza : ""],
     ["servidor", "Servidor", a.servidor],
-    ["raridade-shiny", "Qualidade", raridade]
+    ["raridade-shiny", "Qualidade", ehPokemon ? raridade : ""]
   ].filter(([, , v]) => v);
 
   /* similares: mesma categoria ou tipo primeiro; completa com o resto até 12 */
@@ -584,7 +601,7 @@ function renderDetalhe() {
         </div>
         <button class="bz-art-share" type="button" data-compartilhar aria-label="Compartilhar anúncio">↗</button>
         ${arte}
-        <span class="bz-art-quality">${esc(raridade)}${a.nivel ? ` <b>Nv. ${a.nivel}</b>` : ""}</span>
+        ${ehPokemon ? `<span class="bz-art-quality">${esc(raridade)}${a.nivel ? ` <b>Nv. ${a.nivel}</b>` : ""}</span>` : ""}
         </div>
         <div class="bz-thumbnails" aria-label="Galeria do anúncio">
           <button type="button" aria-label="Imagem anterior">‹</button>

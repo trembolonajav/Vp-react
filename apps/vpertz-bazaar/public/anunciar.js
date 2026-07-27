@@ -32,9 +32,7 @@
     .filter((p) => p.dexNo)
     .map((p) => ({ dex: p.dexNo, nome: p.nome, tipos: Array.isArray(p.tipos) ? p.tipos : [] }))
     .sort((a, b) => a.dex - b.dex);
-  const pokePorNome = new Map(POKES.map((p) => [p.nome.toLowerCase(), p]));
-
-  const IV_LABELS = ["HP", "Atq", "Def", "Atq.Esp", "Def.Esp", "Vel"];
+  const IV_LABELS = ["HP IV", "Ataque IV", "Defesa IV", "Atq. Esp. IV", "Def. Esp. IV", "Velocidade IV"];
 
   const MEUS_KEY = "vp-bazaar-meus";
   const lerMeus = () => { try { return JSON.parse(localStorage.getItem(MEUS_KEY)) || []; } catch { return []; } };
@@ -45,14 +43,16 @@
   let cfg = null, bz = null;
   const st = {
     tipo: null, intencao: null,
-    dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, quantidade: "",
+    dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, forma: "",
+    disponibilidade: "", qualidade: "", quantidade: "",
     ivs: ["", "", "", "", "", ""], img: "",
     moeda: null, preco: "", servidor: "", negociavel: false, descricao: ""
   };
   let buscaSel = "";
 
   const resetSelecao = () => Object.assign(st, {
-    dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, quantidade: "",
+    dex: 0, titulo: "", tipos: [], nivel: "", shiny: false, forma: "",
+    disponibilidade: "", qualidade: "", quantidade: "",
     ivs: ["", "", "", "", "", ""], img: ""
   });
 
@@ -106,7 +106,7 @@
       sub: "Por enquanto, apenas o PokeIdle World.",
       body: `<div class="bz-choice-grid one" data-choices>
         <button type="button" class="bz-choice on" data-choice="pokeidle">
-          <img class="bz-choice-art" src="/assets/diamante-pokeidle.webp" alt="">
+          <img class="bz-choice-art bz-game-logo" src="/assets/logo-pokeidle-world.png" alt="PokeIdle World">
           <b>PokeIdle World</b>
           <small>Servidores da comunidade</small>
         </button>
@@ -162,30 +162,62 @@
   function cardResultsHTML() {
     const termo = buscaSel.trim().toLowerCase();
     let lista = CARDS;
-    if (termo) lista = CARDS.filter((c) => c.nome.toLowerCase().includes(termo));
+    if (termo) lista = CARDS.filter((c) => (`shiny ${c.nome} card`).toLowerCase().includes(termo));
     if (!lista.length) return `<p class="bz-sel-vazio">Nenhuma card encontrada.</p>`;
     return lista.map((c) => `
-      <button type="button" class="bz-cardpick${st.titulo === c.nome && st.img === c.src ? " on" : ""}"
-              data-card="${esc(c.nome)}" data-src="${esc(c.src)}" title="${esc(c.nome)}">
+      <button type="button" class="bz-cardpick${st.titulo === `Shiny ${c.nome} Card` && st.img === c.src ? " on" : ""}"
+              data-card="${esc(`Shiny ${c.nome} Card`)}" data-src="${esc(c.src)}" title="${esc(`Shiny ${c.nome} Card`)}">
         <img src="${esc(c.src)}" alt="" loading="lazy" data-fallback data-selo="${esc(c.nome.slice(0, 2).toUpperCase())}">
-        <span>${esc(c.nome)}</span>
+        <span>${esc(`Shiny ${c.nome} Card`)}</span>
       </button>`).join("");
   }
 
   function extrasHTML() {
     if (st.tipo === "pokemon") {
       const show = st.dex ? "" : "hidden";
+      const ivTotal = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31)
+        ? st.ivs.reduce((s, v) => s + Number(v), 0) : null;
       return `<div class="bz-sel-extras" ${show} data-extras>
-        <label class="bz-field">
-          <span>Nível <i>(opcional)</i></span>
-          <input class="bz-input" type="number" min="1" max="1000" data-nivel value="${esc(st.nivel)}" placeholder="Ex.: 100">
-        </label>
-        <label class="bz-check"><input type="checkbox" data-shiny ${st.shiny ? "checked" : ""}> Shiny</label>
+        <div class="bz-form-2">
+          <label class="bz-field">
+            <span>Nível <b>*</b></span>
+            <input class="bz-input" required type="number" min="1" max="1000" data-nivel value="${esc(st.nivel)}" placeholder="Ex.: 100">
+          </label>
+          <label class="bz-field">
+            <span>Forma <b>*</b></span>
+            <select class="bz-input" required data-forma>
+              <option value="">Selecione</option>
+              <option value="Normal" ${st.forma === "Normal" ? "selected" : ""}>Normal</option>
+              <option value="Shiny" ${st.forma === "Shiny" ? "selected" : ""}>Shiny</option>
+            </select>
+          </label>
+          <label class="bz-field">
+            <span>Disponível para <b>*</b></span>
+            <select class="bz-input" required data-disponibilidade>
+              <option value="">Selecione</option>
+              <option value="Venda" ${st.disponibilidade === "Venda" ? "selected" : ""}>Venda</option>
+              <option value="Troca" ${st.disponibilidade === "Troca" ? "selected" : ""}>Troca</option>
+              <option value="Venda e Troca" ${st.disponibilidade === "Venda e Troca" ? "selected" : ""}>Venda e Troca</option>
+            </select>
+          </label>
+          <label class="bz-field">
+            <span>Qualidade <b>*</b></span>
+            <select class="bz-input" required data-qualidade>
+              <option value="">Selecione</option>
+              ${["Comum","Incomum","Rara","Épica","Lendária"].map((v) => `<option value="${v}" ${st.qualidade === v ? "selected" : ""}>${v}</option>`).join("")}
+            </select>
+          </label>
+        </div>
         <div class="bz-ivs-wrap">
-          <span class="bz-ivs-title">IVs <i>(opcional, 0–31)</i></span>
+          <div class="bz-ivs-head">
+            <span class="bz-ivs-title">Atributos obrigatórios <b>*</b> <i>(0–31)</i></span>
+            <output class="bz-iv-total ${ivTotal === null ? "" : "ok"}" data-iv-total>
+              ${ivTotal === null ? "IV total: preencha os 6 atributos" : `IV total: ${ivTotal}/186 ✓`}
+            </output>
+          </div>
           <div class="bz-ivs">
             ${IV_LABELS.map((l, i) => `<label class="bz-iv"><span>${l}</span>
-              <input type="number" min="0" max="31" data-iv="${i}" value="${esc(st.ivs[i])}" placeholder="—"></label>`).join("")}
+              <input required type="number" min="0" max="31" data-iv="${i}" value="${esc(st.ivs[i])}" placeholder="0–31"></label>`).join("")}
           </div>
         </div>
       </div>`;
@@ -206,7 +238,7 @@
       : modo === "item" ? "Buscar item…" : "Buscar shiny card…";
     const gridClass = modo === "item" ? "bz-item-list" : modo === "shinycard" ? "bz-card-grid" : "bz-poke-grid";
     const resultados = modo === "pokemon" ? pokeResultsHTML() : modo === "item" ? itemResultsHTML() : cardResultsHTML();
-    const selecionado = modo === "item" || modo === "shinycard" ? Boolean(st.titulo) : Boolean(st.dex);
+    const selecionado = modo === "item" || modo === "shinycard" ? Boolean(st.titulo) : pokemonCompleto();
 
     return {
       titulo: modo === "pokemon" ? "Qual pokémon?" : modo === "item" ? "Qual item?" : "Qual shiny card?",
@@ -244,8 +276,7 @@
           } else {
             const b = e.target.closest("[data-card]"); if (!b) return;
             st.titulo = b.dataset.card; st.img = b.dataset.src; st.dex = 0;
-            const p = pokePorNome.get(b.dataset.card.toLowerCase());
-            st.tipos = p ? p.tipos : []; st.shiny = true;
+            st.tipos = []; st.shiny = false;
           }
           render();
         });
@@ -256,12 +287,44 @@
   }
 
   function wireExtras() {
-    const nivel = q("[data-nivel]"); if (nivel) nivel.addEventListener("input", () => { st.nivel = nivel.value; });
-    const shiny = q("[data-shiny]"); if (shiny) shiny.addEventListener("change", () => { st.shiny = shiny.checked; });
+    const atualizarPokemon = () => atualizarFooter(pokemonCompleto());
+    const nivel = q("[data-nivel]"); if (nivel) nivel.addEventListener("input", () => { st.nivel = nivel.value; atualizarPokemon(); });
+    const forma = q("[data-forma]"); if (forma) forma.addEventListener("change", () => {
+      st.forma = forma.value;
+      st.shiny = forma.value === "Shiny";
+      atualizarPokemon();
+    });
+    const disponibilidade = q("[data-disponibilidade]"); if (disponibilidade) disponibilidade.addEventListener("change", () => {
+      st.disponibilidade = disponibilidade.value;
+      atualizarPokemon();
+    });
+    const qualidade = q("[data-qualidade]"); if (qualidade) qualidade.addEventListener("change", () => {
+      st.qualidade = qualidade.value;
+      atualizarPokemon();
+    });
     const qtd = q("[data-qtd]"); if (qtd) qtd.addEventListener("input", () => { st.quantidade = qtd.value; });
     wizardEl.querySelectorAll("[data-iv]").forEach((inp) => {
-      inp.addEventListener("input", () => { st.ivs[Number(inp.dataset.iv)] = inp.value; });
+      inp.addEventListener("input", () => {
+        st.ivs[Number(inp.dataset.iv)] = inp.value;
+        const total = q("[data-iv-total]");
+        const validos = st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31);
+        if (total) {
+          total.textContent = validos
+            ? `IV total: ${st.ivs.reduce((s, v) => s + Number(v), 0)}/186 ✓`
+            : "IV total: preencha os 6 atributos";
+          total.classList.toggle("ok", validos);
+        }
+        atualizarPokemon();
+      });
     });
+  }
+
+  function pokemonCompleto() {
+    return st.tipo !== "pokemon" || (
+      st.dex > 0 && Number(st.nivel) >= 1 && Number(st.nivel) <= 1000 &&
+      Boolean(st.forma) && Boolean(st.disponibilidade) && Boolean(st.qualidade) &&
+      st.ivs.every((v) => v !== "" && Number(v) >= 0 && Number(v) <= 31)
+    );
   }
 
   /* ------- passo 5: moeda e valor ------- */
@@ -274,10 +337,10 @@
       body: `
         <div class="bz-moeda" data-moeda>
           <button type="button" class="bz-choice mini${st.moeda === "brl" ? " on" : ""}" data-moeda-op="brl">
-            <span class="bz-choice-ic">${svg("pix")}</span><b>PIX</b><small>Reais (R$)</small>
+            <span class="bz-choice-ic bz-pix-icon" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>PIX</b><small>Reais (R$)</small>
           </button>
           <button type="button" class="bz-choice mini${st.moeda === "diamonds" ? " on" : ""}" data-moeda-op="diamonds">
-            <span class="bz-choice-ic"><img src="/assets/diamante-pokeidle.webp" alt="" style="width:26px"></span>
+            <span class="bz-choice-ic"><img src="/assets/diamante-pokeidle-oficial.png" alt="" class="bz-diamond-icon"></span>
             <b>Diamante</b><small>Diamonds do jogo</small>
           </button>
         </div>
@@ -402,9 +465,12 @@
       setStep(!st.tipo ? 1 : !st.intencao ? 3 : !selecionado ? 4 : 5);
       return;
     }
-    const ivsPreenchidos = st.tipo === "pokemon" && st.ivs.some((v) => v !== "");
-    const ivs = ivsPreenchidos
-      ? st.ivs.map((v) => Math.max(0, Math.min(31, Number(v) || 0)))
+    if (st.tipo === "pokemon" && !pokemonCompleto()) {
+      setStep(4);
+      return;
+    }
+    const ivs = st.tipo === "pokemon"
+      ? st.ivs.map((v) => Math.max(0, Math.min(31, Number(v))))
       : [];
     const categoria = st.tipo === "pokemon" ? "Pokémon" : st.tipo === "shinycard" ? "Shiny Card" : "Itens";
 
@@ -420,8 +486,11 @@
       dex: st.tipo === "pokemon" ? st.dex : 0,
       img: st.tipo === "pokemon" ? "" : st.img,
       nivel: st.tipo === "pokemon" && st.nivel ? Number(st.nivel) : 0,
-      shiny: st.tipo === "item" ? false : !!st.shiny,
-      tipos: st.tipos || [],
+      shiny: st.tipo === "pokemon" && st.forma === "Shiny",
+      forma: st.tipo === "pokemon" ? st.forma : "",
+      disponibilidade: st.tipo === "pokemon" ? st.disponibilidade : "",
+      qualidade: st.tipo === "pokemon" ? st.qualidade : "",
+      tipos: st.tipo === "pokemon" ? (st.tipos || []) : [],
       ivs,
       quantidade: st.tipo !== "pokemon" && st.quantidade ? Number(st.quantidade) : 0,
       moeda: st.moeda,

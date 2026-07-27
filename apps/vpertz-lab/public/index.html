@@ -28,11 +28,11 @@
       <span class="word"><strong>VPLab</strong><span>PokeIdle World</span></span>
     </a>
     <div class="main-tabs" role="tablist">
-      <button class="main-tab" role="tab" data-tab="pokedex" aria-selected="true">
+      <button class="main-tab" role="tab" data-tab="pokedex" aria-selected="false">
         <img class="tab-game-icon" src="assets/header/pokedex.png" alt="" width="32" height="32" aria-hidden="true">
         Pokédex
       </button>
-      <button class="main-tab" role="tab" data-tab="avaliar" aria-selected="false">
+      <button class="main-tab" role="tab" data-tab="avaliar" aria-selected="true">
         <img class="tab-game-icon" src="assets/header/evaluate-iv.webp" alt="" width="929" height="934" aria-hidden="true">
         Avaliar IV
       </button>
@@ -58,6 +58,10 @@
       </button>
     </div>
     <div class="header-actions">
+      <a class="btn-icon-label btn-home" href="/" aria-label="Voltar ao hub da comunidade VPertsz">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 11h2.7v9h5v-5.5h3.6V20h5v-9h2.7L12 3Zm4.8 15h-1v-5.5H8.2V18h-1v-8L12 6l4.8 4v8Z"/></svg>
+        <span>Início</span>
+      </a>
       <a class="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0 1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
         <span>Live</span>
@@ -75,7 +79,7 @@
     <!-- contexto do perfil; cada ferramenta mantém seus próprios controles -->
 
     <!-- ============ POKÉDEX ============ -->
-    <section class="panel card active" id="tab-pokedex">
+    <section class="panel card" id="tab-pokedex">
       <span class="kicker">Catálogo do VPLab</span>
       <h2 class="sec">Pokédex</h2>
       <p class="sec-sub">Todas as 251 espécies da nossa base, com stats, golpes, evolução, hunt, preços e drops.</p>
@@ -88,7 +92,7 @@
     </section>
 
     <!-- ============ AVALIAR IV ============ -->
-    <section class="panel card" id="tab-avaliar">
+    <section class="panel card active" id="tab-avaliar">
       <span class="kicker">Raio-X do seu Pokémon</span>
       <h2 class="sec">Esse Pokémon é bom?</h2>
       <p class="sec-sub">Copie do card do jogo: nível, qualidade, IV Total e os 6 stats. O VPLab estima o growth (IV, 1–32) de cada stat, confere a soma e dá o veredito.</p>
