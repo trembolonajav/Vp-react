@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useConfig } from "../../../hooks/useConfig";
-import { createListing } from "../../../services/listingsService";
+import { createListing, getListing, updateListing } from "../../../services/listingsService";
 import { ApiError } from "../../../services/api";
-import type { ListingWriteRequest } from "../../../types/listing";
+import type { Listing, ListingWriteRequest } from "../../../types/listing";
 import { TIPOS_ORDEM, TYPE_COLOR, TYPE_LABEL } from "../constants";
 
 const IV_NOMES = ["HP", "Ataque", "Defesa", "Atq. Esp.", "Def. Esp.", "Velocidade"];
@@ -47,12 +47,58 @@ const INITIAL: FormState = {
 const numero = (v: string): number | undefined => (v.trim() === "" ? undefined : Number(v));
 const texto = (v: string): string | undefined => (v.trim() === "" ? undefined : v.trim());
 
+/** Anúncio existente -> estado do formulário (para edição). */
+function fromListing(l: Listing): FormState {
+  const s = (n: number) => (n ? String(n) : "");
+  return {
+    titulo: l.titulo,
+    categoria: l.categoria,
+    servidor: l.servidor,
+    intencao: l.intencao || "venda",
+    moeda: l.moeda || "brl",
+    preco: s(l.preco),
+    negociavel: l.negociavel,
+    img: l.img,
+    descricao: l.descricao,
+    dex: s(l.dex),
+    nivel: s(l.nivel),
+    poder: s(l.poder),
+    shiny: l.shiny,
+    quantidade: s(l.quantidade),
+    aceitaTroca: l.aceitaTroca,
+    qualidade: l.qualidade ? String(l.qualidade) : "",
+    natureza: l.natureza,
+    habilidade: l.habilidade,
+    genero: l.genero,
+    forma: l.forma,
+    disponibilidade: l.disponibilidade,
+    tipos: l.tipos,
+    ivs: l.ivs.length === 6 ? l.ivs.map(String) : ["", "", "", "", "", ""],
+    moves: [0, 1, 2, 3].map((i) => l.moves[i] ?? ""),
+  };
+}
+
 export function AnunciarPage() {
   const { config } = useConfig();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const editing = Boolean(id);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    const controller = new AbortController();
+    getListing(id, controller.signal)
+      .then((l) => setForm(fromListing(l)))
+      .catch((err: Error) => {
+        if (err.name !== "AbortError") {
+          setError(err instanceof ApiError ? err.message : "Anúncio não encontrado.");
+        }
+      });
+    return () => controller.abort();
+  }, [id]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -95,10 +141,10 @@ export function AnunciarPage() {
     };
 
     try {
-      const criado = await createListing(body);
-      navigate(`/anuncio/${criado.id}`);
+      const salvo = editing ? await updateListing(id!, body) : await createListing(body);
+      navigate(`/anuncio/${salvo.id}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Não foi possível publicar o anúncio.");
+      setError(err instanceof ApiError ? err.message : "Não foi possível salvar o anúncio.");
     } finally {
       setBusy(false);
     }
@@ -110,7 +156,7 @@ export function AnunciarPage() {
   return (
     <main className="page">
       <div className="container an-form-wrap">
-        <h1 className="bz-form-title">Criar anúncio</h1>
+        <h1 className="bz-form-title">{editing ? "Editar anúncio" : "Criar anúncio"}</h1>
 
         <form onSubmit={submit} className="an-form">
           <div className="an-form-grid">
@@ -278,7 +324,7 @@ export function AnunciarPage() {
           {error && <p className="bz-form-error">{error}</p>}
 
           <button className="bz-submit" type="submit" disabled={busy}>
-            {busy ? "Publicando…" : "Publicar anúncio"}
+            {busy ? "Salvando…" : editing ? "Salvar alterações" : "Publicar anúncio"}
           </button>
         </form>
       </div>

@@ -42,6 +42,10 @@ export function getListing(publicId: string, signal?: AbortSignal): Promise<List
   return apiGet<Listing>(`/api/v1/listings/${encodeURIComponent(publicId)}`, signal);
 }
 
+export function listMine(signal?: AbortSignal): Promise<Listing[]> {
+  return apiGet<Listing[]>("/api/v1/listings/mine", signal);
+}
+
 export function createListing(body: ListingWriteRequest): Promise<Listing> {
   return apiPost<Listing>("/api/v1/listings", body);
 }

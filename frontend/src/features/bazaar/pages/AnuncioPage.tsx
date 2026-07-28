@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getListing } from "../../../services/listingsService";
+import { startConversation } from "../../../services/chatService";
+import { useAuth } from "../../../contexts/AuthContext";
 import { useConfig } from "../../../hooks/useConfig";
 import type { Listing } from "../../../types/listing";
 import { ApiError } from "../../../services/api";
@@ -74,8 +76,11 @@ function Ficha({ listing }: { listing: Listing }) {
 export function AnuncioPage() {
   const { id = "" } = useParams();
   const { config } = useConfig();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [chatErro, setChatErro] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -128,6 +133,28 @@ export function AnuncioPage() {
     .replaceAll("{titulo}", listing.titulo)
     .replaceAll("{id}", listing.id);
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`;
+
+  const podeNegociar = !vendido && Boolean(listing.vendedor) && user?.username !== listing.vendedor;
+  const negociarChat = async () => {
+    if (!user) {
+      navigate("/login", { state: { from: `/anuncio/${listing.id}` } });
+      return;
+    }
+    setChatErro(null);
+    try {
+      await startConversation({
+        adId: listing.id,
+        seller: listing.vendedor,
+        title: listing.titulo,
+        image: arte,
+        price: listing.preco,
+        currency: listing.moeda === "diamonds" ? "diamante" : "pix",
+      });
+      navigate("/chat");
+    } catch (err) {
+      setChatErro(err instanceof ApiError ? err.message : "Não foi possível abrir a conversa.");
+    }
+  };
 
   return (
     <main className="page">
@@ -216,8 +243,14 @@ export function AnuncioPage() {
               </div>
             )}
 
+            {podeNegociar && (
+              <button type="button" className="an-cta" onClick={negociarChat}>
+                Negociar pelo chat
+              </button>
+            )}
+            {chatErro && <p className="bz-form-error">{chatErro}</p>}
             {!vendido && whatsapp && (
-              <a className="an-cta" href={waLink} target="_blank" rel="noreferrer">
+              <a className="an-cta an-cta-alt" href={waLink} target="_blank" rel="noreferrer">
                 Negociar agora no WhatsApp
               </a>
             )}

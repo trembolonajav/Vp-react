@@ -27,30 +27,28 @@ export function Header() {
             </span>
           </Link>
           <div className="nav-links">
-            <Link className="nav-link active" to="/">
-              Marketplace
-            </Link>
-            <Link className="nav-link" to="/anunciar">
-              Anunciar
-            </Link>
+            <Link className="nav-link active" to="/">Marketplace</Link>
+            <Link className="nav-link" to="/anunciar">Anunciar</Link>
+            {user && (
+              <>
+                <Link className="nav-link" to="/meus-anuncios">Meus anúncios</Link>
+                <Link className="nav-link" to="/chat">Chat</Link>
+              </>
+            )}
             {user?.role === "ADMIN" && (
-              <Link className="nav-link" to="/admin">
-                Painel
-              </Link>
+              <Link className="nav-link" to="/admin">Painel</Link>
             )}
           </div>
           <div className="header-actions">
             {user ? (
               <>
-                <span className="nav-user">{user.username}</span>
+                <Link className="nav-user" to="/perfil">{user.username}</Link>
                 <button className="bz-vpertsz-link" type="button" onClick={logout}>
                   Sair
                 </button>
               </>
             ) : (
-              <Link className="bz-vpertsz-link" to="/login">
-                Entrar
-              </Link>
+              <Link className="bz-vpertsz-link" to="/login">Entrar</Link>
             )}
           </div>
         </nav>

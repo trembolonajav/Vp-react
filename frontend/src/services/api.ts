@@ -65,5 +65,8 @@ export const apiPost = <T>(path: string, body?: unknown, signal?: AbortSignal): 
 export const apiPut = <T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> =>
   request<T>("PUT", path, { body, signal });
 
+export const apiPatch = <T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> =>
+  request<T>("PATCH", path, { body, signal });
+
 export const apiDelete = (path: string, signal?: AbortSignal): Promise<void> =>
   request<void>("DELETE", path, { signal });
