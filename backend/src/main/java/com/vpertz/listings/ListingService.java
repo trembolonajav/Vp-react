@@ -53,6 +53,14 @@ public class ListingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
     }
 
+    /** Anúncios do usuário autenticado (qualquer status), para a tela "meus anúncios". */
+    @Transactional(readOnly = true)
+    public List<ListingResponse> listMine(String userId) {
+        return repository.findBySellerIdOrderByCreatedAtDesc(userId).stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
     /** Todos os anúncios (qualquer status) no formato legado, para o espelho de config. */
     @Transactional(readOnly = true)
     public List<ListingResponse> allForConfig() {

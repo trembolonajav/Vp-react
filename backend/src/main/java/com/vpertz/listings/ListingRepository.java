@@ -1,5 +1,6 @@
 package com.vpertz.listings;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,4 +11,6 @@ public interface ListingRepository
     Optional<Listing> findByPublicId(String publicId);
 
     boolean existsByPublicId(String publicId);
+
+    List<Listing> findBySellerIdOrderByCreatedAtDesc(String sellerId);
 }

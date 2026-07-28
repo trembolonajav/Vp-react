@@ -66,6 +66,11 @@ public class ListingController {
         return ResponseEntity.ok(listingService.list(filter, sort, page, size));
     }
 
+    @GetMapping("/mine")
+    public ResponseEntity<List<ListingResponse>> mine(@AuthenticationPrincipal AuthPrincipal principal) {
+        return ResponseEntity.ok(listingService.listMine(principal.userId()));
+    }
+
     @GetMapping("/{publicId}")
     public ResponseEntity<ListingResponse> getOne(@PathVariable String publicId) {
         return ResponseEntity.ok(listingService.getByPublicId(publicId));
