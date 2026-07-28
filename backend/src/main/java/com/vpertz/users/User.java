@@ -46,6 +46,15 @@ public class User {
     @Column(length = 800)
     private String avatar;
 
+    @Column(length = 240)
+    private String bio;
+
+    @Column(length = 80)
+    private String contact;
+
+    @Column(name = "preferred_contact", nullable = false, length = 40)
+    private String preferredContact = "Chat do Bazaar";
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 

@@ -8,11 +8,17 @@ import com.vpertz.config.SiteConfig;
 import com.vpertz.config.SiteConfigRepository;
 import com.vpertz.content.Banner;
 import com.vpertz.content.BannerRepository;
+import com.vpertz.chat.Conversation;
+import com.vpertz.chat.ConversationRepository;
+import com.vpertz.chat.Message;
+import com.vpertz.chat.MessageRepository;
 import com.vpertz.common.security.PasswordService;
 import com.vpertz.content.Contact;
 import com.vpertz.content.ContactRepository;
 import com.vpertz.listings.Listing;
 import com.vpertz.listings.ListingRepository;
+import com.vpertz.reports.Report;
+import com.vpertz.reports.ReportRepository;
 import com.vpertz.taxonomy.Category;
 import com.vpertz.taxonomy.CategoryRepository;
 import com.vpertz.taxonomy.GameServer;
@@ -23,6 +29,7 @@ import com.vpertz.users.UserRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -57,6 +64,9 @@ public class DataSeeder implements CommandLineRunner {
     private final ListingRepository listingRepository;
     private final UserRepository userRepository;
     private final PasswordService passwordService;
+    private final ConversationRepository conversationRepository;
+    private final MessageRepository messageRepository;
+    private final ReportRepository reportRepository;
     private final String adminUsername;
     private final String adminPassword;
 
@@ -72,6 +82,9 @@ public class DataSeeder implements CommandLineRunner {
                      ListingRepository listingRepository,
                      UserRepository userRepository,
                      PasswordService passwordService,
+                     ConversationRepository conversationRepository,
+                     MessageRepository messageRepository,
+                     ReportRepository reportRepository,
                      @Value("${app.admin.username}") String adminUsername,
                      @Value("${app.admin.password}") String adminPassword) {
         this.objectMapper = objectMapper;
@@ -84,6 +97,9 @@ public class DataSeeder implements CommandLineRunner {
         this.listingRepository = listingRepository;
         this.userRepository = userRepository;
         this.passwordService = passwordService;
+        this.conversationRepository = conversationRepository;
+        this.messageRepository = messageRepository;
+        this.reportRepository = reportRepository;
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
     }
@@ -117,9 +133,9 @@ public class DataSeeder implements CommandLineRunner {
         seedListings(bazaar.path("anuncios"));
         seedUsers();
 
-        log.info("Seed concluído: {} jogo(s), {} banner(s), {} contato(s), {} servidor(es), {} categoria(s), {} anúncio(s), {} usuário(s).",
-                gameRepository.count(), bannerRepository.count(), contactRepository.count(),
-                serverRepository.count(), categoryRepository.count(), listingRepository.count(), userRepository.count());
+        log.info("Seed concluído: {} jogo(s), {} anúncio(s), {} usuário(s), {} conversa(s), {} mensagem(ns), {} denúncia(s).",
+                gameRepository.count(), listingRepository.count(), userRepository.count(),
+                conversationRepository.count(), messageRepository.count(), reportRepository.count());
     }
 
     /** Contas do bazaar (hash scrypt legado) + admin do painel (bcrypt). */
@@ -146,8 +162,14 @@ public class DataSeeder implements CommandLineRunner {
                 user.setPasswordAlgo(PasswordService.ALGO_SCRYPT);
                 user.setRole(Role.USER);
                 user.setAvatar(emptyToNull(text(u, "avatar", null)));
+                user.setBio(emptyToNull(text(u, "bio", null)));
+                user.setContact(emptyToNull(text(u, "contact", null)));
+                user.setPreferredContact(text(u, "preferredContact", "Chat do Bazaar"));
                 userRepository.save(user);
             }
+            seedConversations(db.path("conversations"));
+            seedMessages(db.path("messages"));
+            seedReports(db.path("reports"));
         }
 
         // Admin do painel: só cria se o username ainda não existir.
@@ -161,6 +183,96 @@ public class DataSeeder implements CommandLineRunner {
             admin.setPasswordAlgo(PasswordService.ALGO_BCRYPT);
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);
+        }
+    }
+
+    private void seedConversations(JsonNode arr) {
+        if (!arr.isArray()) {
+            return;
+        }
+        for (JsonNode c : arr) {
+            Conversation conv = new Conversation();
+            conv.setId(text(c, "id", UUID.randomUUID().toString()));
+            conv.setAdId(emptyToNull(text(c, "adId", null)));
+            conv.setTitle(emptyToNull(text(c, "title", null)));
+            JsonNode parts = c.path("participants");
+            String buyerId = parts.isArray() && parts.size() > 0 ? parts.get(0).asText("") : lookupUserId(text(c, "buyer", ""));
+            String sellerId = parts.isArray() && parts.size() > 1 ? parts.get(1).asText("") : lookupUserId(text(c, "seller", ""));
+            conv.setBuyerId(emptyToNull(buyerId));
+            conv.setSellerId(emptyToNull(sellerId));
+            conv.setImageUrl(emptyToNull(text(c, "image", null)));
+            conv.setPrice(decimal(c, "price"));
+            conv.setCurrency(text(c, "currency", "diamante"));
+            conv.setDetails(emptyToNull(text(c, "details", null)));
+            conv.setStatus(text(c, "status", "aberta"));
+            OffsetDateTime created = parseTime(text(c, "createdAt", null), OffsetDateTime.now());
+            conv.setCreatedAt(created);
+            conv.setUpdatedAt(parseTime(text(c, "updatedAt", null), created));
+            conversationRepository.save(conv);
+        }
+    }
+
+    private void seedMessages(JsonNode arr) {
+        if (!arr.isArray()) {
+            return;
+        }
+        for (JsonNode m : arr) {
+            String conversationId = text(m, "conversationId", "");
+            if (conversationId.isEmpty() || !conversationRepository.existsById(conversationId)) {
+                continue;
+            }
+            Message msg = new Message();
+            msg.setId(text(m, "id", UUID.randomUUID().toString()));
+            msg.setConversationId(conversationId);
+            msg.setAuthorId(emptyToNull(text(m, "authorId", null)));
+            msg.setText(text(m, "text", ""));
+            msg.setCreatedAt(parseTime(text(m, "createdAt", null), OffsetDateTime.now()));
+            JsonNode readBy = m.path("readBy");
+            if (readBy.isArray()) {
+                readBy.forEach(v -> msg.getReadBy().add(v.asText()));
+            }
+            messageRepository.save(msg);
+        }
+    }
+
+    private void seedReports(JsonNode arr) {
+        if (!arr.isArray()) {
+            return;
+        }
+        for (JsonNode r : arr) {
+            String adId = text(r, "adId", "");
+            if (adId.isEmpty()) {
+                continue;
+            }
+            Report report = new Report();
+            report.setId(text(r, "id", UUID.randomUUID().toString()));
+            report.setAdId(adId);
+            report.setTitle(emptyToNull(text(r, "title", null)));
+            report.setSeller(emptyToNull(text(r, "seller", null)));
+            report.setReason(text(r, "reason", "Outro motivo"));
+            report.setDetails(emptyToNull(text(r, "details", null)));
+            report.setReporterId(emptyToNull(text(r, "reporterId", null)));
+            report.setStatus(text(r, "status", "aberta"));
+            report.setCreatedAt(parseTime(text(r, "createdAt", null), OffsetDateTime.now()));
+            reportRepository.save(report);
+        }
+    }
+
+    private String lookupUserId(String username) {
+        if (username == null || username.isEmpty()) {
+            return null;
+        }
+        return userRepository.findByUsernameIgnoreCase(username).map(User::getId).orElse(null);
+    }
+
+    private static OffsetDateTime parseTime(String value, OffsetDateTime fallback) {
+        if (value == null || value.isEmpty()) {
+            return fallback;
+        }
+        try {
+            return OffsetDateTime.parse(value);
+        } catch (Exception e) {
+            return fallback;
         }
     }
 

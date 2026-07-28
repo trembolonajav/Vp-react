@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // leitura pública
                         .requestMatchers(HttpMethod.GET, "/api/v1/config", "/api/v1/listings", "/api/v1/listings/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/profiles/*").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         // autenticação
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/logout").permitAll()
