@@ -53,7 +53,7 @@ public class ConfigService {
         SiteConfig site = siteConfigRepository.findById((short) 1).orElseGet(SiteConfig::new);
 
         List<BannerDto> banners = bannerRepository.findAllByOrderByOrderingAscIdAsc().stream()
-                .map(b -> new BannerDto(b.getImgUrl(), b.getAlt(), b.getLink()))
+                .map(b -> new BannerDto(b.getImgUrl(), nullToEmpty(b.getAlt()), nullToEmpty(b.getLink())))
                 .toList();
 
         List<GameDto> games = gameRepository.findAllByOrderByOrderingAscNomeAsc().stream()
@@ -61,7 +61,7 @@ public class ConfigService {
                 .toList();
 
         List<ContactDto> contatos = contactRepository.findAllByOrderByOrderingAscIdAsc().stream()
-                .map(c -> new ContactDto(c.getIcone(), c.getNome(), c.getInfo(), c.getUrl()))
+                .map(c -> new ContactDto(c.getIcone(), nullToEmpty(c.getNome()), nullToEmpty(c.getInfo()), nullToEmpty(c.getUrl())))
                 .toList();
 
         List<String> servidores = serverRepository.findAllByOrderByOrderingAscNomeAsc().stream()
