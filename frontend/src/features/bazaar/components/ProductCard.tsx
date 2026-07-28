@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import type { Listing } from "../../../types/listing";
 import { brl, numeroBR, spriteUrl, DIAMANTE } from "../../../utils/format";
 import { TYPE_COLOR, TYPE_LABEL } from "../constants";
@@ -116,9 +117,9 @@ export function ProductCard({ listing }: { listing: Listing }) {
         )}
       </div>
 
-      <a className="bz-cta" href={`#anuncio-${listing.id}`}>
+      <Link className="bz-cta" to={`/anuncio/${listing.id}`}>
         {vendido ? "Ver anúncio encerrado" : "Ver anúncio"}
-      </a>
+      </Link>
     </article>
   );
 }

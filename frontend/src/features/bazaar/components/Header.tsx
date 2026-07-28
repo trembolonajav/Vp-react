@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export function Header() {
+  const { user, logout } = useAuth();
+
   return (
     <>
       <div className="topbar">
@@ -27,14 +30,28 @@ export function Header() {
             <Link className="nav-link active" to="/">
               Marketplace
             </Link>
-            <a className="nav-link" href="#anunciar">
+            <Link className="nav-link" to="/anunciar">
               Anunciar
-            </a>
+            </Link>
+            {user?.role === "ADMIN" && (
+              <Link className="nav-link" to="/admin">
+                Painel
+              </Link>
+            )}
           </div>
           <div className="header-actions">
-            <a className="bz-vpertsz-link" href="/">
-              VPERTSZ
-            </a>
+            {user ? (
+              <>
+                <span className="nav-user">{user.username}</span>
+                <button className="bz-vpertsz-link" type="button" onClick={logout}>
+                  Sair
+                </button>
+              </>
+            ) : (
+              <Link className="bz-vpertsz-link" to="/login">
+                Entrar
+              </Link>
+            )}
           </div>
         </nav>
       </header>

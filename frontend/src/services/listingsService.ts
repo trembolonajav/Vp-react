@@ -1,5 +1,5 @@
-import { apiGet } from "./api";
-import type { Listing, ListingFilters, Page } from "../types/listing";
+import { apiDelete, apiGet, apiPost, apiPut } from "./api";
+import type { Listing, ListingFilters, ListingWriteRequest, Page } from "../types/listing";
 
 const PAGE_SIZE = 12;
 
@@ -40,4 +40,16 @@ export function listListings(
 
 export function getListing(publicId: string, signal?: AbortSignal): Promise<Listing> {
   return apiGet<Listing>(`/api/v1/listings/${encodeURIComponent(publicId)}`, signal);
+}
+
+export function createListing(body: ListingWriteRequest): Promise<Listing> {
+  return apiPost<Listing>("/api/v1/listings", body);
+}
+
+export function updateListing(publicId: string, body: ListingWriteRequest): Promise<Listing> {
+  return apiPut<Listing>(`/api/v1/listings/${encodeURIComponent(publicId)}`, body);
+}
+
+export function deleteListing(publicId: string): Promise<void> {
+  return apiDelete(`/api/v1/listings/${encodeURIComponent(publicId)}`);
 }

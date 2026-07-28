@@ -47,6 +47,38 @@ export interface Page<T> {
   totalPages: number;
 }
 
+/** Corpo de criação/edição de anúncio (só título é obrigatório). */
+export interface ListingWriteRequest {
+  titulo: string;
+  jogo?: string;
+  servidor?: string;
+  categoria?: string;
+  intencao?: string;
+  moeda?: string;
+  preco?: number;
+  negociavel?: boolean;
+  status?: string;
+  img?: string;
+  descricao?: string;
+  dex?: number;
+  nivel?: number;
+  poder?: number;
+  shiny?: boolean;
+  quantidade?: number;
+  aceitaTroca?: boolean;
+  natureza?: string;
+  habilidade?: string;
+  genero?: string;
+  forma?: string;
+  qualidade?: number;
+  disponibilidade?: string;
+  tipos?: string[];
+  ivs?: number[];
+  moves?: string[];
+  regras?: string;
+  destaque?: boolean;
+}
+
 export type SortKey = "recentes" | "preco-asc" | "preco-desc" | "titulo";
 
 export interface ListingFilters {

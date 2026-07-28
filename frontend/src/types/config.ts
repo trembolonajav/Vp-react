@@ -45,3 +45,19 @@ export interface SiteConfig {
   bazaar: BazaarConfig;
   contatos: Contact[];
 }
+
+/** Corpo de escrita da config pelo painel (sem os anúncios). */
+export interface AdminConfigRequest {
+  whatsapp: string;
+  msgNegociar: string;
+  banners: Banner[];
+  games: Game[];
+  bazaar: {
+    ativo: boolean;
+    msgInteresse: string;
+    msgAnunciar: string;
+    servidores: string[];
+    categorias: string[];
+  };
+  contatos: Contact[];
+}
