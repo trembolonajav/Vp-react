@@ -1,97 +1,139 @@
 # Plataforma Vpertz
 
-Monorepositório oficial da Vpertz. Um único projeto Vercel publica a Store,
-o painel administrativo e o VPLab (que inclui a PokeFipe) no mesmo domínio.
+Aplicação da comunidade Vpertz (streamer de PokeIdle World): hub, loja de
+diamonds (VP Store), marketplace entre jogadores (VP Bazaar), ferramentas
+(VPLab) e painel administrativo.
 
-## Endereços
+Arquitetura atual (**modular monolith**): frontend **React + TypeScript + Vite**,
+backend **Java 21 + Spring Boot** e banco **PostgreSQL**, orquestrados por
+**Docker Compose**.
 
-| Área | Caminho público | Código-fonte |
-|---|---|---|
-| Vpertz Store | `/` | `apps/vpertz-store/public/` |
-| VP Bazaar | `/bazaar/` | `apps/vpertz-bazaar/public/` |
-| Painel | `/admin.html` | `apps/vpertz-store/public/admin.*` + `api/` |
-| PokeFipe | `/vplab/?tab=fipe` | `apps/vpertz-lab/public/pokefipe-core.js` + aba no VPLab |
-| VPLab | `/vplab/` | `apps/vpertz-lab/public/` |
+> A stack antiga (site estático + funções serverless na Vercel, em `apps/` e
+> `api/`) ainda está no repositório durante a transição e será removida na
+> limpeza final (Fase 9). O produto novo vive em `backend/` e `frontend/`.
 
-## Estrutura
+## 1. Arquitetura
 
-```text
-Vpertz/
-├── apps/
-│   ├── vpertz-store/public/   # Site e painel
-│   ├── vpertz-bazaar/public/  # Marketplace publicado em /bazaar/
-│   └── vpertz-lab/
-│       ├── public/            # Aplicação publicada em /vplab/ (inclui PokeFipe)
-│       ├── design/            # Mockups e referências (não publicados)
-│       └── source-data/       # Fontes usadas para gerar o catálogo
-├── api/                       # Functions serverless da Vercel
-├── scripts/build.mjs          # Monta dist/
-├── tests/                     # Segurança, cálculos e E2E
-├── docs/                      # Arquitetura e deploy
-├── dist/                      # Gerada; não versionar
-├── dev-server.mjs
-├── package.json
-└── vercel.json
+```
+                 ┌───────────────────────────┐
+                 │  Frontend (React/TS/Vite)  │   nginx serve o SPA e faz
+                 │  hub / store / bazaar /    │   proxy de /api e /media
+                 │  vplab (estático) / admin  │
+                 └───────────────┬────────────┘
+                                 │ REST /api/v1
+                 ┌───────────────▼────────────┐
+                 │  Backend (Spring Boot)      │
+                 │  Web · Data JPA · Security  │
+                 │  (JWT) · Flyway · Bean Val. │
+                 └──────┬───────────────┬──────┘
+                        │               │
+                 ┌──────▼─────┐  ┌──────▼───────────┐
+                 │ PostgreSQL │  │ StorageService    │
+                 │  (Flyway)  │  │ local (volume);   │
+                 └────────────┘  │ pluga S3/MinIO    │
+                                 └───────────────────┘
 ```
 
-## Desenvolvimento
+Áreas (rotas do frontend): hub em `/`, loja em `/store`, marketplace em
+`/bazaar`, ferramentas em `/vplab/` (app estático preservado), painel em
+`/admin`, login em `/login`.
 
-```powershell
+API REST versionada em `/api/v1`: `config`, `listings`, `auth`,
+`conversations` (chat), `reports`, `profiles`, `media` e `admin`. Erros são
+padronizados (`{status, error, message, timestamp, path}`).
+
+## 2. Requisitos
+
+- **Docker** + **Docker Compose** (caminho recomendado — sobe tudo).
+- Para rodar os serviços separadamente: **Java 21**, **Maven 3.9+**,
+  **Node 20+** e um **PostgreSQL 16**.
+
+## 3. Configuração / variáveis de ambiente
+
+Copie o exemplo e ajuste (nunca versione o `.env` com valores reais):
+
+```bash
+cp .env.example .env
+```
+
+| Variável | Para quê |
+|---|---|
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Banco |
+| `SPRING_PROFILES_ACTIVE` | `dev` (semeia dados) ou `prod` |
+| `DB_URL` / `DB_USERNAME` / `DB_PASSWORD` | Conexão do backend |
+| `APP_CORS_ALLOWED_ORIGINS` | Origens liberadas (nunca `*` com credenciais) |
+| `STORAGE_DIR` | Diretório dos uploads (volume em Docker) |
+| `JWT_SECRET` | Assinatura do token (mín. 32 bytes) |
+| `ADMIN_USER` / `ADMIN_PASS` | Semente do admin do painel |
+| `FRONTEND_PORT` / `BACKEND_PORT` | Portas publicadas |
+
+## 4. Subir com Docker (recomendado)
+
+```bash
+docker compose up --build
+```
+
+- Frontend: <http://localhost:8090>
+- Backend: <http://localhost:8080> (health em `/actuator/health`)
+- PostgreSQL: `localhost:5432`
+
+O Postgres sobe primeiro; o backend aplica as migrations (Flyway) e, em `dev`,
+semeia os dados iniciais; o nginx do frontend serve o SPA e o VPLab e faz proxy
+de `/api` e `/media` para o backend.
+
+Admin de desenvolvimento (perfil `dev`): **`vpadmin` / `vpadmin123`**
+(troque em produção via `ADMIN_USER`/`ADMIN_PASS`).
+
+## 5. Rodar o frontend separadamente
+
+```bash
+cd frontend
 npm install
-$env:ADMIN_USER="admin"
-$env:ADMIN_PASS="uma-senha-forte"
-$env:SESSION_SECRET="um-segredo-longo-com-mais-de-32-caracteres"
-npm run dev
+npm run dev        # http://localhost:5173 (proxy /api e /media -> :8080)
+npm run build      # typecheck (tsc) + bundle de produção
 ```
 
-- Store: `http://127.0.0.1:8736/`
-- VP Bazaar: `http://127.0.0.1:8736/bazaar/`
-- PokeFipe: `http://127.0.0.1:8736/vplab/?tab=fipe`
-- VPLab: `http://127.0.0.1:8736/vplab/`
-- Admin: `http://127.0.0.1:8736/admin.html`
+## 6. Rodar o backend separadamente
 
-## Verificação
+Requer um PostgreSQL acessível e as variáveis de conexão (ver `.env.example`).
 
-```powershell
-npm run verify
+```bash
+cd backend
+mvn spring-boot:run
 ```
 
-Esse comando valida JavaScript, executa testes unitários e de segurança, monta
-`dist/` e testa Store, PokeFipe, VPLab, Bazaar, APIs, login, upload e publicação.
+## 7. Acessar o PostgreSQL
 
-## VP Bazaar
+```bash
+docker compose exec postgres psql -U vpertz -d vpertz
+```
 
-O marketplace lê os anúncios da mesma configuração da loja (`cfg.bazaar`),
-editada na aba **Bazaar** do painel. Nesta primeira fase não há contas de
-usuário: os anúncios são cadastrados pela administração e a negociação sai
-pelo WhatsApp, com intermédio opcional da VP.
+## 8. Migrations (Flyway)
 
-- Cada anúncio tem página própria em `/bazaar/anuncio.html?id=<id>` (não é
-  mais modal). O card e o botão "Ver anúncio" navegam para lá.
-- `status` do anúncio: `ativo` (na vitrine), `pausado` (invisível) e
-  `vendido` (fora da vitrine, mas ainda acessível pelo link direto da página,
-  que já pode ter circulado no WhatsApp).
-- A "Ficha detalhada" (natureza, habilidade, gênero, IVs, moves, regras e a
-  reputação do vendedor) é opcional, editada no bloco recolhível da aba Bazaar,
-  e alimenta a página do anúncio. Anúncio sem esses dados esconde os painéis.
-- Servidores e categorias são listas editáveis no painel; valores removidos
-  de lá são limpos dos anúncios que os usavam na próxima publicação.
-- Reais e diamonds nunca são comparados entre si: a faixa de preço exige
-  escolher uma moeda e a ordenação por preço agrupa por moeda.
+Rodam automaticamente na subida do backend. Cada mudança de schema é um novo
+arquivo `backend/src/main/resources/db/migration/V<n>__descricao.sql` — **nunca
+edite uma migração já aplicada**; crie a próxima.
 
-## Deploy
+## 9. Testes
 
-Importe a raiz deste repositório na Vercel com Framework Preset **Other**.
-O `vercel.json` executa `npm run build` e publica `dist/`. Não selecione uma
-subpasta como Root Directory.
+```bash
+cd backend && mvn test      # requer JDK 21
+cd frontend && npm run build # typecheck do frontend
+```
 
-Variáveis obrigatórias:
+## 10. Estrutura
 
-- `ADMIN_USER`
-- `ADMIN_PASS`
-- `SESSION_SECRET`
-
-Conecte também um Vercel Blob ao projeto. A Vercel cria `BLOB_STORE_ID` e as
-credenciais de integração automaticamente.
-
-<!-- deploy 1 -->
+```
+Vpertz/
+├── backend/                 # Java 21 + Spring Boot (modular monolith por domínio)
+│   ├── src/main/java/com/vpertz/{config,catalog,content,taxonomy,
+│   │        listings,users,auth,chat,reports,media,admin,common}
+│   ├── src/main/resources/{application.yml, db/migration, seed}
+│   ├── pom.xml  Dockerfile
+├── frontend/                # React + TS + Vite
+│   ├── src/{features,components,contexts,hooks,services,types,utils,styles}
+│   ├── public/vplab/        # VPLab preservado (estático)
+│   ├── vite.config.ts  Dockerfile  nginx.conf
+├── docker-compose.yml  .env.example
+└── (apps/ · api/ · dev-server.mjs — stack legada, em desativação)
+```
