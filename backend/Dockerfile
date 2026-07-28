@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 # Usuário sem privilégios.
 RUN useradd --system --uid 1001 spring
+# Diretório de mídia com dono correto: o volume nomeado herda esta permissão,
+# permitindo que o processo (não-root) grave os uploads.
+RUN mkdir -p /data/media && chown -R spring /data/media
 COPY --from=build /app/target/vpertz-backend.jar app.jar
 USER spring
 EXPOSE 8080

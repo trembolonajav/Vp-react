@@ -36,7 +36,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-vpertz}
       DB_USERNAME: ${POSTGRES_USER:-vpertz}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-vpertz}
-      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:8090,http://localhost:5173}
       STORAGE_DIR: /data/media
     volumes:
       - mediadata:/data/media
