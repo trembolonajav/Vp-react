@@ -16,7 +16,7 @@ export function Header() {
 
       <header>
         <nav className="container nav-shell" aria-label="Navegação principal">
-          <Link className="brand" to="/" aria-label="VP Bazaar — Início">
+          <Link className="brand" to="/bazaar" aria-label="VP Bazaar — Início">
             <img
               className="logo"
               src="/assets/logo-vp-bazaar-horizontal-oficial.webp"
@@ -27,12 +27,12 @@ export function Header() {
             </span>
           </Link>
           <div className="nav-links">
-            <Link className="nav-link active" to="/">Marketplace</Link>
-            <Link className="nav-link" to="/anunciar">Anunciar</Link>
+            <Link className="nav-link active" to="/bazaar">Marketplace</Link>
+            <Link className="nav-link" to="/bazaar/anunciar">Anunciar</Link>
             {user && (
               <>
-                <Link className="nav-link" to="/meus-anuncios">Meus anúncios</Link>
-                <Link className="nav-link" to="/chat">Chat</Link>
+                <Link className="nav-link" to="/bazaar/meus-anuncios">Meus anúncios</Link>
+                <Link className="nav-link" to="/bazaar/chat">Chat</Link>
               </>
             )}
             {user?.role === "ADMIN" && (
@@ -40,9 +40,10 @@ export function Header() {
             )}
           </div>
           <div className="header-actions">
+            <Link className="bz-vpertsz-link" to="/">VPERTSZ</Link>
             {user ? (
               <>
-                <Link className="nav-user" to="/perfil">{user.username}</Link>
+                <Link className="nav-user" to="/bazaar/perfil">{user.username}</Link>
                 <button className="bz-vpertsz-link" type="button" onClick={logout}>
                   Sair
                 </button>

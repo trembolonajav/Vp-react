@@ -53,7 +53,7 @@ export function MeusAnunciosPage() {
       <div className="container an-form-wrap">
         <div className="admin-head">
           <h1 className="bz-form-title">Meus anúncios</h1>
-          <Link className="bz-vpertsz-link" to="/anunciar">
+          <Link className="bz-vpertsz-link" to="/bazaar/anunciar">
             + Novo anúncio
           </Link>
         </div>
@@ -68,7 +68,7 @@ export function MeusAnunciosPage() {
           <div className="bz-empty">
             <strong>Você ainda não tem anúncios</strong>
             <p>
-              <Link to="/anunciar">Criar meu primeiro anúncio</Link>
+              <Link to="/bazaar/anunciar">Criar meu primeiro anúncio</Link>
             </p>
           </div>
         ) : (
@@ -83,8 +83,8 @@ export function MeusAnunciosPage() {
                   <span className="mine-preco">{preco(l)}</span>
                 </div>
                 <div className="mine-actions">
-                  <Link className="bz-clear" to={`/anuncio/${l.id}`}>Ver</Link>
-                  <Link className="bz-clear" to={`/anunciar/${l.id}`}>Editar</Link>
+                  <Link className="bz-clear" to={`/bazaar/anuncio/${l.id}`}>Ver</Link>
+                  <Link className="bz-clear" to={`/bazaar/anunciar/${l.id}`}>Editar</Link>
                   <button
                     type="button"
                     className="bz-clear mine-del"

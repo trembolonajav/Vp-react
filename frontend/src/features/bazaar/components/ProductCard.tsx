@@ -117,7 +117,7 @@ export function ProductCard({ listing }: { listing: Listing }) {
         )}
       </div>
 
-      <Link className="bz-cta" to={`/anuncio/${listing.id}`}>
+      <Link className="bz-cta" to={`/bazaar/anuncio/${listing.id}`}>
         {vendido ? "Ver anúncio encerrado" : "Ver anúncio"}
       </Link>
     </article>

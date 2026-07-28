@@ -142,7 +142,7 @@ export function AnunciarPage() {
 
     try {
       const salvo = editing ? await updateListing(id!, body) : await createListing(body);
-      navigate(`/anuncio/${salvo.id}`);
+      navigate(`/bazaar/anuncio/${salvo.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Não foi possível salvar o anúncio.");
     } finally {

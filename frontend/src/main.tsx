@@ -7,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 // Estilos reaproveitados do app atual: tema (base) + bazaar (design aprovado)
 // + estilos das páginas novas (formulários/detalhe/painel).
 import "./styles/base.css";
+import "./styles/hub.css";
 import "./styles/bazaar.css";
 import "./styles/pages.css";
 

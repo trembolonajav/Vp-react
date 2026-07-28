@@ -102,7 +102,7 @@ export function AnuncioPage() {
           <div className="bz-empty">
             <strong>{error}</strong>
             <p>
-              <Link to="/">Voltar ao marketplace</Link>
+              <Link to="/bazaar">Voltar ao marketplace</Link>
             </p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export function AnuncioPage() {
   const podeNegociar = !vendido && Boolean(listing.vendedor) && user?.username !== listing.vendedor;
   const negociarChat = async () => {
     if (!user) {
-      navigate("/login", { state: { from: `/anuncio/${listing.id}` } });
+      navigate("/login", { state: { from: `/bazaar/anuncio/${listing.id}` } });
       return;
     }
     setChatErro(null);
@@ -150,7 +150,7 @@ export function AnuncioPage() {
         price: listing.preco,
         currency: listing.moeda === "diamonds" ? "diamante" : "pix",
       });
-      navigate("/chat");
+      navigate("/bazaar/chat");
     } catch (err) {
       setChatErro(err instanceof ApiError ? err.message : "Não foi possível abrir a conversa.");
     }
@@ -160,7 +160,7 @@ export function AnuncioPage() {
     <main className="page">
       <div className="container">
         <nav className="an-crumbs" aria-label="Trilha">
-          <Link to="/">Marketplace</Link>
+          <Link to="/bazaar">Marketplace</Link>
           <span>›</span>
           {listing.categoria && <span>{listing.categoria}</span>}
           {listing.categoria && <span>›</span>}

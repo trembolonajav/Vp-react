@@ -10,7 +10,7 @@ export function LoginPage() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: string } };
-  const destino = location.state?.from ?? "/";
+  const destino = location.state?.from ?? "/bazaar";
 
   const [mode, setMode] = useState<Mode>("login");
   const [loginId, setLoginId] = useState("");
