@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import type { CSSProperties, FormEvent } from "react";
+import type { ChangeEvent, CSSProperties, FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useConfig } from "../../../hooks/useConfig";
 import { createListing, getListing, updateListing } from "../../../services/listingsService";
+import { uploadImage } from "../../../services/mediaService";
 import { ApiError } from "../../../services/api";
 import type { Listing, ListingWriteRequest } from "../../../types/listing";
 import { TIPOS_ORDEM, TYPE_COLOR, TYPE_LABEL } from "../constants";
@@ -86,6 +87,7 @@ export function AnunciarPage() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -105,6 +107,20 @@ export function AnunciarPage() {
 
   const toggleTipo = (t: string) =>
     set("tipos", form.tipos.includes(t) ? form.tipos.filter((x) => x !== t) : [...form.tipos, t].slice(0, 2));
+
+  const enviarImagem = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      set("img", await uploadImage(file));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Falha ao enviar a imagem.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -266,6 +282,9 @@ export function AnunciarPage() {
               <label htmlFor="a-img">Imagem (URL do card)</label>
               <input className="bz-input" id="a-img" value={form.img} placeholder="assets/… ou https://…"
                 onChange={(e) => set("img", e.target.value)} />
+              <input className="an-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif"
+                disabled={uploading} onChange={enviarImagem} />
+              {uploading && <small className="an-file-hint">Enviando imagem…</small>}
             </div>
           </div>
 

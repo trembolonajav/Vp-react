@@ -5,6 +5,11 @@ spring:
     name: vpertz-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  servlet:
+    multipart:
+      # Uploads de imagem: o limite fino (2,5MB) é conferido no MediaController.
+      max-file-size: 3MB
+      max-request-size: 3MB
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/vpertz}
     username: ${DB_USERNAME:vpertz}
@@ -22,6 +27,10 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: false
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -39,6 +48,9 @@ app:
     # Semente do administrador do painel (dev). Em produção use variáveis reais.
     username: ${ADMIN_USER:vpadmin}
     password: ${ADMIN_PASS:vpadmin123}
+  storage:
+    # Diretório dos uploads. Em Docker aponte para um volume persistente.
+    dir: ${STORAGE_DIR:./.media}
 
 management:
   endpoints:

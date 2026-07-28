@@ -534,3 +534,30 @@ textarea.bz-input {
 @media (max-width: 720px) {
   .chat-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- upload de imagem (anunciar) ---------- */
+.an-file {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.an-file::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--line-strong);
+  background: rgba(10, 6, 5, 0.5);
+  color: var(--gold);
+  font: 700 11px/1 Inter, sans-serif;
+}
+.an-file::file-selector-button:hover {
+  color: var(--cream);
+  border-color: var(--gold);
+}
+.an-file-hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--gold-soft);
+  font-size: 12px;
+}

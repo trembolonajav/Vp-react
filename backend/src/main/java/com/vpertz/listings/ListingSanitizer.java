@@ -27,6 +27,7 @@ final class ListingSanitizer {
 
     private static final Pattern IMG_ASSET = Pattern.compile("^assets/[\\w\\-./]+$", Pattern.CASE_INSENSITIVE);
     private static final Pattern IMG_UPLOAD = Pattern.compile("^/uploads/[\\w\\-.]+$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMG_MEDIA = Pattern.compile("^/media/[\\w\\-.]+$", Pattern.CASE_INSENSITIVE);
     private static final Pattern IMG_HTTPS = Pattern.compile("^https://[^\\s\"'<>]+$", Pattern.CASE_INSENSITIVE);
 
     private ListingSanitizer() {
@@ -125,7 +126,8 @@ final class ListingSanitizer {
         if (s.length() > 800) {
             s = s.substring(0, 800);
         }
-        if (IMG_ASSET.matcher(s).matches() || IMG_UPLOAD.matcher(s).matches() || IMG_HTTPS.matcher(s).matches()) {
+        if (IMG_ASSET.matcher(s).matches() || IMG_UPLOAD.matcher(s).matches()
+                || IMG_MEDIA.matcher(s).matches() || IMG_HTTPS.matcher(s).matches()) {
             return s;
         }
         return null;
