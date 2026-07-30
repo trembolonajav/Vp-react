@@ -131,3 +131,16 @@ test("favoritos pertencem à conta e usam Spring/PostgreSQL", () => {
   assert.match(migration, /CREATE TABLE favorites/);
   assert.match(migration, /UNIQUE \(user_id, listing_public_id\)/);
 });
+
+test("compartilhamento usa Open Graph gerado pelo Spring", () => {
+  const detail = fs.readFileSync("frontend/src/features/bazaar/pages/AnuncioPage.tsx", "utf8");
+  const controller = fs.readFileSync("backend/src/main/java/com/vpertz/sharing/ShareController.java", "utf8");
+  const config = fs.readFileSync("backend/src/main/resources/application.yml", "utf8");
+
+  assert.match(detail, /\/api\/v1\/share\/\$\{encodeURIComponent\(listing\.id\)\}/);
+  assert.match(controller, /property="og:title"/);
+  assert.match(controller, /name="twitter:card"/);
+  assert.match(controller, /image\.png/);
+  assert.match(controller, /\/bazaar\/anuncio\//);
+  assert.match(config, /public-base-url:/);
+});

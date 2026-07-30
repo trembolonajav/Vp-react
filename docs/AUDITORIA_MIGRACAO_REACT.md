@@ -152,8 +152,8 @@ concreto.
 | Configuração | `/api/config`, `/api/admin/config` | `/api/v1/config`, `/api/v1/admin/config` | config.json/Blob | tabelas de config | NEW_ACTIVE | remover consumidor legado |
 | Banners/contatos/taxonomia | config Node | config/admin Spring | config.json | tabelas próprias | PARTIAL | completar UI admin/testes |
 | Uploads | `/api/admin/upload` | `/api/v1/media` | Blob/filesystem | somente URL nos consumidores | PARTIAL | implementar S3/MinIO e metadados |
-| Open Graph | `/api/bazaar/og` | inexistente | render dinâmico Node | nenhum | LEGACY_ACTIVE | criar endpoint Spring |
-| Compartilhamento | `/api/bazaar/share` | Web Share no React | Node redirect/HTML | nenhum | PARTIAL | definir SSR/OG |
+| Open Graph | `/api/bazaar/og` | `/api/v1/share/{id}/image.png` | render dinâmico Node | dados de `listings` | NEW_ACTIVE | manter |
+| Compartilhamento | `/api/bazaar/share` | `/api/v1/share/{id}` + Web Share | Node redirect/HTML | dados de `listings` | NEW_ACTIVE | manter |
 | Administração de denúncias/anúncios | parcial no Node | config apenas | JSON | tabelas existem | PARTIAL | endpoints ADMIN |
 
 As seis migrations Flyway foram verificadas como aplicadas no container:
@@ -275,7 +275,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 5. **Concluído:** ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
 6. **Concluído:** ativar chat e denúncias com testes de autorização.
 7. **Concluído:** implementar favoritos no Spring/PostgreSQL.
-8. Implementar Open Graph/compartilhamento no Spring.
+8. **Concluído:** implementar Open Graph/compartilhamento no Spring.
 9. Adicionar S3StorageService/MinIO e migration de metadados.
 10. Completar administração.
 11. Migrar VPLab na ordem: Avaliar IV no shell, PokeFipe, Pokédex, Rotas,
@@ -523,7 +523,33 @@ Validações executadas:
 - [x] atualização otimista com reversão quando a API falha;
 - [x] dados temporários removidos após a auditoria.
 
-## 20. Checklist de paridade por rota
+## 20. Registro da etapa Open Graph e compartilhamento
+
+```text
+ETAPA: Migração de Open Graph e compartilhamento para Spring
+STATUS: CONCLUÍDA
+LINK COMPARTILHÁVEL: /api/v1/share/{listingId}
+IMAGEM SOCIAL: /api/v1/share/{listingId}/image.png
+DESTINO HUMANO: /bazaar/anuncio/{listingId}
+```
+
+Validações executadas:
+
+- [x] título, descrição, vendedor e preço obtidos do PostgreSQL;
+- [x] Open Graph e Twitter Card presentes;
+- [x] imagem PNG 1200 × 630 gerada pelo Java;
+- [x] URL canônica apontando para a rota React limpa;
+- [x] anúncio inexistente respondendo 404;
+- [x] endpoint público para crawlers sem autenticação;
+- [x] origem pública configurada por `APP_PUBLIC_BASE_URL`;
+- [x] cabeçalho `Host` não influencia os links gerados;
+- [x] Web Share e cópia usam o novo link Spring;
+- [x] Docker entregando HTML e PNG pelo proxy Nginx.
+
+Os endpoints Node `/api/bazaar/share` e `/api/bazaar/og` permanecem apenas para
+compatibilidade do deploy legado até a etapa final de limpeza.
+
+## 21. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -541,7 +567,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 21. Critérios finais
+## 22. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router

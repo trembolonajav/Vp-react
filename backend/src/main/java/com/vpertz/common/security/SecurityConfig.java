@@ -53,6 +53,7 @@ public class SecurityConfig {
                         // leitura pública
                         .requestMatchers(HttpMethod.GET, "/api/v1/config", "/api/v1/listings", "/api/v1/listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/profiles/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/share/**").permitAll()
                         .requestMatchers("/media/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                         // autenticação

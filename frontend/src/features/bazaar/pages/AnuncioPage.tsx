@@ -137,6 +137,25 @@ export function AnuncioPage() {
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`;
 
   const podeNegociar = !vendido && Boolean(listing.vendedor) && user?.username !== listing.vendedor;
+  const compartilhar = async () => {
+    const shareUrl = `${window.location.origin}/api/v1/share/${encodeURIComponent(listing.id)}`;
+    const data = {
+      title: listing.titulo,
+      text: `Confira este anúncio no VP Bazaar: ${listing.titulo}`,
+      url: shareUrl,
+    };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else {
+        await navigator.clipboard.writeText(data.url);
+        setChatErro("Link copiado!");
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        setChatErro("Não foi possível compartilhar.");
+      }
+    }
+  };
   const negociarChat = async () => {
     if (!user) {
       navigate("/bazaar/login", { state: { from: `/bazaar/anuncio/${listing.id}` } });
@@ -252,6 +271,9 @@ export function AnuncioPage() {
                 Negociar pelo chat
               </button>
             )}
+            <button type="button" className="an-cta an-cta-alt" onClick={compartilhar}>
+              Compartilhar anúncio
+            </button>
             <button type="button" className="an-cta an-cta-alt" onClick={() => setReportOpen(true)}>
               Denunciar anúncio
             </button>
