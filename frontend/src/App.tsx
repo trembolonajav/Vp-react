@@ -21,6 +21,8 @@ const IvScannerPage = lazy(() =>
   import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
 const PokedexPage = lazy(() =>
   import("./features/vplab/pages/PokedexPage").then((module) => ({ default: module.PokedexPage })));
+const PokeFipePage = lazy(() =>
+  import("./features/vplab/pages/PokeFipePage").then((module) => ({ default: module.PokeFipePage })));
 
 function Protegida({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   return <ProtectedRoute requireAdmin={admin}>{children}</ProtectedRoute>;
@@ -87,6 +89,11 @@ export function App() {
       <Route path="vplab/pokedex" element={
         <Suspense fallback={<main className="page"><div className="container">Carregando Pokédex…</div></main>}>
           <PokedexPage />
+        </Suspense>
+      } />
+      <Route path="vplab/pokefipe" element={
+        <Suspense fallback={<main className="page"><div className="container">Carregando PokeFipe…</div></main>}>
+          <PokeFipePage />
         </Suspense>
       } />
     </Routes>

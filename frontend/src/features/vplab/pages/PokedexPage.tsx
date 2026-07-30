@@ -73,7 +73,7 @@ export function PokedexPage() {
   return <main className="vplab-react"><div className="container">
     <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
       <Link to="/vplab/">Avaliar IV</Link><Link className="is-active" to="/vplab/pokedex">Pokédex</Link>
-      <a href="/vplab/legacy/?tab=fipe">PokeFipe</a><a href="/vplab/legacy/?tab=rota">Rota de caça</a>
+      <Link to="/vplab/pokefipe">PokeFipe</Link><a href="/vplab/legacy/?tab=rota">Rota de caça</a>
       <a href="/vplab/legacy/?tab=breeding">Breeding</a><a href="/vplab/legacy/?tab=clas">Clãs</a>
       <a href="/vplab/legacy/?tab=profissoes">Profissões</a>
     </nav>

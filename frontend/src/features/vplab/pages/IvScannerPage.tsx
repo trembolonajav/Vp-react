@@ -99,7 +99,7 @@ export function IvScannerPage() {
       <div className="container">
         <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
           <Link to="/vplab/" className="is-active">Avaliar IV</Link>
-          <Link to="/vplab/pokedex">Pokédex</Link><a href="/vplab/legacy/?tab=fipe">PokeFipe</a>
+          <Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link>
           <a href="/vplab/legacy/?tab=rota">Rota de caça</a><a href="/vplab/legacy/?tab=breeding">Breeding</a>
           <a href="/vplab/legacy/?tab=clas">Clãs</a><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
         </nav>
@@ -151,6 +151,7 @@ export function IvScannerPage() {
             </div>
             <div className="vplab-iv-list">{STAT_LABELS.map((label, index) => <div key={label}><span>{label}</span>
               <strong>{analysis.ivs[index]}</strong><small>{analysis.ranges[index].low}–{analysis.ranges[index].high}</small></div>)}</div>
+            <Link className="fipe-from-iv" to={`/vplab/pokefipe?p=${analysis.species.s}&iv=${analysis.total.likely}&multiplier=${fields.quality}&level=${fields.level}`}>Ver estimativa na PokeFipe →</Link>
             {analysis.warnings.map((warning) => <p className="vplab-warning" key={warning}>{warning}</p>)}
           </> : <p className="vplab-result__empty">Informe espécie, nível, qualidade e os seis atributos para gerar a análise.</p>}
         </section>
