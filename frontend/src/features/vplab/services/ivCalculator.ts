@@ -4,7 +4,19 @@ export interface PokemonDexEntry {
   n: number;
   s: string;
   m: string;
+  t: string[];
+  h: number;
+  r: string;
   bs: [number, number, number, number, number, number];
+  xp: number;
+  npc: number;
+  sell: number;
+  la: number;
+  loot: Array<[string, number, number, number, number]>;
+  ev: number | null;
+  evl: number | null;
+  boss: boolean;
+  g: Array<[string, string, string, number, number]>;
 }
 
 export interface IvAnalysis {

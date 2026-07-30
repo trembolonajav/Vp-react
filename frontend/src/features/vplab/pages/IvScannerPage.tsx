@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { analyzeIv, findSpecies, loadPokemonCatalog } from "../services/ivCalculator";
 import type { PokemonDexEntry } from "../services/ivCalculator";
 import { scanPokeIdleImage } from "../services/paddleIvScanner";
@@ -14,6 +14,7 @@ function imageFromClipboard(event: ClipboardEvent): File | null {
 }
 
 export function IvScannerPage() {
+  const [searchParams] = useSearchParams();
   const [fields, setFields] = useState<IvScanFields>(EMPTY_IV_SCAN);
   const [catalog, setCatalog] = useState<PokemonDexEntry[]>([]);
   const [preview, setPreview] = useState("");
@@ -24,9 +25,14 @@ export function IvScannerPage() {
   const requestRef = useRef(0);
 
   useEffect(() => {
-    void loadPokemonCatalog().then(setCatalog).catch((error) =>
+    void loadPokemonCatalog().then((entries) => {
+      setCatalog(entries);
+      const requested = searchParams.get("p");
+      const species = requested ? entries.find((entry) => entry.s === requested) : undefined;
+      if (species) setFields((current) => ({ ...current, species: species.m }));
+    }).catch((error) =>
       setStatus(error instanceof Error ? error.message : "Não foi possível carregar a Pokédex."));
-  }, []);
+  }, [searchParams]);
 
   const read = async (file: File) => {
     const request = ++requestRef.current;
@@ -93,7 +99,7 @@ export function IvScannerPage() {
       <div className="container">
         <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
           <Link to="/vplab/" className="is-active">Avaliar IV</Link>
-          <a href="/vplab/legacy/?tab=pokedex">Pokédex</a><a href="/vplab/legacy/?tab=fipe">PokeFipe</a>
+          <Link to="/vplab/pokedex">Pokédex</Link><a href="/vplab/legacy/?tab=fipe">PokeFipe</a>
           <a href="/vplab/legacy/?tab=rota">Rota de caça</a><a href="/vplab/legacy/?tab=breeding">Breeding</a>
           <a href="/vplab/legacy/?tab=clas">Clãs</a><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
         </nav>
