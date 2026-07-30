@@ -412,7 +412,9 @@ function renderGrid() {
   ligarCards($("[data-grid]"));
 }
 
-const linkAnuncio = (id) => `anuncio.html?id=${encodeURIComponent(id)}`;
+// Transição controlada: o marketplace ainda é legado, mas o detalhe já pertence
+// ao React Router e consulta o Spring/PostgreSQL.
+const linkAnuncio = (id) => `/bazaar/anuncio/${encodeURIComponent(id)}`;
 
 /* Um só listener por container em vez de um por card. */
 function ligarCards(container) {
