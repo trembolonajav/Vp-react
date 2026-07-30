@@ -336,6 +336,48 @@ textarea.bz-input {
   color: var(--muted);
   font-size: 13.5px;
 }
+.admin-moderation {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(12, 7, 6, 0.62);
+}
+.admin-tabs, .admin-case-actions, .admin-listing-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.admin-tabs button, .admin-case-actions button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,.03);
+  color: var(--muted);
+  cursor: pointer;
+}
+.admin-tabs button.active, .admin-case-actions button:last-child {
+  color: var(--gold);
+  border-color: var(--line-strong);
+}
+.admin-filter { display: grid; gap: 6px; max-width: 220px; color: var(--muted); font-size: 12px; }
+.admin-moderation-list { display: grid; gap: 10px; margin-top: 14px; }
+.admin-case { padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(5,3,3,.38); }
+.admin-case-head, .admin-listing-case { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.admin-case-head > div, .admin-listing-case > div { display: grid; gap: 4px; }
+.admin-case p { margin: 10px 0; color: var(--muted); line-height: 1.5; }
+.admin-case small { color: var(--faint); }
+.admin-case textarea { margin-top: 12px; }
+.admin-case-actions { justify-content: flex-end; margin-top: 10px; }
+.admin-case-actions a, .admin-listing-case a { color: var(--gold); font-size: 13px; }
+.admin-status { border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; font-size: 11px; text-transform: uppercase; }
+.status-aberta { color: var(--gold); }
+.status-resolvida { color: #7fd9a2; }
+.status-rejeitada { color: #e48275; }
+.admin-resolution { border-left: 2px solid var(--line-strong); padding-left: 10px; }
+.admin-listing-filters { margin-bottom: 8px; }
+.admin-listing-filters .bz-input { flex: 1; }
+.admin-listing-case .bz-select { width: auto; min-width: 130px; }
 .nav-user {
   color: var(--gold-soft);
   font-size: 13px;

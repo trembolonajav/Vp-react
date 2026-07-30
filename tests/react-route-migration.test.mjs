@@ -160,3 +160,21 @@ test("uploads usam MinIO e mantêm metadados no PostgreSQL", () => {
   assert.match(migration, /CREATE TABLE media_assets/);
   assert.match(migration, /uploaded_by[^\\n]+REFERENCES users/);
 });
+
+test("administração modera denúncias e anúncios pelo Spring", () => {
+  const panel = fs.readFileSync("frontend/src/features/admin/components/AdminModerationPanel.tsx", "utf8");
+  const service = fs.readFileSync("frontend/src/services/adminModerationService.ts", "utf8");
+  const controller = fs.readFileSync("backend/src/main/java/com/vpertz/admin/AdminController.java", "utf8");
+  const listingController = fs.readFileSync("backend/src/main/java/com/vpertz/listings/ListingController.java", "utf8");
+  const migration = fs.readFileSync("backend/src/main/resources/db/migration/V8__report_moderation.sql", "utf8");
+
+  assert.match(panel, /reviewReport/);
+  assert.match(panel, /moderateListing/);
+  assert.match(service, /api\/v1\/admin\/reports/);
+  assert.match(service, /api\/v1\/admin\/listings/);
+  assert.match(controller, /@GetMapping\("\/reports"\)/);
+  assert.match(controller, /@PatchMapping\("\/listings\/\{publicId\}\/status"\)/);
+  assert.match(listingController, /ListingFilter[\s\S]*"ativo"\);/);
+  assert.match(migration, /reviewed_by/);
+  assert.match(migration, /resolution_note/);
+});

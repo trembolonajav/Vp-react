@@ -30,6 +30,7 @@ public class ListingService {
 
     private static final int MAX_SIZE = 60;
     private static final Set<String> MANAGEABLE_STATUS = Set.of("ativo", "pausado", "vendido");
+    private static final Set<String> ADMIN_STATUS = Set.of("ativo", "pausado", "vendido", "removido");
 
     private final ListingRepository repository;
     private final ListingMapper mapper;
@@ -50,10 +51,17 @@ public class ListingService {
     }
 
     @Transactional(readOnly = true)
-    public ListingResponse getByPublicId(String publicId) {
-        return repository.findByPublicId(publicId)
-                .map(mapper::toResponse)
+    public ListingResponse getByPublicId(String publicId, AuthPrincipal principal) {
+        Listing listing = repository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
+        boolean publicStatus = "ativo".equals(listing.getStatus()) || "vendido".equals(listing.getStatus());
+        boolean owner = principal != null && listing.getSellerId() != null
+                && listing.getSellerId().equals(principal.userId());
+        boolean admin = principal != null && "ADMIN".equals(principal.role());
+        if (!publicStatus && !owner && !admin) {
+            throw new ResourceNotFoundException("Anúncio não encontrado: " + publicId);
+        }
+        return mapper.toResponse(listing);
     }
 
     /** Anúncios do usuário autenticado (qualquer status), para a tela "meus anúncios". */
@@ -105,6 +113,21 @@ public class ListingService {
         if (!MANAGEABLE_STATUS.contains(status)) {
             throw new ValidationException("Status de anúncio inválido.");
         }
+        listing.setStatus(status);
+        touch(listing);
+        return mapper.toResponse(repository.save(listing));
+    }
+
+    @Transactional
+    public ListingResponse updateStatusAsAdmin(String publicId, String status, AuthPrincipal principal) {
+        if (!"ADMIN".equals(principal.role())) {
+            throw new AccessDeniedException("Apenas administradores podem moderar anúncios.");
+        }
+        if (!ADMIN_STATUS.contains(status)) {
+            throw new ValidationException("Status de anúncio inválido.");
+        }
+        Listing listing = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
         listing.setStatus(status);
         touch(listing);
         return mapper.toResponse(repository.save(listing));

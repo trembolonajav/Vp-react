@@ -63,7 +63,7 @@ public class ListingController {
                 q, tipo, intencao, moeda, jogo, categoria, servidor,
                 precoMin, precoMax, ivMin, ivMax, qualidadeMin, qualidadeMax,
                 nivelMin, nivelMax, poderMin, poderMax, tipos,
-                "todos".equalsIgnoreCase(status) ? null : status);
+                "ativo");
 
         return ResponseEntity.ok(listingService.list(filter, sort, page, size));
     }
@@ -74,8 +74,10 @@ public class ListingController {
     }
 
     @GetMapping("/{publicId}")
-    public ResponseEntity<ListingResponse> getOne(@PathVariable String publicId) {
-        return ResponseEntity.ok(listingService.getByPublicId(publicId));
+    public ResponseEntity<ListingResponse> getOne(
+            @PathVariable String publicId,
+            @AuthenticationPrincipal AuthPrincipal principal) {
+        return ResponseEntity.ok(listingService.getByPublicId(publicId, principal));
     }
 
     @PostMapping

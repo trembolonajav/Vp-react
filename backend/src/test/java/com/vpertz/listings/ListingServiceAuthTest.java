@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import com.vpertz.common.exception.ValidationException;
+import com.vpertz.common.exception.ResourceNotFoundException;
 
 /** Autorização das escritas: só dono ou admin gerenciam o anúncio. */
 @ExtendWith(MockitoExtension.class)
@@ -99,6 +100,38 @@ class ListingServiceAuthTest {
                 "x", "arquivado", new AuthPrincipal("eu", "eu", "USER")))
                 .isInstanceOf(ValidationException.class);
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void anuncioPausadoNaoVazaParaVisitante() {
+        Listing listing = listing("dono");
+        listing.setStatus("pausado");
+        when(repository.findByPublicId("x")).thenReturn(Optional.of(listing));
+
+        assertThatThrownBy(() -> service.getByPublicId("x", null))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void donoAindaPodeAbrirAnuncioPausadoParaEditar() {
+        Listing listing = listing("dono");
+        listing.setStatus("pausado");
+        when(repository.findByPublicId("x")).thenReturn(Optional.of(listing));
+
+        service.getByPublicId("x", new AuthPrincipal("dono", "dono", "USER"));
+
+        verify(mapper).toResponse(listing);
+    }
+
+    @Test
+    void somenteAdminPodeMarcarAnuncioComoRemovido() {
+        Listing listing = listing("dono");
+        when(repository.findByPublicId("x")).thenReturn(Optional.of(listing));
+        when(repository.save(listing)).thenReturn(listing);
+
+        service.updateStatusAsAdmin("x", "removido", new AuthPrincipal("admin", "admin", "ADMIN"));
+
+        assertThat(listing.getStatus()).isEqualTo("removido");
     }
 
     private static Listing listing(String sellerId) {

@@ -4,6 +4,7 @@ import { getConfig, saveConfig } from "../../../services/configService";
 import { useAuth } from "../../../contexts/AuthContext";
 import { ApiError } from "../../../services/api";
 import type { AdminConfigRequest, Banner, Contact, Game, SiteConfig } from "../../../types/config";
+import { AdminModerationPanel } from "../components/AdminModerationPanel";
 
 const ICONES = [
   "instagram", "youtube", "twitch", "whatsapp", "tiktok", "discord",
@@ -135,6 +136,8 @@ export function AdminPage() {
             <button type="button" className="bz-clear" onClick={logout}>Sair</button>
           </div>
         </div>
+
+        <AdminModerationPanel />
 
         <form onSubmit={save} className="an-form">
           <section className="admin-section">

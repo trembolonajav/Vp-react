@@ -67,7 +67,7 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 |---|---:|---|
 | Frontend ativo | **60%** | 15 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
-| Backend funcional | **73%** | 11 de 15 domínios necessários possuem API Spring utilizável |
+| Backend funcional | **80%** | 12 de 15 domínios necessários possuem API Spring utilizável |
 | Persistência moderna | **100%** | os 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **75%** | backend, Postgres e MinIO definitivos; frontend ainda incorpora legado |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
@@ -91,7 +91,7 @@ rota React separada.
 | Store | `/store/jogos.html` | HTML/JS | inexistente | Node/config legado | JSON/Blob ou arquivo | legado | LEGACY_ACTIVE | migrar |
 | Store | `/store/intermedio.html` | HTML/JS | inexistente | client-side | estático | legado | LEGACY_ACTIVE | migrar |
 | Store | `/store/offline.html` | HTML | inexistente | nenhum | nenhum | legado | LEGACY_ACTIVE | reavaliar PWA |
-| Admin | `/admin` | React protegido | `AdminPage` | Spring ADMIN | PostgreSQL | React | NEW_ACTIVE | completar gestão |
+| Admin | `/admin` | React protegido | `AdminPage` + `AdminModerationPanel` | Spring ADMIN | PostgreSQL | React | NEW_ACTIVE | manter |
 | Admin antigo | `/store/admin.html` | HTML/JS em `apps/` | `AdminPage` | APIs Node | JSON/Blob | não copiado no runtime atual | LEGACY_REFERENCE | remover após paridade |
 
 ### Bazaar
@@ -154,7 +154,7 @@ concreto.
 | Uploads | `/api/admin/upload` | `/api/v1/media` + `/media/{id}` | Blob/filesystem | `media_assets` + bucket privado | NEW_ACTIVE | manter |
 | Open Graph | `/api/bazaar/og` | `/api/v1/share/{id}/image.png` | render dinâmico Node | dados de `listings` | NEW_ACTIVE | manter |
 | Compartilhamento | `/api/bazaar/share` | `/api/v1/share/{id}` + Web Share | Node redirect/HTML | dados de `listings` | NEW_ACTIVE | manter |
-| Administração de denúncias/anúncios | parcial no Node | config apenas | JSON | tabelas existem | PARTIAL | endpoints ADMIN |
+| Administração de denúncias/anúncios | parcial no Node | `/api/v1/admin/reports` e `/listings` | JSON | `reports`, `listings` | NEW_ACTIVE | manter |
 
 As seis migrations Flyway foram verificadas como aplicadas no container:
 configuração, anúncios, usuários, vínculo do vendedor, chat e denúncias.
@@ -277,7 +277,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 7. **Concluído:** implementar favoritos no Spring/PostgreSQL.
 8. **Concluído:** implementar Open Graph/compartilhamento no Spring.
 9. **Concluído:** adicionar S3StorageService/MinIO e migration de metadados.
-10. Completar administração.
+10. **Concluído:** completar administração.
 11. Migrar VPLab na ordem: Avaliar IV no shell, PokeFipe, Pokédex, Rotas,
     Breeding, Clãs e Profissões.
 12. Migrar Store Jogos/Intermédio e eliminar HTML restante.
@@ -580,7 +580,33 @@ O volume local `mediadata` deixou de fazer parte do Compose. Os endpoints Node e
 o Vercel Blob permanecem somente enquanto houver páginas legadas dependentes
 deles.
 
-## 22. Checklist de paridade por rota
+## 22. Registro da etapa de administração e moderação
+
+```text
+ETAPA: Administração de denúncias e anúncios
+STATUS: CONCLUÍDA
+PAINEL: /admin
+DENÚNCIAS: /api/v1/admin/reports
+ANÚNCIOS: /api/v1/admin/listings
+```
+
+Validações executadas:
+
+- [x] painel React protegido por `ROLE_ADMIN`;
+- [x] usuário comum recebe 403 nos endpoints administrativos;
+- [x] fila de denúncias filtrável por situação;
+- [x] decisão resolvida/rejeitada com nota interna;
+- [x] responsável e horário da decisão persistidos;
+- [x] busca e filtro administrativo de anúncios;
+- [x] status ativo, pausado, vendido e removido;
+- [x] listagem pública ignora tentativas de `status=todos`;
+- [x] anúncio pausado/removido não é visível ao visitante;
+- [x] dono e administrador ainda podem abrir anúncio oculto para gestão;
+- [x] migration Flyway V8 aplicada;
+- [x] fluxo real React → Spring → PostgreSQL validado no Docker;
+- [x] dados temporários da auditoria removidos.
+
+## 23. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -598,7 +624,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 23. Critérios finais
+## 24. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router

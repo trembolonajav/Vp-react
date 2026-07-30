@@ -44,4 +44,13 @@ public class Report {
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @Column(name = "reviewed_by", length = 64)
+    private String reviewedBy;
+
+    @Column(name = "reviewed_at")
+    private OffsetDateTime reviewedAt;
+
+    @Column(name = "resolution_note", length = 600)
+    private String resolutionNote;
 }
