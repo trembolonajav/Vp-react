@@ -25,6 +25,8 @@ const PokeFipePage = lazy(() =>
   import("./features/vplab/pages/PokeFipePage").then((module) => ({ default: module.PokeFipePage })));
 const HuntRoutePage = lazy(() =>
   import("./features/vplab/pages/HuntRoutePage").then((module) => ({ default: module.HuntRoutePage })));
+const BreedingPage = lazy(() =>
+  import("./features/vplab/pages/BreedingPage").then((module) => ({ default: module.BreedingPage })));
 
 function Protegida({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   return <ProtectedRoute requireAdmin={admin}>{children}</ProtectedRoute>;
@@ -103,6 +105,7 @@ export function App() {
           <HuntRoutePage />
         </Suspense>
       } />
+      <Route path="vplab/breeding" element={<Suspense fallback={<main className="page"><div className="container">Calculando Breeding…</div></main>}><BreedingPage /></Suspense>} />
     </Routes>
   );
 }
