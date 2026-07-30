@@ -100,7 +100,7 @@ export function IvScannerPage() {
         <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
           <Link to="/vplab/" className="is-active">Avaliar IV</Link>
           <Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link>
-          <a href="/vplab/legacy/?tab=rota">Rota de caça</a><a href="/vplab/legacy/?tab=breeding">Breeding</a>
+          <Link to="/vplab/rota">Rota de caça</Link><a href="/vplab/legacy/?tab=breeding">Breeding</a>
           <a href="/vplab/legacy/?tab=clas">Clãs</a><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
         </nav>
         <header className="vplab-react__hero">

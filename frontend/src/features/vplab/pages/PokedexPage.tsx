@@ -73,7 +73,7 @@ export function PokedexPage() {
   return <main className="vplab-react"><div className="container">
     <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
       <Link to="/vplab/">Avaliar IV</Link><Link className="is-active" to="/vplab/pokedex">Pokédex</Link>
-      <Link to="/vplab/pokefipe">PokeFipe</Link><a href="/vplab/legacy/?tab=rota">Rota de caça</a>
+      <Link to="/vplab/pokefipe">PokeFipe</Link><Link to="/vplab/rota">Rota de caça</Link>
       <a href="/vplab/legacy/?tab=breeding">Breeding</a><a href="/vplab/legacy/?tab=clas">Clãs</a>
       <a href="/vplab/legacy/?tab=profissoes">Profissões</a>
     </nav>
@@ -104,7 +104,7 @@ function PokemonDetail({pokemon,catalog,choose,back,effectiveness}:{pokemon:Poke
     <div className="dex-heading"><div className="dex-art"><img src={sprite(pokemon.n)} alt={pokemon.m}/></div><div>
       <span className="vplab-react__eyebrow">#{String(pokemon.n).padStart(3,"0")}</span><h1>{pokemon.m}</h1>
       <div>{pokemon.t.map((x)=><Type key={x} name={x}/>)}</div>
-      <div className="dex-actions"><Link to={`/vplab/?p=${pokemon.s}`}>Avaliar IV</Link><a href={`/vplab/legacy/?tab=rota&p=${pokemon.s}`}>Planejar rota</a></div>
+      <div className="dex-actions"><Link to={`/vplab/?p=${pokemon.s}`}>Avaliar IV</Link><Link to={`/vplab/rota?p=${pokemon.s}`}>Planejar rota</Link></div>
     </div></div>
     <div className="dex-facts"><span><small>Hunt</small><b>{pokemon.boss?"Não disponível":`Nv ${pokemon.h}`}</b></span><span><small>XP por abate</small><b>{fmt(pokemon.xp)}</b></span><span><small>Loot médio</small><b>${fmt(pokemon.la)}</b></span><span><small>Preço NPC</small><b>${fmt(pokemon.npc)}</b></span><span><small>Venda</small><b>${fmt(pokemon.sell)}</b></span></div>
     <h2>Stats base · Total {pokemon.bs.reduce((a,b)=>a+b,0)}</h2><div className="dex-stats">{pokemon.bs.map((value,i)=><span key={STATS[i]}><small>{STATS[i]}</small><b>{value}</b><i><em style={{width:`${Math.max(2,value/255*100)}%`}}/></i></span>)}</div>
