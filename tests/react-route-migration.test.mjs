@@ -100,3 +100,19 @@ test("criar, editar e gerenciar anúncios usam React e a API Spring", () => {
   assert.match(mine, /updateListingStatus/);
   assert.match(listings, /\/api\/v1\/listings\/\$\{encodeURIComponent\(publicId\)\}\/status/);
 });
+
+test("chat e denúncias usam rotas React e dados autoritativos do Spring", () => {
+  const chat = fs.readFileSync("frontend/src/features/bazaar/pages/ChatPage.tsx", "utf8");
+  const detail = fs.readFileSync("frontend/src/features/bazaar/pages/AnuncioPage.tsx", "utf8");
+  const reportModal = fs.readFileSync("frontend/src/features/bazaar/components/ReportModal.tsx", "utf8");
+  const reports = fs.readFileSync("frontend/src/services/reportsService.ts", "utf8");
+
+  assert.match(app, /path="chat" element=\{<Protegida><ChatPage \/><\/Protegida>\}/);
+  assert.match(nginx, /location = \/bazaar\/chat\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(chat, /searchParams\.get\("conversation"\)/);
+  assert.match(chat, /\/api\/v1\/conversations|listConversations/);
+  assert.match(detail, /chat\?conversation=/);
+  assert.match(detail, /ReportModal/);
+  assert.match(reportModal, /createReport/);
+  assert.match(reports, /\/api\/v1\/reports/);
+});

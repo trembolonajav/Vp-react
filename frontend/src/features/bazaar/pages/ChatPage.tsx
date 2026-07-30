@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   getConversation,
   listConversations,
@@ -14,6 +15,7 @@ import type { ConversationDetail, ConversationSummary } from "../../../types/con
 const STATUS_OPCOES = Object.keys(CONVERSATION_STATUS);
 
 export function ChatPage() {
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [conversas, setConversas] = useState<ConversationSummary[]>([]);
   const [ativa, setAtiva] = useState<string | null>(null);
@@ -26,10 +28,6 @@ export function ChatPage() {
       .then((r) => setConversas(r.conversations))
       .catch((err: Error) => setError(err.message));
 
-  useEffect(() => {
-    recarregarLista();
-  }, []);
-
   const abrir = async (id: string) => {
     setAtiva(id);
     setDetalhe(null);
@@ -41,6 +39,13 @@ export function ChatPage() {
       setError((err as Error).message);
     }
   };
+
+  useEffect(() => {
+    const requested = searchParams.get("conversation");
+    recarregarLista().then(() => {
+      if (requested) void abrir(requested);
+    });
+  }, []);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();

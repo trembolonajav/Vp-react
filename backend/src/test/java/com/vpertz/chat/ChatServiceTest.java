@@ -8,6 +8,8 @@ import com.vpertz.chat.dto.ChatDtos.StartRequest;
 import com.vpertz.common.exception.ConflictException;
 import com.vpertz.common.exception.ResourceNotFoundException;
 import com.vpertz.common.exception.ValidationException;
+import com.vpertz.listings.Listing;
+import com.vpertz.listings.ListingRepository;
 import com.vpertz.users.User;
 import com.vpertz.users.UserRepository;
 import java.util.Optional;
@@ -23,6 +25,7 @@ class ChatServiceTest {
     @Mock private ConversationRepository conversationRepository;
     @Mock private MessageRepository messageRepository;
     @Mock private UserRepository userRepository;
+    @Mock private ListingRepository listingRepository;
 
     @InjectMocks private ChatService chatService;
 
@@ -52,6 +55,7 @@ class ChatServiceTest {
 
     @Test
     void iniciarComVendedorInexistenteConflita() {
+        when(listingRepository.findByPublicId("an-1")).thenReturn(Optional.of(listing(null, "fulano")));
         when(userRepository.findByUsernameIgnoreCase("fulano")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> chatService.start("eu", req("fulano")))
@@ -63,10 +67,40 @@ class ChatServiceTest {
         User eu = new User();
         eu.setId("eu");
         eu.setUsername("eu");
-        lenient().when(userRepository.findByUsernameIgnoreCase("eu")).thenReturn(Optional.of(eu));
+        Listing listing = listing("eu", "eu");
+        when(listingRepository.findByPublicId("an-1")).thenReturn(Optional.of(listing));
+        when(userRepository.findById("eu")).thenReturn(Optional.of(eu));
 
         assertThatThrownBy(() -> chatService.start("eu", req("eu")))
                 .isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    void anuncioInexistenteNaoIniciaConversa() {
+        when(listingRepository.findByPublicId("an-1")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> chatService.start("eu", req("inventado")))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void anuncioPausadoNaoIniciaConversa() {
+        Listing listing = listing("seller-id", "fulano");
+        listing.setStatus("pausado");
+        when(listingRepository.findByPublicId("an-1")).thenReturn(Optional.of(listing));
+
+        assertThatThrownBy(() -> chatService.start("eu", req("fulano")))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    private static Listing listing(String sellerId, String vendedor) {
+        Listing listing = new Listing();
+        listing.setPublicId("an-1");
+        listing.setSellerId(sellerId);
+        listing.setVendedor(vendedor);
+        listing.setTitulo("Título real");
+        listing.setStatus("ativo");
+        return listing;
     }
 
     private static StartRequest req(String seller) {

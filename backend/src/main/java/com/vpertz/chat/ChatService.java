@@ -9,6 +9,8 @@ import com.vpertz.chat.dto.ChatDtos.StartRequest;
 import com.vpertz.common.exception.ConflictException;
 import com.vpertz.common.exception.ResourceNotFoundException;
 import com.vpertz.common.exception.ValidationException;
+import com.vpertz.listings.Listing;
+import com.vpertz.listings.ListingRepository;
 import com.vpertz.users.User;
 import com.vpertz.users.UserRepository;
 import java.math.BigDecimal;
@@ -28,18 +30,20 @@ import org.springframework.util.StringUtils;
 public class ChatService {
 
     private static final Set<String> STATUS = Set.of("aberta", "intermedio-solicitado", "concluida", "encerrada");
-    private static final Set<String> CURRENCIES = Set.of("diamante", "pix");
 
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final ListingRepository listingRepository;
 
     ChatService(ConversationRepository conversationRepository,
                MessageRepository messageRepository,
-               UserRepository userRepository) {
+               UserRepository userRepository,
+               ListingRepository listingRepository) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
+        this.listingRepository = listingRepository;
     }
 
     @Transactional(readOnly = true)
@@ -81,14 +85,20 @@ public class ChatService {
 
     @Transactional
     public ConversationView start(String userId, StartRequest req) {
-        String sellerName = req.seller() == null ? "" : req.seller().trim();
-        User seller = userRepository.findByUsernameIgnoreCase(sellerName)
-                .orElseThrow(() -> new ConflictException("O vendedor ainda não ativou uma conta no Bazaar."));
+        String adId = req.adId() == null ? "" : req.adId().trim();
+        Listing listing = listingRepository.findByPublicId(adId)
+                .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado."));
+        if (!"ativo".equals(listing.getStatus())) {
+            throw new ConflictException("Este anúncio não está disponível para negociação.");
+        }
+        User seller = listing.getSellerId() == null
+                ? userRepository.findByUsernameIgnoreCase(listing.getVendedor())
+                    .orElseThrow(() -> new ConflictException("O vendedor ainda não ativou uma conta no Bazaar."))
+                : userRepository.findById(listing.getSellerId())
+                    .orElseThrow(() -> new ConflictException("O vendedor ainda não ativou uma conta no Bazaar."));
         if (seller.getId().equals(userId)) {
             throw new ValidationException("Este anúncio pertence à sua conta.");
         }
-        String adId = req.adId() == null ? "" : req.adId();
-
         Conversation conversa = conversationRepository.findByBuyerIdOrSellerId(userId, userId).stream()
                 .filter(c -> adId.equals(c.getAdId()) && userId.equals(c.getBuyerId()) && seller.getId().equals(c.getSellerId()))
                 .findFirst()
@@ -100,10 +110,10 @@ public class ChatService {
             conversa.setAdId(adId);
             conversa.setBuyerId(userId);
             conversa.setSellerId(seller.getId());
-            aplicarDadosDoAnuncio(conversa, req);
+            aplicarDadosDoAnuncio(conversa, listing);
             conversationRepository.save(conversa);
-        } else if (!StringUtils.hasText(conversa.getImageUrl()) && StringUtils.hasText(req.image())) {
-            aplicarDadosDoAnuncio(conversa, req);
+        } else if (!StringUtils.hasText(conversa.getImageUrl()) && StringUtils.hasText(listing.getImgUrl())) {
+            aplicarDadosDoAnuncio(conversa, listing);
             conversa.setUpdatedAt(OffsetDateTime.now());
             conversationRepository.save(conversa);
         }
@@ -168,12 +178,12 @@ public class ChatService {
         return conversa;
     }
 
-    private void aplicarDadosDoAnuncio(Conversation conversa, StartRequest req) {
-        conversa.setTitle(trunc(req.title(), 120));
-        conversa.setImageUrl(trunc(req.image(), 500));
-        conversa.setPrice(req.price() == null ? BigDecimal.ZERO : req.price());
-        conversa.setCurrency(CURRENCIES.contains(req.currency()) ? req.currency() : "diamante");
-        conversa.setDetails(trunc(req.details(), 200));
+    private void aplicarDadosDoAnuncio(Conversation conversa, Listing listing) {
+        conversa.setTitle(trunc(listing.getTitulo(), 120));
+        conversa.setImageUrl(trunc(listing.getImgUrl(), 500));
+        conversa.setPrice(listing.getPreco() == null ? BigDecimal.ZERO : listing.getPreco());
+        conversa.setCurrency("diamonds".equals(listing.getMoeda()) ? "diamante" : "pix");
+        conversa.setDetails(trunc(listing.getDescricao(), 200));
     }
 
     private Map<String, String> usernames(Set<String> ids) {

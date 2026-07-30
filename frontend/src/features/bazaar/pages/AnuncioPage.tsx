@@ -8,6 +8,7 @@ import type { Listing } from "../../../types/listing";
 import { ApiError } from "../../../services/api";
 import { brl, numeroBR, spriteUrl, DIAMANTE, ivTotal } from "../../../utils/format";
 import { TYPE_COLOR, TYPE_LABEL } from "../constants";
+import { ReportModal } from "../components/ReportModal";
 import type { CSSProperties } from "react";
 
 const IV_NOMES = ["HP", "Ataque", "Defesa", "Atq. Esp.", "Def. Esp.", "Velocidade"];
@@ -81,6 +82,7 @@ export function AnuncioPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatErro, setChatErro] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -142,7 +144,7 @@ export function AnuncioPage() {
     }
     setChatErro(null);
     try {
-      await startConversation({
+      const conversation = await startConversation({
         adId: listing.id,
         seller: listing.vendedor,
         title: listing.titulo,
@@ -150,7 +152,7 @@ export function AnuncioPage() {
         price: listing.preco,
         currency: listing.moeda === "diamonds" ? "diamante" : "pix",
       });
-      navigate("/bazaar/chat");
+      navigate(`/bazaar/chat?conversation=${encodeURIComponent(conversation.id)}`);
     } catch (err) {
       setChatErro(err instanceof ApiError ? err.message : "Não foi possível abrir a conversa.");
     }
@@ -250,6 +252,9 @@ export function AnuncioPage() {
                 Negociar pelo chat
               </button>
             )}
+            <button type="button" className="an-cta an-cta-alt" onClick={() => setReportOpen(true)}>
+              Denunciar anúncio
+            </button>
             {chatErro && <p className="bz-form-error">{chatErro}</p>}
             {!vendido && whatsapp && (
               <a className="an-cta an-cta-alt" href={waLink} target="_blank" rel="noreferrer">
@@ -259,6 +264,7 @@ export function AnuncioPage() {
           </div>
         </div>
       </div>
+      {reportOpen && <ReportModal listing={listing} onClose={() => setReportOpen(false)} />}
     </main>
   );
 }

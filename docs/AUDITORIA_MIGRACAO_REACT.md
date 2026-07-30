@@ -65,14 +65,14 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 
 | Camada | Resultado | Cálculo |
 |---|---:|---|
-| Frontend ativo | **56%** | 14 de 25 rotas/fluxos de usuário auditados são React ativos |
+| Frontend ativo | **60%** | 15 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
 | Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
 | Persistência moderna | **71%** | 5 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
-Há **13 rotas/fluxos legados ativos**: três do Bazaar, três da Store e sete
+Há **12 rotas/fluxos legados ativos**: dois do Bazaar, três da Store e sete
 ferramentas acessíveis pelo shell legado do VPLab. O Avaliar IV entra nessa
 contagem porque o shell antigo ainda expõe a versão Tesseract, embora exista uma
 rota React separada.
@@ -106,7 +106,8 @@ rota React separada.
 | Bazaar antigo | `/bazaar/anunciar.html` e `/bazaar/meus-anuncios.html` | HTML/JS | substituídos pelas rotas limpas | Node/localStorage | localStorage | arquivos ainda presentes | LEGACY_REFERENCE | retirar após atualizar todas as pontes |
 | Bazaar | `/bazaar/perfil` e `/bazaar/perfil/:username` | React | `PerfilPage` | Spring profiles | PostgreSQL | React | NEW_ACTIVE | manter |
 | Bazaar antigo | `/bazaar/perfil.html?user=` | HTML/JS | substituído pela rota com username | Node profile | JSON efêmero | arquivo ainda presente | LEGACY_REFERENCE | retirar após atualizar todas as pontes |
-| Bazaar | `/bazaar/chat.html` | HTML/JS | `ChatPage` | Node chat | JSON efêmero | legado | NEW_INACTIVE | ativar com Spring |
+| Bazaar | `/bazaar/chat` | React | `ChatPage` | Spring conversations/messages | PostgreSQL | React | NEW_ACTIVE | manter |
+| Bazaar antigo | `/bazaar/chat.html` | HTML/JS | substituído pela rota limpa | Node chat | JSON efêmero | arquivo ainda presente | LEGACY_REFERENCE | retirar após atualizar todas as pontes |
 | Bazaar | `/bazaar/conta.html` | HTML/JS | inexistente como página de conta | Node auth/profile | JSON efêmero | legado | LEGACY_ACTIVE | criar React |
 | Bazaar | `/bazaar/login` | React | `LoginPage` | Spring auth | PostgreSQL | React | NEW_ACTIVE | manter |
 | Bazaar | `/bazaar/cadastro` | React | `LoginPage` | Spring auth | PostgreSQL | React | NEW_ACTIVE | manter |
@@ -144,9 +145,9 @@ concreto.
 | Anúncios | `/api/config` + arrays | `/api/v1/listings` | config/localStorage | `listings`, `listing_types` | NEW_ACTIVE | manter e ampliar administração |
 | Favoritos | localStorage | inexistente | localStorage | inexistente | LEGACY_ACTIVE | criar migration/API |
 | Perfil | `/api/bazaar/profile` | `/api/v1/profiles` | JSON | `users` | NEW_ACTIVE | migrar dados reais e avaliar privacidade do contato |
-| Conversas | `/api/bazaar/chat` | `/api/v1/conversations` | JSON | `conversations` | NEW_INACTIVE | ativar React |
-| Mensagens/não lidas | `/api/bazaar/chat` | endpoints de conversa | JSON | `messages`, `message_reads` | NEW_INACTIVE | testes de autorização |
-| Denúncias | `/api/bazaar/report` | `/api/v1/reports` | JSON | `reports` | NEW_INACTIVE | ativar modal React |
+| Conversas | `/api/bazaar/chat` | `/api/v1/conversations` | JSON | `conversations` | NEW_ACTIVE | manter |
+| Mensagens/não lidas | `/api/bazaar/chat` | endpoints de conversa | JSON | `messages`, `message_reads` | NEW_ACTIVE | manter |
+| Denúncias | `/api/bazaar/report` | `/api/v1/reports` | JSON | `reports` | NEW_ACTIVE | completar painel administrativo |
 | Bloqueios | inexistente | inexistente | inexistente | inexistente | UNKNOWN | definir regra e implementar se necessária |
 | Configuração | `/api/config`, `/api/admin/config` | `/api/v1/config`, `/api/v1/admin/config` | config.json/Blob | tabelas de config | NEW_ACTIVE | remover consumidor legado |
 | Banners/contatos/taxonomia | config Node | config/admin Spring | config.json | tabelas próprias | PARTIAL | completar UI admin/testes |
@@ -256,7 +257,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 
 ## 10. Riscos de remoção
 
-- Remover `apps/` agora quebra 13 rotas/fluxos.
+- Remover `apps/` agora quebra 12 rotas/fluxos.
 - Remover `api/` quebra o deploy legado/Vercel e as páginas HTML ativas.
 - Remover `frontend/public/vplab` antes de ajustar o build pode retirar
   Tesseract/assets usados por testes e fallback.
@@ -272,7 +273,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 3. **Concluído:** ativar `/bazaar/login` e `/bazaar/cadastro`, consolidando autenticação React.
 4. **Concluído:** ativar perfil próprio e público em React.
 5. **Concluído:** ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
-6. Ativar chat e denúncias; ampliar testes de autorização.
+6. **Concluído:** ativar chat e denúncias com testes de autorização.
 7. Implementar favoritos no Spring/PostgreSQL.
 8. Implementar Open Graph/compartilhamento no Spring.
 9. Adicionar S3StorageService/MinIO e migration de metadados.
@@ -473,7 +474,34 @@ Os HTMLs antigos permanecem apenas como `LEGACY_REFERENCE`. O armazenamento de
 mídia local é persistente no Docker, mas continua `PARTIAL` até a futura etapa
 S3/MinIO.
 
-## 18. Checklist de paridade por rota
+## 18. Registro da etapa Chat e denúncias
+
+```text
+ETAPA: Ativação do chat e denúncias React
+STATUS: CONCLUÍDA
+ROTA ATIVADA: /bazaar/chat
+ROTA LEGADA SUBSTITUÍDA: /bazaar/chat.html
+BACKEND: /api/v1/conversations, /messages, /read, /status e /api/v1/reports
+PERSISTÊNCIA: PostgreSQL
+```
+
+Validações executadas:
+
+- [x] conversa criada somente para anúncio real e ativo;
+- [x] vendedor, título, preço e imagem obtidos do PostgreSQL;
+- [x] negociação com o próprio anúncio bloqueada;
+- [x] apenas comprador e vendedor acessam histórico, mensagens e status;
+- [x] mensagens e contagem de não lidas persistidas;
+- [x] link de negociação abre diretamente a conversa;
+- [x] denúncia vinculada ao anúncio real;
+- [x] denúncia do próprio anúncio bloqueada;
+- [x] denúncia aberta duplicada bloqueada;
+- [x] registros temporários removidos após a auditoria.
+
+O painel administrativo de tratamento de denúncias continua pendente. O HTML
+antigo do chat permanece apenas como `LEGACY_REFERENCE`.
+
+## 19. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -491,7 +519,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 19. Critérios finais
+## 20. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router
