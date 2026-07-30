@@ -101,7 +101,7 @@ export function IvScannerPage() {
           <Link to="/vplab/" className="is-active">Avaliar IV</Link>
           <Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link>
           <Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link>
-          <a href="/vplab/legacy/?tab=clas">Clãs</a><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
+          <Link to="/vplab/clas">Clãs</Link><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
         </nav>
         <header className="vplab-react__hero">
           <div><span className="vplab-react__eyebrow">React · leitor neural local</span>

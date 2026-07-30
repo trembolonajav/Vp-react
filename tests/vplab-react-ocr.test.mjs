@@ -26,5 +26,5 @@ test("scanner usa PaddleOCR local nos três fluxos de entrada", () => {
 test("ferramentas pendentes permanecem isoladas na ponte legada", () => {
   assert.match(dockerfile, /dist\/vplab\/legacy/);
   assert.match(scanner, /to="\/vplab\/pokedex"/);
-  assert.match(scanner, /\/vplab\/legacy\/\?tab=clas/);
+  assert.match(scanner, /\/vplab\/legacy\/\?tab=profissoes/);
 });
