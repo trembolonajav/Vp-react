@@ -1,12 +1,13 @@
 package com.vpertz.media;
 
-/**
- * Abstração de armazenamento de arquivos, para não acoplar o sistema a um
- * fornecedor. Hoje há a implementação local (disco/volume); um adaptador
- * S3/MinIO pode ser adicionado sem mudar quem chama.
- */
+/** Abstração de objetos binários, independente do fornecedor S3 ou disco local. */
 public interface StorageService {
+    void store(String objectKey, byte[] data, String contentType);
 
-    /** Salva os bytes e devolve a URL pública do arquivo (ex.: /media/xxx.png). */
-    String store(byte[] data, String extension);
+    StoredObject load(String objectKey);
+
+    void delete(String objectKey);
+
+    record StoredObject(byte[] data, String contentType) {
+    }
 }

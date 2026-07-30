@@ -144,3 +144,19 @@ test("compartilhamento usa Open Graph gerado pelo Spring", () => {
   assert.match(controller, /\/bazaar\/anuncio\//);
   assert.match(config, /public-base-url:/);
 });
+
+test("uploads usam MinIO e mantêm metadados no PostgreSQL", () => {
+  const compose = fs.readFileSync("docker-compose.yml", "utf8");
+  const storage = fs.readFileSync("backend/src/main/java/com/vpertz/media/S3StorageService.java", "utf8");
+  const media = fs.readFileSync("backend/src/main/java/com/vpertz/media/MediaService.java", "utf8");
+  const migration = fs.readFileSync("backend/src/main/resources/db/migration/V7__media_assets.sql", "utf8");
+
+  assert.match(compose, /minio\/minio:/);
+  assert.match(compose, /STORAGE_TYPE: s3/);
+  assert.match(storage, /PutObjectArgs/);
+  assert.match(storage, /GetObjectArgs/);
+  assert.match(media, /SHA-256/);
+  assert.match(media, /saveAndFlush/);
+  assert.match(migration, /CREATE TABLE media_assets/);
+  assert.match(migration, /uploaded_by[^\\n]+REFERENCES users/);
+});

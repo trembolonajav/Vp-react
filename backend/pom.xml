@@ -86,6 +86,12 @@
       <version>1.78.1</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>9.0.1</version>
+    </dependency>
+
     <!-- Reduz boilerplate nas entidades -->
     <dependency>
       <groupId>org.projectlombok</groupId>

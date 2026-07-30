@@ -24,8 +24,8 @@ Nginx
 Spring Boot → PostgreSQL
 └── autenticação, configuração, anúncios, perfil, chat e denúncias
 
-Spring Boot → volume Docker mediadata
-└── uploads locais
+Spring Boot → MinIO/S3
+└── objetos privados com metadados no PostgreSQL
 ```
 
 O backend moderno existe e está operacional, mas parte relevante do frontend
@@ -67,9 +67,9 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 |---|---:|---|
 | Frontend ativo | **60%** | 15 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
-| Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
-| Persistência moderna | **86%** | 6 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
-| Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
+| Backend funcional | **73%** | 11 de 15 domínios necessários possuem API Spring utilizável |
+| Persistência moderna | **100%** | os 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
+| Docker definitivo | **75%** | backend, Postgres e MinIO definitivos; frontend ainda incorpora legado |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
 Há **12 rotas/fluxos legados ativos**: dois do Bazaar, três da Store e sete
@@ -151,7 +151,7 @@ concreto.
 | Bloqueios | inexistente | inexistente | inexistente | inexistente | UNKNOWN | definir regra e implementar se necessária |
 | Configuração | `/api/config`, `/api/admin/config` | `/api/v1/config`, `/api/v1/admin/config` | config.json/Blob | tabelas de config | NEW_ACTIVE | remover consumidor legado |
 | Banners/contatos/taxonomia | config Node | config/admin Spring | config.json | tabelas próprias | PARTIAL | completar UI admin/testes |
-| Uploads | `/api/admin/upload` | `/api/v1/media` | Blob/filesystem | somente URL nos consumidores | PARTIAL | implementar S3/MinIO e metadados |
+| Uploads | `/api/admin/upload` | `/api/v1/media` + `/media/{id}` | Blob/filesystem | `media_assets` + bucket privado | NEW_ACTIVE | manter |
 | Open Graph | `/api/bazaar/og` | `/api/v1/share/{id}/image.png` | render dinâmico Node | dados de `listings` | NEW_ACTIVE | manter |
 | Compartilhamento | `/api/bazaar/share` | `/api/v1/share/{id}` + Web Share | Node redirect/HTML | dados de `listings` | NEW_ACTIVE | manter |
 | Administração de denúncias/anúncios | parcial no Node | config apenas | JSON | tabelas existem | PARTIAL | endpoints ADMIN |
@@ -276,7 +276,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 6. **Concluído:** ativar chat e denúncias com testes de autorização.
 7. **Concluído:** implementar favoritos no Spring/PostgreSQL.
 8. **Concluído:** implementar Open Graph/compartilhamento no Spring.
-9. Adicionar S3StorageService/MinIO e migration de metadados.
+9. **Concluído:** adicionar S3StorageService/MinIO e migration de metadados.
 10. Completar administração.
 11. Migrar VPLab na ordem: Avaliar IV no shell, PokeFipe, Pokédex, Rotas,
     Breeding, Clãs e Profissões.
@@ -549,7 +549,38 @@ Validações executadas:
 Os endpoints Node `/api/bazaar/share` e `/api/bazaar/og` permanecem apenas para
 compatibilidade do deploy legado até a etapa final de limpeza.
 
-## 21. Checklist de paridade por rota
+## 21. Registro da etapa de armazenamento S3/MinIO
+
+```text
+ETAPA: Migração de uploads para object storage
+STATUS: CONCLUÍDA
+UPLOAD: POST /api/v1/media
+LEITURA: GET /media/{publicId}
+OBJETOS: bucket privado vpertz-media
+METADADOS: tabela media_assets
+```
+
+Validações executadas:
+
+- [x] upload exige autenticação;
+- [x] formato real validado por magic bytes;
+- [x] limite de 2,5 MB preservado;
+- [x] objeto gravado no MinIO por chave não previsível;
+- [x] bucket criado automaticamente e mantido privado;
+- [x] autor, tamanho, MIME type, nome original e SHA-256 no PostgreSQL;
+- [x] rollback remove o objeto quando a persistência falha;
+- [x] leitura pública usa URL estável sem expor credenciais S3;
+- [x] resposta inclui cache imutável e ETag baseado no SHA-256;
+- [x] fallback local selecionável por `STORAGE_TYPE=local`;
+- [x] migration Flyway V7 aplicada;
+- [x] persistência confirmada no volume `miniodata`;
+- [x] Docker saudável com frontend, backend, PostgreSQL e MinIO.
+
+O volume local `mediadata` deixou de fazer parte do Compose. Os endpoints Node e
+o Vercel Blob permanecem somente enquanto houver páginas legadas dependentes
+deles.
+
+## 22. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -567,7 +598,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 22. Critérios finais
+## 23. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router
@@ -575,7 +606,7 @@ Para cada migração:
 - [ ] nenhuma API Node ativa
 - [ ] regras autoritativas no Spring
 - [ ] persistência transacional no PostgreSQL
-- [ ] uploads no S3/MinIO
+- [x] uploads no S3/MinIO
 - [ ] Docker construindo apenas `frontend/` e `backend/`
 - [ ] nenhuma cópia concorrente
 - [ ] OCR aprovado em suíte representativa

@@ -5,20 +5,18 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.SecureRandom;
-import java.util.HexFormat;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-/** Armazena os arquivos no disco (um volume, em produção). */
+/** Fallback para desenvolvimento sem serviço S3. */
 @Service
+@ConditionalOnProperty(name = "app.storage.type", havingValue = "local", matchIfMissing = true)
 public class LocalStorageService implements StorageService {
-
     private final Path dir;
-    private final SecureRandom random = new SecureRandom();
 
     public LocalStorageService(@Value("${app.storage.dir}") String dir) {
-        this.dir = Path.of(dir);
+        this.dir = Path.of(dir).toAbsolutePath().normalize();
     }
 
     @PostConstruct
@@ -31,15 +29,39 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
-    public String store(byte[] data, String extension) {
-        byte[] suffix = new byte[8];
-        random.nextBytes(suffix);
-        String name = "img-" + System.currentTimeMillis() + "-" + HexFormat.of().formatHex(suffix) + "." + extension;
+    public void store(String objectKey, byte[] data, String contentType) {
+        Path target = safePath(objectKey);
         try {
-            Files.write(dir.resolve(name), data);
+            Files.createDirectories(target.getParent());
+            Files.write(target, data);
         } catch (IOException e) {
             throw new UncheckedIOException("Falha ao salvar o arquivo de mídia.", e);
         }
-        return "/media/" + name;
+    }
+
+    @Override
+    public StoredObject load(String objectKey) {
+        try {
+            return new StoredObject(Files.readAllBytes(safePath(objectKey)), MediaTypes.fromObjectKey(objectKey));
+        } catch (IOException e) {
+            throw new MediaStorageException("Objeto de mídia não encontrado.", e);
+        }
+    }
+
+    @Override
+    public void delete(String objectKey) {
+        try {
+            Files.deleteIfExists(safePath(objectKey));
+        } catch (IOException e) {
+            throw new UncheckedIOException("Falha ao remover o arquivo de mídia.", e);
+        }
+    }
+
+    private Path safePath(String objectKey) {
+        Path target = dir.resolve(objectKey).normalize();
+        if (!target.startsWith(dir)) {
+            throw new IllegalArgumentException("Chave de mídia inválida.");
+        }
+        return target;
     }
 }
