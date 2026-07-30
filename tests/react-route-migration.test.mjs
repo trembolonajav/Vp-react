@@ -66,3 +66,19 @@ test("login e cadastro são rotas React oficiais dentro do Bazaar", () => {
   assert.match(authService, /\/api\/v1\/auth\/register/);
   assert.match(authService, /\/api\/v1\/auth\/me/);
 });
+
+test("perfil próprio e público usam React e a API Spring", () => {
+  const profilePage = fs.readFileSync("frontend/src/features/bazaar/pages/PerfilPage.tsx", "utf8");
+  const profileService = fs.readFileSync("frontend/src/services/profileService.ts", "utf8");
+  const detail = fs.readFileSync("frontend/src/features/bazaar/pages/AnuncioPage.tsx", "utf8");
+
+  assert.match(app, /path="perfil" element=\{<Protegida><PerfilPage \/><\/Protegida>\}/);
+  assert.match(app, /path="perfil\/:username" element=\{<PerfilPage \/>\}/);
+  assert.match(nginx, /location = \/bazaar\/perfil\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(profilePage, /const \{ username \} = useParams\(\)/);
+  assert.match(profilePage, /updateMyProfile/);
+  assert.match(profileService, /\/api\/v1\/profiles\/\$\{encodeURIComponent\(username\)\}/);
+  assert.match(profileService, /\/api\/v1\/profiles\/me/);
+  assert.match(detail, /to=\{`\/bazaar\/perfil\/\$\{encodeURIComponent\(listing\.vendedor\)\}`\}/);
+  assert.doesNotMatch(detail, /perfil\.html/);
+});

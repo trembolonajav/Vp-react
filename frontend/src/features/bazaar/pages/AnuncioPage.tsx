@@ -225,7 +225,9 @@ export function AnuncioPage() {
 
             {listing.vendedor && (
               <div className="an-seller">
-                Anunciante: <b>{listing.vendedor}</b>
+                Anunciante: <Link to={`/bazaar/perfil/${encodeURIComponent(listing.vendedor)}`}>
+                  <b>{listing.vendedor}</b>
+                </Link>
                 <span className={`bz-online ${listing.vendedorOnline ? "" : "off"}`}>
                   {listing.vendedorOnline ? "Online" : "Offline"}
                 </span>

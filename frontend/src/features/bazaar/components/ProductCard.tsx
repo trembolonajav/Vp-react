@@ -99,7 +99,9 @@ export function ProductCard({ listing }: { listing: Listing }) {
 
       {listing.vendedor && (
         <div className="bz-seller">
-          <span className="bz-seller-name">{listing.vendedor}</span>
+          <Link className="bz-seller-name" to={`/bazaar/perfil/${encodeURIComponent(listing.vendedor)}`}>
+            {listing.vendedor}
+          </Link>
           <span className={`bz-online ${listing.vendedorOnline ? "" : "off"}`}>
             {listing.vendedorOnline ? "Online" : "Offline"}
           </span>

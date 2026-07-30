@@ -52,7 +52,11 @@ public class ProfileService {
         if (value == null) {
             return "";
         }
-        String t = value.replaceAll("[<>]", "").trim();
+        String t = value
+                .replaceAll("<[^>]*>", "")
+                .replace("<", "")
+                .replace(">", "")
+                .trim();
         return t.length() > max ? t.substring(0, max) : t;
     }
 
