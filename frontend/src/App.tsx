@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HubLayout } from "./features/hub/HubLayout";
@@ -8,14 +8,17 @@ import { StoreHomePage } from "./features/store/pages/StoreHomePage";
 import { NegociarPage } from "./features/store/pages/NegociarPage";
 import { ContatoPage } from "./features/store/pages/ContatoPage";
 import { BazaarLayout } from "./layouts/BazaarLayout";
+import { LoginPage } from "./features/auth/pages/LoginPage";
+import { AdminPage } from "./features/admin/pages/AdminPage";
 import { AnuncioPage } from "./features/bazaar/pages/AnuncioPage";
 import { MarketplacePage } from "./features/bazaar/pages/MarketplacePage";
 import { PerfilPage } from "./features/bazaar/pages/PerfilPage";
 import { AnunciarPage } from "./features/bazaar/pages/AnunciarPage";
 import { MeusAnunciosPage } from "./features/bazaar/pages/MeusAnunciosPage";
 import { ChatPage } from "./features/bazaar/pages/ChatPage";
-import { LoginPage } from "./features/auth/pages/LoginPage";
-import { AdminPage } from "./features/admin/pages/AdminPage";
+
+const IvScannerPage = lazy(() =>
+  import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
 
 function Protegida({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   return <ProtectedRoute requireAdmin={admin}>{children}</ProtectedRoute>;
@@ -66,6 +69,19 @@ export function App() {
 
       {/* Painel */}
       <Route path="admin" element={<Protegida admin><AdminPage /></Protegida>} />
+
+      {/* Primeira migração vertical do VPLab. O shell legado permanece em
+          /vplab/ apenas até as demais ferramentas alcançarem paridade. */}
+      <Route path="vplab" element={
+        <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
+          <IvScannerPage />
+        </Suspense>
+      } />
+      <Route path="vplab/avaliar-iv" element={
+        <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
+          <IvScannerPage />
+        </Suspense>
+      } />
     </Routes>
   );
 }

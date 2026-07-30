@@ -1,0 +1,15 @@
+.git
+.agents
+.claude
+.codex
+.data
+.tmp-*
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+design-sources
+tests/fixtures
+*.png
+!apps/**/*.png
+!frontend/**/*.png

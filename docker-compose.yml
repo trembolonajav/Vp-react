@@ -1,4 +1,5 @@
-# Sobe a plataforma completa para desenvolvimento local.
+# Sobe a plataforma para desenvolvimento local: banco + backend.
+# O frontend (React) e o storage (MinIO) entram nas fases seguintes.
 # Segredos ficam no arquivo .env (ver .env.example) — nunca versionados.
 
 services:
@@ -78,7 +79,10 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      # O contexto raiz permite compor o SPA React com os módulos estáticos
+      # oficiais de apps/ (VPLab e Bazaar), sem cópias divergentes.
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: vpertz-frontend
     restart: unless-stopped
     depends_on:
