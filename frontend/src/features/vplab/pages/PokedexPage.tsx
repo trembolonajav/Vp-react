@@ -75,7 +75,7 @@ export function PokedexPage() {
       <Link to="/vplab/">Avaliar IV</Link><Link className="is-active" to="/vplab/pokedex">Pokédex</Link>
       <Link to="/vplab/pokefipe">PokeFipe</Link><Link to="/vplab/rota">Rota de caça</Link>
       <Link to="/vplab/breeding">Breeding</Link><Link to="/vplab/clas">Clãs</Link>
-      <a href="/vplab/legacy/?tab=profissoes">Profissões</a>
+      <Link to="/vplab/profissoes">Profissões</Link>
     </nav>
     <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Catálogo oficial · 251 espécies</span>
       <h1>Pokédex VPLab</h1><p>Stats, hunts, efetividade, golpes, evoluções e drops em um só lugar.</p></div>

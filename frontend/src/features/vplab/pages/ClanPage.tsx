@@ -19,7 +19,7 @@ export function ClanPage(){
  const clan=data?.clans[clanId];const substitutes=useMemo(()=>clan?.ranking.slice(6).filter(p=>(!query||p.name.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR")))&&(!type||p.types.includes(type)))??[],[clan,query,type]);
  const selectClan=(id:string)=>{setParams({clan:id});setExpanded(false);setQuery("");setType("")};
  return <main className="vplab-react clan-react" style={{"--clan":COLORS[clanId]} as CSSProperties}><div className="container">
-  <nav className="vplab-react__tools"><Link to="/vplab/">Avaliar IV</Link><Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link><Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link><Link className="is-active" to="/vplab/clas">Clãs</Link><a href="/vplab/legacy/?tab=profissoes">Profissões</a></nav>
+  <nav className="vplab-react__tools"><Link to="/vplab/">Avaliar IV</Link><Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link><Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link><Link className="is-active" to="/vplab/clas">Clãs</Link><Link to="/vplab/profissoes">Profissões</Link></nav>
   <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Ranking canônico · Rank 5</span><h1>Clãs e times recomendados</h1><p>Escolha um clã para consultar o Top 6 oficial, substitutos e critérios da auditoria.</p></div>{data&&<span className="vplab-react__privacy">Consolidado em {data.meta.consolidatedAt}</span>}</header>
   {error&&<section className="vplab-panel clan-react-error">{error}</section>}
   {!data&&!error&&<section className="vplab-panel clan-react-loading">Carregando os 10 clãs…</section>}

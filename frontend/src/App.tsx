@@ -29,6 +29,8 @@ const BreedingPage = lazy(() =>
   import("./features/vplab/pages/BreedingPage").then((module) => ({ default: module.BreedingPage })));
 const ClanPage = lazy(() =>
   import("./features/vplab/pages/ClanPage").then((module) => ({ default: module.ClanPage })));
+const ProfessionsPage = lazy(() =>
+  import("./features/vplab/pages/ProfessionsPage").then((module) => ({ default: module.ProfessionsPage })));
 
 function Protegida({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   return <ProtectedRoute requireAdmin={admin}>{children}</ProtectedRoute>;
@@ -109,6 +111,7 @@ export function App() {
       } />
       <Route path="vplab/breeding" element={<Suspense fallback={<main className="page"><div className="container">Calculando Breeding…</div></main>}><BreedingPage /></Suspense>} />
       <Route path="vplab/clas" element={<Suspense fallback={<main className="page"><div className="container">Carregando clãs…</div></main>}><ClanPage /></Suspense>} />
+      <Route path="vplab/profissoes" element={<Suspense fallback={<main className="page"><div className="container">Carregando profissões…</div></main>}><ProfessionsPage /></Suspense>} />
     </Routes>
   );
 }

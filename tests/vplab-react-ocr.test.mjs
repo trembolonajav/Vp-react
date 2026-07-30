@@ -23,8 +23,8 @@ test("scanner usa PaddleOCR local nos três fluxos de entrada", () => {
   assert.doesNotMatch(scanner, /Tesseract/);
 });
 
-test("ferramentas pendentes permanecem isoladas na ponte legada", () => {
+test("shell legado permanece apenas como ponte de compatibilidade", () => {
   assert.match(dockerfile, /dist\/vplab\/legacy/);
   assert.match(scanner, /to="\/vplab\/pokedex"/);
-  assert.match(scanner, /\/vplab\/legacy\/\?tab=profissoes/);
+  assert.doesNotMatch(scanner, /\/vplab\/legacy\/\?tab=/);
 });

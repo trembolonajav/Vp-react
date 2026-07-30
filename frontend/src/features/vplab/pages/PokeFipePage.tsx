@@ -28,7 +28,7 @@ export function PokeFipePage() {
       <Link to="/vplab/">Avaliar IV</Link><Link to="/vplab/pokedex">Pokédex</Link>
       <Link className="is-active" to="/vplab/pokefipe">PokeFipe</Link>
       <Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link>
-      <Link to="/vplab/clas">Clãs</Link><a href="/vplab/legacy/?tab=profissoes">Profissões</a>
+      <Link to="/vplab/clas">Clãs</Link><Link to="/vplab/profissoes">Profissões</Link>
     </nav>
     <header className="vplab-react__hero fipe-react-hero"><div><span className="vplab-react__eyebrow">PokeFipe · modelo 2.0</span>
       <h1>Quanto vale esse Pokémon hoje?</h1><p>Venda rápida, valor justo e preço para anunciar com base de mercado atualizada em {UPDATED_AT}.</p></div>
