@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HubLayout } from "./features/hub/HubLayout";
 import { HubHomePage } from "./features/hub/HubHomePage";
@@ -44,15 +44,15 @@ export function App() {
       <Route path="bazaar" element={<BazaarLayout />}>
         <Route index element={<MarketplacePage />} />
         <Route path="anuncio/:id" element={<AnuncioPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="cadastro" element={<LoginPage />} />
       </Route>
 
       {/* Fallback temporário somente para as rotas Bazaar ainda não migradas. */}
       <Route path="bazaar/*" element={<BazaarRedirect />} />
 
-      {/* Login (com o cabeçalho do bazaar) */}
-      <Route path="login" element={<BazaarLayout />}>
-        <Route index element={<LoginPage />} />
-      </Route>
+      {/* Compatibilidade com links antigos; a rota oficial vive no Bazaar. */}
+      <Route path="login" element={<Navigate to="/bazaar/login" replace />} />
 
       {/* Painel */}
       <Route path="admin" element={<Protegida admin><AdminPage /></Protegida>} />

@@ -1462,6 +1462,10 @@ body:has([data-wizard]) main.page{
 .bz-login-note{margin:14px 0 0;font-size:11.5px;line-height:1.5;color:#7d6d64}
 .bz-login-safe{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(229,179,79,.16);text-align:left;font-size:11.5px;line-height:1.4;color:#8a7a70}
 .bz-login-safe img{width:28px;height:28px;padding:5px;object-fit:contain;border:1px solid rgba(216,138,74,.28);border-radius:6px;background:rgba(38,24,18,.7)}
+.bz-auth-page{min-height:720px;padding-top:54px}
+.bz-auth-page .bz-login-card{margin:0 auto}
+.bz-login-card h1{margin:10px 0 0;font:700 28px/1.15 Cinzel,serif;color:#f7eee7}
+.bz-login-ok:disabled{opacity:.58;cursor:wait;filter:saturate(.5)}
 
 /* Referência _3 — barra autenticada, notificações e menu de perfil */
 .bz-userbar{position:relative;display:flex;align-items:center;gap:12px}

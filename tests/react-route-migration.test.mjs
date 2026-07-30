@@ -47,3 +47,22 @@ test("contadores e grade do Marketplace usam a API Spring, não config.bazaar.an
   assert.match(stats, /intencao: "compra"/);
   assert.match(listings, /\/api\/v1\/listings\?/);
 });
+
+test("login e cadastro são rotas React oficiais dentro do Bazaar", () => {
+  const loginPage = fs.readFileSync("frontend/src/features/auth/pages/LoginPage.tsx", "utf8");
+  const protectedRoute = fs.readFileSync("frontend/src/components/ProtectedRoute.tsx", "utf8");
+  const authService = fs.readFileSync("frontend/src/services/authService.ts", "utf8");
+
+  assert.match(app, /<Route path="login" element=\{<LoginPage \/>\} \/>/);
+  assert.match(app, /<Route path="cadastro" element=\{<LoginPage \/>\} \/>/);
+  assert.match(app, /<Navigate to="\/bazaar\/login" replace \/>/);
+  assert.match(nginx, /location = \/bazaar\/login\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(nginx, /location = \/bazaar\/cadastro\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(loginPage, /location\.pathname\.endsWith\("\/cadastro"\)/);
+  assert.match(loginPage, /to="\/bazaar\/login"/);
+  assert.match(loginPage, /to="\/bazaar\/cadastro"/);
+  assert.match(protectedRoute, /to="\/bazaar\/login"/);
+  assert.match(authService, /\/api\/v1\/auth\/login/);
+  assert.match(authService, /\/api\/v1\/auth\/register/);
+  assert.match(authService, /\/api\/v1\/auth\/me/);
+});

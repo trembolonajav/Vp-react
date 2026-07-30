@@ -137,7 +137,7 @@ export function AnuncioPage() {
   const podeNegociar = !vendido && Boolean(listing.vendedor) && user?.username !== listing.vendedor;
   const negociarChat = async () => {
     if (!user) {
-      navigate("/login", { state: { from: `/bazaar/anuncio/${listing.id}` } });
+      navigate("/bazaar/login", { state: { from: `/bazaar/anuncio/${listing.id}` } });
       return;
     }
     setChatErro(null);

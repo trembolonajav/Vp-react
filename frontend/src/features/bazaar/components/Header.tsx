@@ -49,7 +49,7 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <Link className="bz-vpertsz-link" to="/login">Entrar</Link>
+              <Link className="bz-vpertsz-link" to="/bazaar/login">Entrar</Link>
             )}
           </div>
         </nav>

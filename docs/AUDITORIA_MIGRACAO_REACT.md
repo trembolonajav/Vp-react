@@ -14,10 +14,10 @@ Nginx
 ├── SPA React/TypeScript
 │   ├── Hub
 │   ├── parte da Store
-│   ├── login e administração
+│   ├── login, cadastro e administração
 │   └── /vplab/avaliar-iv
 └── HTML/CSS/JavaScript copiado de apps/
-    ├── Bazaar inteiro
+    ├── páginas restantes do Bazaar
     ├── shell e seis ferramentas do VPLab
     └── páginas restantes da Store
 
@@ -65,14 +65,14 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 
 | Camada | Resultado | Cálculo |
 |---|---:|---|
-| Frontend ativo | **40%** | 10 de 25 rotas/fluxos de usuário auditados são React ativos |
+| Frontend ativo | **44%** | 11 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
 | Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
 | Persistência moderna | **71%** | 5 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
-Há **17 rotas/fluxos legados ativos**: sete do Bazaar, três da Store e sete
+Há **16 rotas/fluxos legados ativos**: seis do Bazaar, três da Store e sete
 ferramentas acessíveis pelo shell legado do VPLab. O Avaliar IV entra nessa
 contagem porque o shell antigo ainda expõe a versão Tesseract, embora exista uma
 rota React separada.
@@ -106,8 +106,9 @@ rota React separada.
 | Bazaar | `/bazaar/perfil.html` | HTML/JS | `PerfilPage` | Node profile | JSON efêmero | legado | NEW_INACTIVE | ativar com Spring |
 | Bazaar | `/bazaar/chat.html` | HTML/JS | `ChatPage` | Node chat | JSON efêmero | legado | NEW_INACTIVE | ativar com Spring |
 | Bazaar | `/bazaar/conta.html` | HTML/JS | inexistente como página de conta | Node auth/profile | JSON efêmero | legado | LEGACY_ACTIVE | criar React |
-| Bazaar | `/login` | React | `LoginPage` | Spring auth | PostgreSQL | React | NEW_ACTIVE | manter |
-| Bazaar | cadastro dentro de `conta.html` | HTML/JS | serviço React sem rota própria | Spring auth disponível | PostgreSQL | legado | PARTIAL | criar `/cadastro` |
+| Bazaar | `/bazaar/login` | React | `LoginPage` | Spring auth | PostgreSQL | React | NEW_ACTIVE | manter |
+| Bazaar | `/bazaar/cadastro` | React | `LoginPage` | Spring auth | PostgreSQL | React | NEW_ACTIVE | manter |
+| Bazaar | `/login` | redirecionamento React | substituído por `/bazaar/login` | nenhum | nenhum | React | LEGACY_BRIDGE | remover após atualizar links externos |
 | Bazaar | `/bazaar/como-funciona.html` | HTML | inexistente | nenhum | estático | legado | LEGACY_ACTIVE | converter para React |
 
 O `App.tsx` mantém `BazaarRedirect` somente para caminhos limpos ainda não
@@ -136,7 +137,7 @@ concreto.
 
 | Funcionalidade | API antiga | API Spring | Dados antigos | PostgreSQL | Estado | Ação |
 |---|---|---|---|---|---|---|
-| Autenticação | `/api/bazaar/auth`, `/api/login` | `/api/v1/auth/*` | `bazaar-accounts.json`, env | `users` | NEW_ACTIVE | adicionar mais testes de controller |
+| Autenticação | `/api/bazaar/auth`, `/api/login` | `/api/v1/auth/*` | `bazaar-accounts.json`, env | `users` | NEW_ACTIVE | rotas React ativadas; avaliar cookie HttpOnly |
 | Usuários | JSON local/Blob | auth + `/profiles` | JSON | `users` | NEW_ACTIVE | migração de dados reais pendente |
 | Anúncios | `/api/config` + arrays | `/api/v1/listings` | config/localStorage | `listings`, `listing_types` | NEW_INACTIVE no Bazaar | ativar frontend |
 | Favoritos | localStorage | inexistente | localStorage | inexistente | LEGACY_ACTIVE | criar migration/API |
@@ -253,7 +254,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 
 ## 10. Riscos de remoção
 
-- Remover `apps/` agora quebra 19 rotas/fluxos.
+- Remover `apps/` agora quebra 16 rotas/fluxos.
 - Remover `api/` quebra o deploy legado/Vercel e as páginas HTML ativas.
 - Remover `frontend/public/vplab` antes de ajustar o build pode retirar
   Tesseract/assets usados por testes e fallback.
@@ -266,7 +267,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 1. **Concluído:** ativar isoladamente `/bazaar/anuncio/:id`; os cards do
    marketplace ativo agora apontam para a rota limpa.
 2. **Concluído:** ativar `/bazaar/`, com filtros, contadores e paginação Spring.
-3. Criar `/cadastro` e consolidar autenticação React.
+3. **Concluído:** ativar `/bazaar/login` e `/bazaar/cadastro`, consolidando autenticação React.
 4. Ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
 5. Ativar perfil, chat e denúncias; ampliar testes de autorização.
 6. Implementar favoritos no Spring/PostgreSQL.
@@ -359,7 +360,43 @@ Evidências executadas:
 - desktop e mobile: nenhuma exceção no console;
 - logs Spring: nenhuma ocorrência de erro/exceção durante os testes.
 
-## 15. Checklist de paridade por rota
+## 15. Registro da etapa Autenticação
+
+```text
+ETAPA: Ativação do login e cadastro React
+STATUS: CONCLUÍDA
+ROTAS ATIVADAS:
+  /bazaar/login
+  /bazaar/cadastro
+ROTA DE COMPATIBILIDADE:
+  /login -> /bazaar/login
+BACKEND:
+  POST /api/v1/auth/login
+  POST /api/v1/auth/register
+  GET /api/v1/auth/me
+PERSISTÊNCIA: PostgreSQL, tabela users, senha bcrypt
+```
+
+Validações executadas:
+
+- [x] cadastro pela interface React;
+- [x] login por usuário e por e-mail;
+- [x] senha inválida respondendo 401 e mensagem segura;
+- [x] token autenticando `/me`;
+- [x] sessão restaurada após recarregar a página;
+- [x] usuário persistido no PostgreSQL com bcrypt;
+- [x] redirecionamento para a origem após autenticação;
+- [x] rotas entregues pelo Nginx do Docker;
+- [x] desktop inspecionado;
+- [x] viewport móvel real 390 × 844 sem overflow;
+- [x] nenhuma exceção JavaScript inesperada;
+- [x] usuário descartável removido ao final da auditoria.
+
+Limitação conhecida: o JWT permanece no `localStorage`. O fluxo está integrado
+ao Spring/PostgreSQL, mas a arquitetura final deve avaliar cookie `HttpOnly`
+antes de considerar a segurança de sessão encerrada.
+
+## 16. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -377,7 +414,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 16. Critérios finais
+## 17. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router
