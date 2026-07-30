@@ -36,7 +36,15 @@ function Preco({ listing }: { listing: Listing }) {
   return <div className="bz-price bz-price-brl">{brl(listing.preco)}</div>;
 }
 
-export function ProductCard({ listing }: { listing: Listing }) {
+export function ProductCard({
+  listing,
+  favorite = false,
+  onFavorite,
+}: {
+  listing: Listing;
+  favorite?: boolean;
+  onFavorite?: (listing: Listing) => void;
+}) {
   const vendido = listing.status === "vendido";
   const detalhe = listing.nivel
     ? `Nível ${listing.nivel}`
@@ -59,7 +67,13 @@ export function ProductCard({ listing }: { listing: Listing }) {
             </span>
           )
         )}
-        <button className="bz-fav" type="button" aria-label="Salvar nos favoritos">
+        <button
+          className="bz-fav"
+          type="button"
+          aria-label={favorite ? "Remover dos favoritos" : "Salvar nos favoritos"}
+          aria-pressed={favorite}
+          onClick={() => onFavorite?.(listing)}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d={HEART} />
           </svg>

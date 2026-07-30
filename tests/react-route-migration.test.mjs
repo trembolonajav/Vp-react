@@ -116,3 +116,18 @@ test("chat e denúncias usam rotas React e dados autoritativos do Spring", () =>
   assert.match(reportModal, /createReport/);
   assert.match(reports, /\/api\/v1\/reports/);
 });
+
+test("favoritos pertencem à conta e usam Spring/PostgreSQL", () => {
+  const card = fs.readFileSync("frontend/src/features/bazaar/components/ProductCard.tsx", "utf8");
+  const grid = fs.readFileSync("frontend/src/features/bazaar/components/ProductGrid.tsx", "utf8");
+  const service = fs.readFileSync("frontend/src/services/favoritesService.ts", "utf8");
+  const migration = fs.readFileSync("backend/src/main/resources/db/migration/V6__favorites.sql", "utf8");
+
+  assert.doesNotMatch(card, /localStorage/);
+  assert.match(grid, /listFavorites/);
+  assert.match(grid, /addFavorite/);
+  assert.match(grid, /removeFavorite/);
+  assert.match(service, /\/api\/v1\/favorites/);
+  assert.match(migration, /CREATE TABLE favorites/);
+  assert.match(migration, /UNIQUE \(user_id, listing_public_id\)/);
+});

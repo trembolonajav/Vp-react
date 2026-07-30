@@ -68,7 +68,7 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 | Frontend ativo | **60%** | 15 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
 | Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
-| Persistência moderna | **71%** | 5 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
+| Persistência moderna | **86%** | 6 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
@@ -98,7 +98,7 @@ rota React separada.
 
 | Área | Rota | Implementação atual | Implementação nova | Backend | Persistência | Docker serve | Estado | Ação |
 |---|---|---|---|---|---|---|---|---|
-| Bazaar | `/bazaar/` | React | `MarketplacePage` | Spring listings | PostgreSQL; favoritos locais | React | PARTIAL | favoritos ainda precisam de API |
+| Bazaar | `/bazaar/` | React | `MarketplacePage` | Spring listings/favorites | PostgreSQL | React | NEW_ACTIVE | manter |
 | Bazaar | `/bazaar/anuncio/:id` | React | `AnuncioPage` | Spring listings/chat/reports | PostgreSQL | React | NEW_ACTIVE | ampliar teste visual e autenticado |
 | Bazaar antigo | `/bazaar/anuncio.html?id=` | HTML/JS | substituído pela rota limpa | Node Bazaar | `.data`/Blob | arquivo ainda presente | LEGACY_REFERENCE | retirar do runtime após paridade |
 | Bazaar | `/bazaar/anunciar` e `/bazaar/anunciar/:id` | React | `AnunciarPage` | Spring listings/media | PostgreSQL + volume de mídia | React | NEW_ACTIVE | manter; migrar mídia para S3/MinIO |
@@ -143,7 +143,7 @@ concreto.
 | Autenticação | `/api/bazaar/auth`, `/api/login` | `/api/v1/auth/*` | `bazaar-accounts.json`, env | `users` | NEW_ACTIVE | rotas React ativadas; avaliar cookie HttpOnly |
 | Usuários | JSON local/Blob | auth + `/profiles` | JSON | `users` | NEW_ACTIVE | migração de dados reais pendente |
 | Anúncios | `/api/config` + arrays | `/api/v1/listings` | config/localStorage | `listings`, `listing_types` | NEW_ACTIVE | manter e ampliar administração |
-| Favoritos | localStorage | inexistente | localStorage | inexistente | LEGACY_ACTIVE | criar migration/API |
+| Favoritos | localStorage | `/api/v1/favorites` | localStorage | `favorites` | NEW_ACTIVE | manter |
 | Perfil | `/api/bazaar/profile` | `/api/v1/profiles` | JSON | `users` | NEW_ACTIVE | migrar dados reais e avaliar privacidade do contato |
 | Conversas | `/api/bazaar/chat` | `/api/v1/conversations` | JSON | `conversations` | NEW_ACTIVE | manter |
 | Mensagens/não lidas | `/api/bazaar/chat` | endpoints de conversa | JSON | `messages`, `message_reads` | NEW_ACTIVE | manter |
@@ -156,9 +156,9 @@ concreto.
 | Compartilhamento | `/api/bazaar/share` | Web Share no React | Node redirect/HTML | nenhum | PARTIAL | definir SSR/OG |
 | Administração de denúncias/anúncios | parcial no Node | config apenas | JSON | tabelas existem | PARTIAL | endpoints ADMIN |
 
-As cinco migrations Flyway foram verificadas como aplicadas no container:
+As seis migrations Flyway foram verificadas como aplicadas no container:
 configuração, anúncios, usuários, vínculo do vendedor, chat e denúncias.
-Favoritos, metadados de mídia e eventuais bloqueios ainda não possuem schema.
+Metadados de mídia e eventuais bloqueios ainda não possuem schema.
 
 ## 6. Auditoria do Docker e Nginx
 
@@ -274,7 +274,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 4. **Concluído:** ativar perfil próprio e público em React.
 5. **Concluído:** ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
 6. **Concluído:** ativar chat e denúncias com testes de autorização.
-7. Implementar favoritos no Spring/PostgreSQL.
+7. **Concluído:** implementar favoritos no Spring/PostgreSQL.
 8. Implementar Open Graph/compartilhamento no Spring.
 9. Adicionar S3StorageService/MinIO e migration de metadados.
 10. Completar administração.
@@ -501,7 +501,29 @@ Validações executadas:
 O painel administrativo de tratamento de denúncias continua pendente. O HTML
 antigo do chat permanece apenas como `LEGACY_REFERENCE`.
 
-## 19. Checklist de paridade por rota
+## 19. Registro da etapa Favoritos
+
+```text
+ETAPA: Migração de favoritos para Spring/PostgreSQL
+STATUS: CONCLUÍDA
+API: GET/POST/DELETE /api/v1/favorites
+PERSISTÊNCIA: PostgreSQL, tabela favorites
+```
+
+Validações executadas:
+
+- [x] favoritos isolados por usuário autenticado;
+- [x] inclusão idempotente e chave única no banco;
+- [x] anúncio inexistente respondendo 404;
+- [x] acesso anônimo respondendo 401;
+- [x] remoção automática com usuário ou anúncio;
+- [x] persistência confirmada após reiniciar o backend;
+- [x] `localStorage` removido do card React;
+- [x] uma única consulta para carregar os favoritos da grade;
+- [x] atualização otimista com reversão quando a API falha;
+- [x] dados temporários removidos após a auditoria.
+
+## 20. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -519,7 +541,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 20. Critérios finais
+## 21. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router
