@@ -65,14 +65,14 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 
 | Camada | Resultado | Cálculo |
 |---|---:|---|
-| Frontend ativo | **36%** | 9 de 25 rotas/fluxos de usuário auditados são React ativos |
+| Frontend ativo | **40%** | 10 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
 | Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
 | Persistência moderna | **71%** | 5 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
-Há **18 rotas/fluxos legados ativos**: oito do Bazaar, três da Store e sete
+Há **17 rotas/fluxos legados ativos**: sete do Bazaar, três da Store e sete
 ferramentas acessíveis pelo shell legado do VPLab. O Avaliar IV entra nessa
 contagem porque o shell antigo ainda expõe a versão Tesseract, embora exista uma
 rota React separada.
@@ -98,7 +98,7 @@ rota React separada.
 
 | Área | Rota | Implementação atual | Implementação nova | Backend | Persistência | Docker serve | Estado | Ação |
 |---|---|---|---|---|---|---|---|---|
-| Bazaar | `/bazaar/` | HTML/JS | `MarketplacePage` | legado `/api/config` | JSON/Blob + localStorage | legado | NEW_INACTIVE | ativar após teste |
+| Bazaar | `/bazaar/` | React | `MarketplacePage` | Spring listings | PostgreSQL; favoritos locais | React | PARTIAL | favoritos ainda precisam de API |
 | Bazaar | `/bazaar/anuncio/:id` | React | `AnuncioPage` | Spring listings/chat/reports | PostgreSQL | React | NEW_ACTIVE | ampliar teste visual e autenticado |
 | Bazaar antigo | `/bazaar/anuncio.html?id=` | HTML/JS | substituído pela rota limpa | Node Bazaar | `.data`/Blob | arquivo ainda presente | LEGACY_REFERENCE | retirar do runtime após paridade |
 | Bazaar | `/bazaar/anunciar.html` | HTML/JS | `AnunciarPage` | Node + localStorage | localStorage | legado | NEW_INACTIVE | ativar com Spring |
@@ -110,8 +110,10 @@ rota React separada.
 | Bazaar | cadastro dentro de `conta.html` | HTML/JS | serviço React sem rota própria | Spring auth disponível | PostgreSQL | legado | PARTIAL | criar `/cadastro` |
 | Bazaar | `/bazaar/como-funciona.html` | HTML | inexistente | nenhum | estático | legado | LEGACY_ACTIVE | converter para React |
 
-O `App.tsx` atualmente usa `BazaarRedirect` para qualquer `/bazaar/*`. Assim,
-todos os seis arquivos TSX do Bazaar estão compilados, mas desligados.
+O `App.tsx` mantém `BazaarRedirect` somente para caminhos limpos ainda não
+migrados. Marketplace e detalhe são React. Anunciar e Como funciona
+usam links `.html` explícitos classificados como `LEGACY_BRIDGE`, evitando
+apresentar essas páginas como migradas.
 
 ### VPLab
 
@@ -263,7 +265,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 
 1. **Concluído:** ativar isoladamente `/bazaar/anuncio/:id`; os cards do
    marketplace ativo agora apontam para a rota limpa.
-2. Ativar `/bazaar/`, validando filtros e paginação Spring.
+2. **Concluído:** ativar `/bazaar/`, com filtros, contadores e paginação Spring.
 3. Criar `/cadastro` e consolidar autenticação React.
 4. Ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
 5. Ativar perfil, chat e denúncias; ampliar testes de autorização.
@@ -314,7 +316,50 @@ DIVERGÊNCIAS: chat autenticado e responsividade visual ainda não retestados
 PRÓXIMA ETAPA: validar e ativar /bazaar/ em React
 ```
 
-## 14. Checklist de paridade por rota
+## 14. Registro da etapa Marketplace
+
+```text
+ETAPA: Ativação do Marketplace React
+STATUS: CONCLUÍDA
+COMMIT: feat(bazaar): activate React marketplace
+ROTA ATIVADA: /bazaar/
+ROTA LEGADA SUBSTITUÍDA: /bazaar/index.html no fluxo normal
+PONTES LEGADAS:
+  /bazaar/anunciar.html
+  /bazaar/como-funciona.html
+BACKEND: GET /api/v1/listings
+PERSISTÊNCIA: PostgreSQL
+```
+
+Checklist de paridade:
+
+- [x] hero, cabeçalho e rodapé
+- [x] busca
+- [x] tipo, intenção e moeda
+- [x] preço, qualidade, IV, nível e poder
+- [x] tipos elementares
+- [x] ordenação e paginação
+- [x] cards, destaque, shiny e links
+- [x] loading, vazio e tratamento de erro implementados
+- [x] desktop, tablet e mobile inspecionados
+- [x] console sem erros
+- [x] Docker entregando React
+- [ ] favoritos no PostgreSQL
+
+Evidências executadas:
+
+- API: 17 anúncios ativos, igual ao `count(*)` do PostgreSQL;
+- busca `char`: 2 resultados;
+- paginação com tamanho 2: páginas 1 e 2 distintas;
+- filtros de tipo, intenção, moeda, preço, qualidade, IV, nível, poder e tipos
+  elementares responderam HTTP 200;
+- ordenação por título testada;
+- runtime Docker: 12 cards, 17 no total e nenhum `bazaar.js` carregado;
+- viewport real 390 × 844: sem overflow horizontal;
+- desktop e mobile: nenhuma exceção no console;
+- logs Spring: nenhuma ocorrência de erro/exceção durante os testes.
+
+## 15. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -332,7 +377,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 15. Critérios finais
+## 16. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router

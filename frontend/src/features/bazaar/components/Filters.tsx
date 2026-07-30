@@ -1,6 +1,23 @@
 import type { ListingFilters } from "../../../types/listing";
 import { TIPOS_ORDEM, TYPE_LABEL } from "../constants";
 
+const QUALITIES = [
+  { name: "Fraca", min: "0.80", max: "1.00", color: "#6b5a52" },
+  { name: "Comum", min: "1.00", max: "1.10", color: "#8a7a70" },
+  { name: "Incomum", min: "1.10", max: "1.30", color: "#7fd9a2" },
+  { name: "Rara", min: "1.30", max: "1.50", color: "#5b9bd6" },
+  { name: "Épica", min: "1.50", max: "1.70", color: "#9a6fbb" },
+  { name: "Lendária", min: "1.70", max: "1.80", color: "#e5b34f" },
+  { name: "Mítica", min: "1.80", max: "2.20", color: "#e8654a" },
+  { name: "Anciã", min: "2.20", max: "2.90", color: "#d84f9e" },
+  { name: "Divina", min: "2.90", max: "3.60", color: "#f2f0e6" },
+];
+const qualityPosition = (value: string, fallback: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(100, ((parsed - 0.8) / 2.8) * 100));
+};
+
 interface FiltersProps {
   filters: ListingFilters;
   onPatch: (patch: Partial<ListingFilters>) => void;
@@ -161,9 +178,59 @@ export function Filters({ filters, onPatch, onClear, collapsed }: FiltersProps) 
 
       <div className="bz-group">
         <span className="bz-group-title">Qualidade</span>
+        <div className="bz-qual-chips">
+          {QUALITIES.map((quality) => {
+            const selected =
+              filters.qualidadeMin === quality.min &&
+              filters.qualidadeMax === quality.max;
+            return (
+              <button
+                key={quality.name}
+                type="button"
+                className={`bz-qual ${selected ? "on" : ""}`}
+                aria-pressed={selected}
+                onClick={() =>
+                  onPatch({
+                    qualidadeMin: selected ? "" : quality.min,
+                    qualidadeMax: selected ? "" : quality.max,
+                  })
+                }
+              >
+                <span className="dot" style={{ background: quality.color }} />
+                {quality.name}
+              </button>
+            );
+          })}
+        </div>
+        <div className="bz-qual-legend">
+          <span>0,80</span><span className="bz-qual-legend-mid">escala de qualidade</span><span>3,60</span>
+        </div>
+        <div className="bz-qual-scale" aria-hidden="true">
+          <span
+            className="bz-qual-mask"
+            style={{ left: 0, width: `${qualityPosition(filters.qualidadeMin, 0)}%` }}
+          />
+          <span
+            className="bz-qual-mask"
+            style={{
+              left: `${qualityPosition(filters.qualidadeMax, 100)}%`,
+              right: 0,
+            }}
+          />
+          <span
+            className="bz-qual-knob"
+            style={{ left: `${qualityPosition(filters.qualidadeMin, 0)}%` }}
+          />
+          <span
+            className="bz-qual-knob"
+            style={{ left: `${qualityPosition(filters.qualidadeMax, 100)}%` }}
+          />
+        </div>
         <Range
           min={filters.qualidadeMin}
           max={filters.qualidadeMax}
+          placeholderMin="Mín. 0,80"
+          placeholderMax="Máx. 3,60"
           onMin={(v) => onPatch({ qualidadeMin: v })}
           onMax={(v) => onPatch({ qualidadeMax: v })}
         />

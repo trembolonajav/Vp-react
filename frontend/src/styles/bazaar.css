@@ -46,13 +46,14 @@
 /* ------------------------------------------------ hero do marketplace */
 .bz-hero{
   position:relative;
+  max-width:1500px;
   aspect-ratio:1680/928;
-  padding:0;margin-bottom:34px;
+  overflow:hidden;padding:0;margin:0 auto 34px;
   background:url("/assets/bazaar/hero-marketplace-oficial.webp") center/100% 100% no-repeat;
-  border:0;border-radius:0;box-shadow:0 22px 60px rgba(0,0,0,.38);
+  border:0;border-radius:14px;box-shadow:0 22px 60px rgba(0,0,0,.38);
 }
 .bz-hero>div:first-child{
-  position:absolute;left:7.2%;top:49%;width:38%;
+  position:absolute;left:6.5%;top:50%;width:36%;
 }
 .bz-hero h1{
   display:none;margin:8px 0 22px;
@@ -63,8 +64,20 @@
   filter:drop-shadow(0 5px 12px rgba(224,72,29,.18));
 }
 .bz-hero .kicker{display:none;font-size:clamp(10px,1vw,14px);letter-spacing:.24em;color:#dfad55}
-.bz-hero p{color:#d1bbb0;font-size:clamp(13px,1.2vw,17px);line-height:1.75;margin:0;max-width:58ch}
+.bz-hero p{color:#c9b3a4;font-size:clamp(13px,1.05vw,14.5px);line-height:1.6;margin:0;max-width:58ch}
 .bz-hero p strong{color:var(--gold)}
+.bz-hero-actions{display:flex;gap:10px;margin-top:18px}
+.bz-hero-actions a{
+  padding:12px 22px;border-radius:8px;white-space:nowrap;
+  font:700 12.5px/1 Cinzel,serif;letter-spacing:.12em;text-transform:uppercase;
+}
+.bz-hero-primary{
+  border:1px solid rgba(240,200,130,.55);color:#fff;
+  background:linear-gradient(180deg,#a51f22,#6a1215);
+  box-shadow:inset 0 1px 0 rgba(255,220,160,.32);
+}
+.bz-hero-secondary{border:1px solid rgba(216,138,74,.34);color:#e5b34f}
+.bz-hero-actions a:hover{filter:brightness(1.14)}
 .bz-stats{
   position:absolute;left:51%;right:5.4%;top:24.5%;bottom:15.5%;
   display:grid;grid-template-columns:repeat(3,1fr);gap:2.5%;
@@ -202,7 +215,9 @@
 /* ------------------------------------------------ barra de resultados */
 .bz-toolbar{
   display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-  padding:0 4px 16px;
+  padding:12px 16px;margin-bottom:16px;
+  border:1px solid rgba(216,138,74,.2);border-radius:11px;
+  background:linear-gradient(180deg,#1a1210,#120c0a);
 }
 .bz-count{color:var(--muted);font-size:13.5px}
 .bz-count b{color:var(--cream)}
@@ -335,18 +350,30 @@
 .bz-price-brl{font-size:22px}
 .bz-negociavel{margin-left:auto;font-size:10px;font-weight:700;color:var(--gold-soft);text-align:right;line-height:1.25}
 
+.bz-card-seller{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding-top:11px;border-top:1px solid rgba(216,138,74,.18)
+}
+.bz-card-seller-link{display:flex;align-items:center;min-width:0;gap:6px;color:#f0e2d9;font:700 12.5px/1 Inter}
+.bz-card-seller-link:hover{color:#e5b34f}
+.bz-card-seller-link>span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bz-card-avatar{
+  flex:none;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;
+  border:1px solid rgba(216,138,74,.34);background:linear-gradient(180deg,#3a2213,#1d1109);
+  color:#e5b34f;font:700 9.5px/1 Inter
+}
+.bz-card-verified{flex:none;display:grid;place-items:center;width:14px;height:14px;border-radius:50%;background:#2f68b7;color:#fff;font-size:8px}
+.bz-card-seller .bz-online{font-size:11px}
+
 /* ---- botão "Ver anúncio" ---- */
 .bz-cta{
-  display:grid;place-items:center;width:100%;min-height:42px;margin-top:auto;
-  padding:0 14px;cursor:pointer;
-  font-family:Cinzel,serif;font-size:14px;font-weight:700;letter-spacing:.03em;
-  color:#f7dcae;text-shadow:0 1px 3px rgba(0,0,0,.8);
-  background:none;
-  border:14px solid transparent;
-  border-image:url('/assets/bazaar/botao-anuncio.webp') 30 56 fill / 14px 22px / 0 stretch;
+  display:grid;place-items:center;width:100%;min-height:0;margin-top:12px;
+  box-sizing:border-box;padding:11px;cursor:pointer;border:1px solid rgba(216,138,74,.34);border-radius:8px;
+  font:700 11.5px/1 Cinzel,serif;letter-spacing:.12em;text-transform:uppercase;
+  color:#e5b34f;text-shadow:none;background:linear-gradient(180deg,#241813,#150e0c);
   transition:filter .2s,transform .15s var(--ease);
 }
-.bz-cta:hover{filter:brightness(1.18) saturate(1.1);color:#fff0d2}
+.bz-cta:hover{filter:none;border-color:#e5b34f;background:linear-gradient(180deg,#33200f,#1a110c);color:#f6d68f}
 .bz-cta:active{transform:translateY(1px)}
 
 .bz-tag{
@@ -724,6 +751,25 @@
   .bz-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .bz-form-row{grid-template-columns:1fr}
   .bz-form,.bz-prose{padding:22px 18px}
+}
+
+@media (max-width:500px){
+  .brand .logo{width:124px;height:46px}
+  .bz-vpertsz-link{display:none}
+  .header-actions .btn-twitch{width:88px;height:38px}
+  .bz-conta-entrar{width:108px;height:38px}
+  .bz-hero{padding:26px 18px}
+  .bz-hero-actions{display:grid;grid-template-columns:1fr;gap:9px}
+  .bz-hero-actions a{text-align:center}
+  .bz-stats{gap:6px}
+  .bz-stat{min-width:0;min-height:92px}
+  .bz-stat b{font-size:32px}
+  .bz-stat span{font-size:7px;letter-spacing:.08em}
+  .bz-toolbar{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center}
+  .bz-count{grid-column:1/-1;min-width:0}
+  .bz-sort{min-width:0;justify-self:stretch}
+  .bz-sort .bz-select{width:100%;min-width:0}
+  .bz-grid{grid-template-columns:1fr}
 }
 
 @media (prefers-reduced-motion:reduce){

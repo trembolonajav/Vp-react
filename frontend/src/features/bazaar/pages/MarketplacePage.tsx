@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { useConfig } from "../../../hooks/useConfig";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useListings } from "../../../hooks/useListings";
+import { useMarketplaceStats } from "../../../hooks/useMarketplaceStats";
 import { EMPTY_FILTERS } from "../../../types/listing";
 import type { ListingFilters, SortKey } from "../../../types/listing";
 import { Filters } from "../components/Filters";
@@ -9,25 +10,19 @@ import { Pagination } from "../components/Pagination";
 import { SORT_OPTIONS } from "../constants";
 
 export function MarketplacePage() {
-  const { config } = useConfig();
-  const [filters, setFilters] = useState<ListingFilters>(EMPTY_FILTERS);
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<ListingFilters>(() => ({
+    ...EMPTY_FILTERS,
+    categoria: searchParams.get("categoria") ?? "",
+  }));
   const [collapsed, setCollapsed] = useState(true);
 
   const { page, loading, error } = useListings(filters);
+  const { stats, loading: statsLoading } = useMarketplaceStats();
 
   // Ao mexer em qualquer filtro a paginação volta ao início; só "page" preserva.
   const patch = (change: Partial<ListingFilters>) =>
     setFilters((prev) => ({ ...prev, ...change, page: "page" in change ? change.page! : 1 }));
-
-  const stats = useMemo(() => {
-    const anuncios = config?.bazaar.anuncios ?? [];
-    const ativos = anuncios.filter((a) => a.status === "ativo");
-    return {
-      total: ativos.length,
-      vendendo: ativos.filter((a) => a.intencao === "venda").length,
-      procurando: ativos.filter((a) => a.intencao === "compra").length,
-    };
-  }, [config]);
 
   const total = page?.totalElements ?? 0;
   const inicio = total === 0 ? 0 : (filters.page - 1) * (page?.size ?? 12) + 1;
@@ -41,22 +36,25 @@ export function MarketplacePage() {
             <span className="kicker">Marketplace da comunidade</span>
             <h1>VP Bazaar</h1>
             <p>
-              Itens, Pokémon, contas e diamonds anunciados por jogadores da
-              comunidade. Encontrou o que procura? Fale direto com o anunciante e,
-              se quiser mais segurança, solicite o intermédio da VP.
+              Itens, pokémons, shiny cards e diamonds anunciados por jogadores da
+              comunidade. A VP acompanha a negociação do começo ao fim.
             </p>
+            <div className="bz-hero-actions">
+              <a className="bz-hero-primary" href="/bazaar/anunciar.html">Criar anúncio</a>
+              <a className="bz-hero-secondary" href="/bazaar/como-funciona.html">Como funciona</a>
+            </div>
           </div>
           <div className="bz-stats">
             <div className="bz-stat">
-              <b>{stats.total}</b>
+              <b>{statsLoading ? "—" : stats.total}</b>
               <span>Anúncios</span>
             </div>
             <div className="bz-stat">
-              <b>{stats.vendendo}</b>
+              <b>{statsLoading ? "—" : stats.vendendo}</b>
               <span>À venda</span>
             </div>
             <div className="bz-stat">
-              <b>{stats.procurando}</b>
+              <b>{statsLoading ? "—" : stats.procurando}</b>
               <span>Procura-se</span>
             </div>
           </div>

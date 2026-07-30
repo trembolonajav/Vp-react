@@ -9,6 +9,7 @@ import { NegociarPage } from "./features/store/pages/NegociarPage";
 import { ContatoPage } from "./features/store/pages/ContatoPage";
 import { BazaarLayout } from "./layouts/BazaarLayout";
 import { AnuncioPage } from "./features/bazaar/pages/AnuncioPage";
+import { MarketplacePage } from "./features/bazaar/pages/MarketplacePage";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { AdminPage } from "./features/admin/pages/AdminPage";
 
@@ -41,6 +42,7 @@ export function App() {
       {/* Primeira rota do Bazaar ativada isoladamente. As demais continuam no
           fallback legado até passarem pela própria validação de paridade. */}
       <Route path="bazaar" element={<BazaarLayout />}>
+        <Route index element={<MarketplacePage />} />
         <Route path="anuncio/:id" element={<AnuncioPage />} />
       </Route>
 
