@@ -1,6 +1,7 @@
 package com.vpertz.listings;
 
 import com.vpertz.common.exception.ResourceNotFoundException;
+import com.vpertz.common.exception.ValidationException;
 import com.vpertz.common.security.AuthPrincipal;
 import com.vpertz.listings.dto.ListingFilter;
 import com.vpertz.listings.dto.ListingResponse;
@@ -12,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ import org.springframework.util.StringUtils;
 public class ListingService {
 
     private static final int MAX_SIZE = 60;
+    private static final Set<String> MANAGEABLE_STATUS = Set.of("ativo", "pausado", "vendido");
 
     private final ListingRepository repository;
     private final ListingMapper mapper;
@@ -90,6 +93,19 @@ public class ListingService {
         // Dono, id público, data de criação e reputação são preservados.
         ListingSanitizer.apply(request, listing);
         applyDestaque(listing, request, principal);
+        touch(listing);
+        return mapper.toResponse(repository.save(listing));
+    }
+
+    @Transactional
+    public ListingResponse updateStatus(String publicId, String status, AuthPrincipal principal) {
+        Listing listing = repository.findByPublicId(publicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
+        authorize(listing, principal);
+        if (!MANAGEABLE_STATUS.contains(status)) {
+            throw new ValidationException("Status de anúncio inválido.");
+        }
+        listing.setStatus(status);
         touch(listing);
         return mapper.toResponse(repository.save(listing));
     }

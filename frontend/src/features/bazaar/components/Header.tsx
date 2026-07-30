@@ -28,7 +28,7 @@ export function Header() {
           </Link>
           <div className="nav-links">
             <Link className="nav-link active" to="/bazaar">Marketplace</Link>
-            <a className="nav-link" href="/bazaar/anunciar.html">Anunciar</a>
+            <Link className="nav-link" to="/bazaar/anunciar">Anunciar</Link>
             {user && (
               <>
                 <Link className="nav-link" to="/bazaar/meus-anuncios">Meus anúncios</Link>

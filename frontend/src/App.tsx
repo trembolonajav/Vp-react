@@ -11,6 +11,8 @@ import { BazaarLayout } from "./layouts/BazaarLayout";
 import { AnuncioPage } from "./features/bazaar/pages/AnuncioPage";
 import { MarketplacePage } from "./features/bazaar/pages/MarketplacePage";
 import { PerfilPage } from "./features/bazaar/pages/PerfilPage";
+import { AnunciarPage } from "./features/bazaar/pages/AnunciarPage";
+import { MeusAnunciosPage } from "./features/bazaar/pages/MeusAnunciosPage";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { AdminPage } from "./features/admin/pages/AdminPage";
 
@@ -49,6 +51,9 @@ export function App() {
         <Route path="cadastro" element={<LoginPage />} />
         <Route path="perfil" element={<Protegida><PerfilPage /></Protegida>} />
         <Route path="perfil/:username" element={<PerfilPage />} />
+        <Route path="anunciar" element={<Protegida><AnunciarPage /></Protegida>} />
+        <Route path="anunciar/:id" element={<Protegida><AnunciarPage /></Protegida>} />
+        <Route path="meus-anuncios" element={<Protegida><MeusAnunciosPage /></Protegida>} />
       </Route>
 
       {/* Fallback temporário somente para as rotas Bazaar ainda não migradas. */}

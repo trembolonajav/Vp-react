@@ -16,6 +16,7 @@ interface FormState {
   servidor: string;
   intencao: string;
   moeda: string;
+  status: string;
   preco: string;
   negociavel: boolean;
   img: string;
@@ -38,7 +39,7 @@ interface FormState {
 }
 
 const INITIAL: FormState = {
-  titulo: "", categoria: "", servidor: "", intencao: "venda", moeda: "brl",
+  titulo: "", categoria: "", servidor: "", intencao: "venda", moeda: "brl", status: "ativo",
   preco: "", negociavel: false, img: "", descricao: "",
   dex: "", nivel: "", poder: "", shiny: false, quantidade: "", aceitaTroca: false,
   qualidade: "", natureza: "", habilidade: "", genero: "", forma: "", disponibilidade: "",
@@ -57,6 +58,7 @@ function fromListing(l: Listing): FormState {
     servidor: l.servidor,
     intencao: l.intencao || "venda",
     moeda: l.moeda || "brl",
+    status: l.status || "ativo",
     preco: s(l.preco),
     negociavel: l.negociavel,
     img: l.img,
@@ -135,6 +137,7 @@ export function AnunciarPage() {
       servidor: texto(form.servidor),
       intencao: form.intencao,
       moeda: form.moeda,
+      status: form.status,
       preco: numero(form.preco),
       negociavel: form.negociavel,
       img: texto(form.img),
@@ -216,6 +219,17 @@ export function AnunciarPage() {
               </select>
             </div>
 
+            {editing && (
+              <div className="bz-group">
+                <span className="bz-group-title">Status</span>
+                <select className="bz-select" value={form.status} onChange={(e) => set("status", e.target.value)}>
+                  <option value="ativo">Ativo</option>
+                  <option value="pausado">Pausado</option>
+                  <option value="vendido">Vendido</option>
+                </select>
+              </div>
+            )}
+
             <div className="bz-group">
               <label htmlFor="a-preco">Preço</label>
               <input className="bz-input" id="a-preco" type="number" min="0" step="0.01"
@@ -229,7 +243,7 @@ export function AnunciarPage() {
             </div>
             <div className="bz-group">
               <label htmlFor="a-nivel">Nível</label>
-              <input className="bz-input" id="a-nivel" type="number" min="0" max="100"
+              <input className="bz-input" id="a-nivel" type="number" min="0" max="1000"
                 value={form.nivel} onChange={(e) => set("nivel", e.target.value)} />
             </div>
             <div className="bz-group">

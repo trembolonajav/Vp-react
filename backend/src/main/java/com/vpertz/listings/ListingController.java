@@ -3,6 +3,7 @@ package com.vpertz.listings;
 import com.vpertz.common.security.AuthPrincipal;
 import com.vpertz.listings.dto.ListingFilter;
 import com.vpertz.listings.dto.ListingResponse;
+import com.vpertz.listings.dto.ListingStatusRequest;
 import com.vpertz.listings.dto.ListingWriteRequest;
 import com.vpertz.listings.dto.PageResponse;
 import jakarta.validation.Valid;
@@ -14,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -90,6 +92,14 @@ public class ListingController {
             @Valid @RequestBody ListingWriteRequest request,
             @AuthenticationPrincipal AuthPrincipal principal) {
         return ResponseEntity.ok(listingService.update(publicId, request, principal));
+    }
+
+    @PatchMapping("/{publicId}/status")
+    public ResponseEntity<ListingResponse> updateStatus(
+            @PathVariable String publicId,
+            @Valid @RequestBody ListingStatusRequest request,
+            @AuthenticationPrincipal AuthPrincipal principal) {
+        return ResponseEntity.ok(listingService.updateStatus(publicId, request.status(), principal));
     }
 
     @DeleteMapping("/{publicId}")

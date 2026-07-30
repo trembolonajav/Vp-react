@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost, apiPut } from "./api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./api";
 import type { Listing, ListingFilters, ListingWriteRequest, Page } from "../types/listing";
 
 const PAGE_SIZE = 12;
@@ -52,6 +52,10 @@ export function createListing(body: ListingWriteRequest): Promise<Listing> {
 
 export function updateListing(publicId: string, body: ListingWriteRequest): Promise<Listing> {
   return apiPut<Listing>(`/api/v1/listings/${encodeURIComponent(publicId)}`, body);
+}
+
+export function updateListingStatus(publicId: string, status: string): Promise<Listing> {
+  return apiPatch<Listing>(`/api/v1/listings/${encodeURIComponent(publicId)}/status`, { status });
 }
 
 export function deleteListing(publicId: string): Promise<void> {

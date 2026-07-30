@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useListings } from "../../../hooks/useListings";
 import { useMarketplaceStats } from "../../../hooks/useMarketplaceStats";
 import { EMPTY_FILTERS } from "../../../types/listing";
@@ -40,7 +40,7 @@ export function MarketplacePage() {
               comunidade. A VP acompanha a negociação do começo ao fim.
             </p>
             <div className="bz-hero-actions">
-              <a className="bz-hero-primary" href="/bazaar/anunciar.html">Criar anúncio</a>
+              <Link className="bz-hero-primary" to="/bazaar/anunciar">Criar anúncio</Link>
               <a className="bz-hero-secondary" href="/bazaar/como-funciona.html">Como funciona</a>
             </div>
           </div>

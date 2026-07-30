@@ -23,7 +23,7 @@ class ListingSanitizerTest {
         assertThat(l.getMoeda()).isEqualTo("brl");
         assertThat(l.getStatus()).isEqualTo("ativo");
         assertThat(l.getPreco()).isEqualByComparingTo("0.00"); // negativo -> 0
-        assertThat(l.getNivel()).isEqualTo(100);          // clamp 0..100
+        assertThat(l.getNivel()).isEqualTo(500);          // PokeIdle usa níveis acima de 100
         assertThat(l.getTipos()).containsExactly("psychic", "fairy"); // máx 2, desconhecidos fora
         assertThat(l.getTipo()).isEqualTo("pokemon");     // dex > 0
         assertThat(l.getIvTotal()).isEqualTo(184);        // soma dos 6
@@ -45,6 +45,22 @@ class ListingSanitizerTest {
         assertThat(l.getTipo()).isEqualTo("item");        // categoria "Itens"
         assertThat(l.getStatus()).isEqualTo("vendido");
         assertThat(l.getMoeda()).isEqualTo("diamonds");
+    }
+
+    @Test
+    void limitaNivelAoTetoDoPokeIdleERemoveTagsHtml() {
+        Listing l = new Listing();
+        ListingWriteRequest request = new ListingWriteRequest(
+                "<b>Gyarados</b>", "pokeidle", "Genesis", "Pokémon", "venda", "brl",
+                BigDecimal.ONE, false, null, "ativo", null, "<script>alert(1)</script>Seguro",
+                130, 5000, 9525, false, 1, false, null, null, null, null,
+                null, null, List.of("water", "flying"), null, null, null);
+
+        ListingSanitizer.apply(request, l);
+
+        assertThat(l.getTitulo()).isEqualTo("Gyarados");
+        assertThat(l.getDescricao()).isEqualTo("alert(1)Seguro");
+        assertThat(l.getNivel()).isEqualTo(1000);
     }
 
     private static ListingWriteRequest req(String categoria, Integer dex, String intencao, String moeda,

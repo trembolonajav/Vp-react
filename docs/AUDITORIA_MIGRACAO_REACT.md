@@ -65,14 +65,14 @@ Os percentuais medem critérios observáveis, não volume de linhas.
 
 | Camada | Resultado | Cálculo |
 |---|---:|---|
-| Frontend ativo | **48%** | 12 de 25 rotas/fluxos de usuário auditados são React ativos |
+| Frontend ativo | **56%** | 14 de 25 rotas/fluxos de usuário auditados são React ativos |
 | Cobertura React existente | **56%** | 14 de 25 já possuem página TSX, ativa ou desligada |
 | Backend funcional | **67%** | 10 de 15 domínios necessários possuem API Spring utilizável |
 | Persistência moderna | **71%** | 5 de 7 domínios persistentes principais possuem tabelas/repositórios PostgreSQL |
 | Docker definitivo | **50%** | backend e Postgres definitivos; frontend ainda incorpora legado e storage ainda não é MinIO/S3 |
 | OCR representativamente validado | **0%** | 2 imagens aprovadas, mas a suíte representativa exigida ainda não existe |
 
-Há **15 rotas/fluxos legados ativos**: cinco do Bazaar, três da Store e sete
+Há **13 rotas/fluxos legados ativos**: três do Bazaar, três da Store e sete
 ferramentas acessíveis pelo shell legado do VPLab. O Avaliar IV entra nessa
 contagem porque o shell antigo ainda expõe a versão Tesseract, embora exista uma
 rota React separada.
@@ -101,8 +101,9 @@ rota React separada.
 | Bazaar | `/bazaar/` | React | `MarketplacePage` | Spring listings | PostgreSQL; favoritos locais | React | PARTIAL | favoritos ainda precisam de API |
 | Bazaar | `/bazaar/anuncio/:id` | React | `AnuncioPage` | Spring listings/chat/reports | PostgreSQL | React | NEW_ACTIVE | ampliar teste visual e autenticado |
 | Bazaar antigo | `/bazaar/anuncio.html?id=` | HTML/JS | substituído pela rota limpa | Node Bazaar | `.data`/Blob | arquivo ainda presente | LEGACY_REFERENCE | retirar do runtime após paridade |
-| Bazaar | `/bazaar/anunciar.html` | HTML/JS | `AnunciarPage` | Node + localStorage | localStorage | legado | NEW_INACTIVE | ativar com Spring |
-| Bazaar | `/bazaar/meus-anuncios.html` | HTML/JS | `MeusAnunciosPage` | localStorage | localStorage | legado | NEW_INACTIVE | ativar com Spring |
+| Bazaar | `/bazaar/anunciar` e `/bazaar/anunciar/:id` | React | `AnunciarPage` | Spring listings/media | PostgreSQL + volume de mídia | React | NEW_ACTIVE | manter; migrar mídia para S3/MinIO |
+| Bazaar | `/bazaar/meus-anuncios` | React | `MeusAnunciosPage` | Spring listings | PostgreSQL | React | NEW_ACTIVE | manter |
+| Bazaar antigo | `/bazaar/anunciar.html` e `/bazaar/meus-anuncios.html` | HTML/JS | substituídos pelas rotas limpas | Node/localStorage | localStorage | arquivos ainda presentes | LEGACY_REFERENCE | retirar após atualizar todas as pontes |
 | Bazaar | `/bazaar/perfil` e `/bazaar/perfil/:username` | React | `PerfilPage` | Spring profiles | PostgreSQL | React | NEW_ACTIVE | manter |
 | Bazaar antigo | `/bazaar/perfil.html?user=` | HTML/JS | substituído pela rota com username | Node profile | JSON efêmero | arquivo ainda presente | LEGACY_REFERENCE | retirar após atualizar todas as pontes |
 | Bazaar | `/bazaar/chat.html` | HTML/JS | `ChatPage` | Node chat | JSON efêmero | legado | NEW_INACTIVE | ativar com Spring |
@@ -113,9 +114,9 @@ rota React separada.
 | Bazaar | `/bazaar/como-funciona.html` | HTML | inexistente | nenhum | estático | legado | LEGACY_ACTIVE | converter para React |
 
 O `App.tsx` mantém `BazaarRedirect` somente para caminhos limpos ainda não
-migrados. Marketplace e detalhe são React. Anunciar e Como funciona
-usam links `.html` explícitos classificados como `LEGACY_BRIDGE`, evitando
-apresentar essas páginas como migradas.
+migrados. Marketplace, detalhe, anunciar, meus anúncios, autenticação e perfil
+são React. Como funciona ainda usa link `.html` explícito classificado como
+`LEGACY_BRIDGE`.
 
 ### VPLab
 
@@ -140,7 +141,7 @@ concreto.
 |---|---|---|---|---|---|---|
 | Autenticação | `/api/bazaar/auth`, `/api/login` | `/api/v1/auth/*` | `bazaar-accounts.json`, env | `users` | NEW_ACTIVE | rotas React ativadas; avaliar cookie HttpOnly |
 | Usuários | JSON local/Blob | auth + `/profiles` | JSON | `users` | NEW_ACTIVE | migração de dados reais pendente |
-| Anúncios | `/api/config` + arrays | `/api/v1/listings` | config/localStorage | `listings`, `listing_types` | NEW_INACTIVE no Bazaar | ativar frontend |
+| Anúncios | `/api/config` + arrays | `/api/v1/listings` | config/localStorage | `listings`, `listing_types` | NEW_ACTIVE | manter e ampliar administração |
 | Favoritos | localStorage | inexistente | localStorage | inexistente | LEGACY_ACTIVE | criar migration/API |
 | Perfil | `/api/bazaar/profile` | `/api/v1/profiles` | JSON | `users` | NEW_ACTIVE | migrar dados reais e avaliar privacidade do contato |
 | Conversas | `/api/bazaar/chat` | `/api/v1/conversations` | JSON | `conversations` | NEW_INACTIVE | ativar React |
@@ -255,7 +256,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 
 ## 10. Riscos de remoção
 
-- Remover `apps/` agora quebra 15 rotas/fluxos.
+- Remover `apps/` agora quebra 13 rotas/fluxos.
 - Remover `api/` quebra o deploy legado/Vercel e as páginas HTML ativas.
 - Remover `frontend/public/vplab` antes de ajustar o build pode retirar
   Tesseract/assets usados por testes e fallback.
@@ -270,7 +271,7 @@ XSS; cookies `HttpOnly` devem ser avaliados antes da arquitetura final.
 2. **Concluído:** ativar `/bazaar/`, com filtros, contadores e paginação Spring.
 3. **Concluído:** ativar `/bazaar/login` e `/bazaar/cadastro`, consolidando autenticação React.
 4. **Concluído:** ativar perfil próprio e público em React.
-5. Ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
+5. **Concluído:** ativar `/bazaar/anunciar` e `/bazaar/meus-anuncios`.
 6. Ativar chat e denúncias; ampliar testes de autorização.
 7. Implementar favoritos no Spring/PostgreSQL.
 8. Implementar Open Graph/compartilhamento no Spring.
@@ -433,7 +434,46 @@ O arquivo `perfil.html` permanece somente como `LEGACY_REFERENCE`. O
 `conta.html` continua ativo porque ainda reúne outros atalhos e fluxos não
 migrados.
 
-## 17. Checklist de paridade por rota
+## 17. Registro da etapa Gestão de anúncios
+
+```text
+ETAPA: Ativação da criação e gestão de anúncios React
+STATUS: CONCLUÍDA
+ROTAS ATIVADAS:
+  /bazaar/anunciar
+  /bazaar/anunciar/:id
+  /bazaar/meus-anuncios
+ROTAS LEGADAS SUBSTITUÍDAS:
+  /bazaar/anunciar.html
+  /bazaar/meus-anuncios.html
+BACKEND:
+  POST /api/v1/listings
+  PUT /api/v1/listings/{id}
+  PATCH /api/v1/listings/{id}/status
+  DELETE /api/v1/listings/{id}
+  POST /api/v1/media
+PERSISTÊNCIA: PostgreSQL e volume Docker de mídia
+```
+
+Validações executadas:
+
+- [x] criar, editar, listar e excluir com usuário autenticado;
+- [x] pausar, reativar, marcar como vendido e reabrir;
+- [x] proprietário autorizado e outro usuário respondendo 403;
+- [x] status preservado durante a edição;
+- [x] nível 433 aceito e teto de segurança em 1000;
+- [x] upload PNG real aceito e servido pelo volume de mídia;
+- [x] persistência confirmada após recriar o backend;
+- [x] rotas limpas entregues pelo Nginx, sem scripts legados;
+- [x] desktop e viewport móvel 390 × 844 sem overflow;
+- [x] console sem erros;
+- [x] dados e mídia descartáveis removidos ao final.
+
+Os HTMLs antigos permanecem apenas como `LEGACY_REFERENCE`. O armazenamento de
+mídia local é persistente no Docker, mas continua `PARTIAL` até a futura etapa
+S3/MinIO.
+
+## 18. Checklist de paridade por rota
 
 Para cada migração:
 
@@ -451,7 +491,7 @@ Para cada migração:
 - [ ] diferença deliberada documentada
 - [ ] legado da rota fora do runtime
 
-## 18. Critérios finais
+## 19. Critérios finais
 
 - [ ] todas as páginas completas em React/TypeScript
 - [ ] todas as rotas controladas pelo React Router

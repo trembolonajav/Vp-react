@@ -49,7 +49,7 @@ final class ListingSanitizer {
 
         int dex = clampInt(r.dex(), 0, 1025);
         listing.setDex(dex);
-        listing.setNivel(clampInt(r.nivel(), 0, 100));
+        listing.setNivel(clampInt(r.nivel(), 0, 1000));
         listing.setPoder(clampInt(r.poder(), 0, 1_000_000));
         listing.setShiny(r.shiny());
         listing.setQuantidade(clampInt(r.quantidade(), 0, 1_000_000));
@@ -91,7 +91,7 @@ final class ListingSanitizer {
         if (value == null) {
             return "";
         }
-        String cleaned = value.replaceAll("[<>]", "").trim();
+        String cleaned = value.replaceAll("<[^>]*>", "").replace("<", "").replace(">", "").trim();
         return cleaned.length() > max ? cleaned.substring(0, max) : cleaned;
     }
 

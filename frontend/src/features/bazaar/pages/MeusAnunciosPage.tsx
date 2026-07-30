@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteListing, listMine } from "../../../services/listingsService";
+import { deleteListing, listMine, updateListingStatus } from "../../../services/listingsService";
 import { ApiError } from "../../../services/api";
 import type { Listing } from "../../../types/listing";
 import { brl, numeroBR } from "../../../utils/format";
@@ -15,6 +15,7 @@ export function MeusAnunciosPage() {
   const [listings, setListings] = useState<Listing[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [removendo, setRemovendo] = useState<string | null>(null);
+  const [alterando, setAlterando] = useState<string | null>(null);
 
   const carregar = () => {
     const controller = new AbortController();
@@ -24,6 +25,19 @@ export function MeusAnunciosPage() {
         if (err.name !== "AbortError") setError(err.message);
       });
     return () => controller.abort();
+  };
+
+  const alterarStatus = async (l: Listing, status: string) => {
+    setAlterando(l.id);
+    setError(null);
+    try {
+      const atualizado = await updateListingStatus(l.id, status);
+      setListings((prev) => prev?.map((item) => (item.id === l.id ? atualizado : item)) ?? prev);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Falha ao alterar o status.");
+    } finally {
+      setAlterando(null);
+    }
   };
 
   useEffect(carregar, []);
@@ -83,6 +97,26 @@ export function MeusAnunciosPage() {
                   <span className="mine-preco">{preco(l)}</span>
                 </div>
                 <div className="mine-actions">
+                  {l.status === "ativo" && (
+                    <>
+                      <button type="button" className="bz-clear" disabled={alterando === l.id}
+                        onClick={() => alterarStatus(l, "pausado")}>Pausar</button>
+                      <button type="button" className="bz-clear" disabled={alterando === l.id}
+                        onClick={() => alterarStatus(l, "vendido")}>Marcar vendido</button>
+                    </>
+                  )}
+                  {l.status === "pausado" && (
+                    <>
+                      <button type="button" className="bz-clear" disabled={alterando === l.id}
+                        onClick={() => alterarStatus(l, "ativo")}>Reativar</button>
+                      <button type="button" className="bz-clear" disabled={alterando === l.id}
+                        onClick={() => alterarStatus(l, "vendido")}>Marcar vendido</button>
+                    </>
+                  )}
+                  {l.status === "vendido" && (
+                    <button type="button" className="bz-clear" disabled={alterando === l.id}
+                      onClick={() => alterarStatus(l, "ativo")}>Reabrir</button>
+                  )}
                   <Link className="bz-clear" to={`/bazaar/anuncio/${l.id}`}>Ver</Link>
                   <Link className="bz-clear" to={`/bazaar/anunciar/${l.id}`}>Editar</Link>
                   <button

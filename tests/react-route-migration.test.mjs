@@ -31,9 +31,11 @@ test("Marketplace React é a rota index e as páginas pendentes são pontes expl
   const page = fs.readFileSync("frontend/src/features/bazaar/pages/MarketplacePage.tsx", "utf8");
   const header = fs.readFileSync("frontend/src/features/bazaar/components/Header.tsx", "utf8");
 
-  assert.match(page, /href="\/bazaar\/anunciar\.html"/);
+  assert.match(page, /to="\/bazaar\/anunciar"/);
   assert.match(page, /href="\/bazaar\/como-funciona\.html"/);
-  assert.match(header, /href="\/bazaar\/anunciar\.html"/);
+  assert.match(header, /to="\/bazaar\/anunciar"/);
+  assert.doesNotMatch(page, /anunciar\.html/);
+  assert.doesNotMatch(header, /anunciar\.html/);
 });
 
 test("contadores e grade do Marketplace usam a API Spring, não config.bazaar.anuncios", () => {
@@ -81,4 +83,20 @@ test("perfil próprio e público usam React e a API Spring", () => {
   assert.match(profileService, /\/api\/v1\/profiles\/me/);
   assert.match(detail, /to=\{`\/bazaar\/perfil\/\$\{encodeURIComponent\(listing\.vendedor\)\}`\}/);
   assert.doesNotMatch(detail, /perfil\.html/);
+});
+
+test("criar, editar e gerenciar anúncios usam React e a API Spring", () => {
+  const form = fs.readFileSync("frontend/src/features/bazaar/pages/AnunciarPage.tsx", "utf8");
+  const mine = fs.readFileSync("frontend/src/features/bazaar/pages/MeusAnunciosPage.tsx", "utf8");
+  const listings = fs.readFileSync("frontend/src/services/listingsService.ts", "utf8");
+
+  assert.match(app, /path="anunciar" element=\{<Protegida><AnunciarPage \/><\/Protegida>\}/);
+  assert.match(app, /path="anunciar\/:id" element=\{<Protegida><AnunciarPage \/><\/Protegida>\}/);
+  assert.match(app, /path="meus-anuncios" element=\{<Protegida><MeusAnunciosPage \/><\/Protegida>\}/);
+  assert.match(nginx, /location = \/bazaar\/anunciar\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(nginx, /location = \/bazaar\/meus-anuncios\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(form, /status: form\.status/);
+  assert.match(form, /max="1000"/);
+  assert.match(mine, /updateListingStatus/);
+  assert.match(listings, /\/api\/v1\/listings\/\$\{encodeURIComponent\(publicId\)\}\/status/);
 });
