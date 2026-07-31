@@ -27,10 +27,15 @@ const SECURITY_HEADERS = {
 
 function sendFile(res, file) {
   const ext = path.extname(file).toLowerCase();
+  const prototypePage = ["pokedex-v2.html", "pokefipe-v2.html", "breeding-v2.html", "avaliar-iv-v4.html"].includes(path.basename(file));
+  const headers = prototypePage ? {
+    ...SECURITY_HEADERS,
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://unpkg.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' data: blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+  } : SECURITY_HEADERS;
   res.writeHead(200, {
     "Content-Type": MIME[ext] || "application/octet-stream",
     "Content-Length": fs.statSync(file).size,
-    ...SECURITY_HEADERS
+    ...headers
   });
   fs.createReadStream(file).pipe(res);
 }
