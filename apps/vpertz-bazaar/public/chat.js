@@ -54,7 +54,11 @@
         ${data.messages.length ? data.messages.map((m) => `<article class="${m.authorId === data.user.id ? "mine" : ""}"><p>${esc(m.text)}</p><small>${esc(m.author)} · ${time(m.createdAt)}</small></article>`).join("") : `<div class="bz-chat-welcome"><strong>Conversa iniciada</strong><p>Envie uma proposta ou tire uma dúvida diretamente com ${esc(other)}.</p></div>`}
         ${data.conversation.status === "intermedio-solicitado" ? `<div class="bz-chat-system"><b>◇ Intermédio solicitado</b><span>Aguarde a confirmação do atendimento antes de realizar entregas.</span></div>` : ""}
       </div>
-      <form class="bz-chat-compose" data-chat-form><textarea name="message" maxlength="1000" required placeholder="Escreva uma proposta ou tire uma dúvida…"></textarea><button aria-label="Enviar mensagem">Enviar →</button></form>`;
+      <form class="bz-chat-compose" data-chat-form>
+        <button class="bz-chat-attach" type="button" title="Anexar print" aria-label="Anexar print"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.7 20.8a5 5 0 0 1-7-7l8.3-8.4a3.3 3.3 0 0 1 4.7 4.7L10.3 18.5a1.7 1.7 0 0 1-2.4-2.4l7.7-7.7"></path></svg></button>
+        <textarea name="message" maxlength="1000" required placeholder="Escreva para ${esc(other)}…"></textarea>
+        <button aria-label="Enviar mensagem">Enviar</button>
+      </form>`;
     root.querySelector("[data-deal-panel]").innerHTML = `
       <section class="bz-deal-panel bz-progress"><h2>Andamento</h2><ol>
         <li class="done"><b>Chat aberto</b><span>${time(data.conversation.createdAt)}</span></li>

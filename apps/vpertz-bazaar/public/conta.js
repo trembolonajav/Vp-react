@@ -15,6 +15,21 @@
 
   function contaAtual() { return atual; }
 
+  function avatarUrl(user = atual) {
+    const avatar = String(user?.avatar || "");
+    return /^\d+$/.test(avatar)
+      ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${avatar}.png`
+      : "";
+  }
+
+  function avatarMarkup(user = atual, className = "") {
+    const src = avatarUrl(user);
+    const initials = String(user?.username || "VP").slice(0, 2).toUpperCase();
+    return src
+      ? `<i class="${className} has-sprite"><img src="${esc(src)}" alt=""></i>`
+      : `<i class="${className}">${esc(initials)}</i>`;
+  }
+
   async function sair() {
     await request({ action: "logout" });
     atual = null;
@@ -138,7 +153,6 @@
   async function renderHeader() {
     const resumo = await carregarResumo();
     ultimoResumo = resumo;
-    const initials = (atual?.username || "").slice(0, 2).toUpperCase();
     document.querySelectorAll("[data-conta]").forEach((el) => {
       el.innerHTML = atual
         ? `<span class="bz-userbar">
@@ -155,14 +169,18 @@
                 </a>`).join("") : "<em class=\"bz-notif-none\">Nenhuma notificação ainda.</em>"}
               <a class="bz-pop-all" href="chat.html">Ver todas as notificações →</a>
             </span>
-            <button class="bz-profile-btn" type="button" data-profile-toggle><i>${esc(initials)}</i><span>${esc(atual.username)}</span><b>▾</b></button>
+            <button class="bz-profile-btn" type="button" data-profile-toggle>
+              ${avatarMarkup(atual, "bz-profile-avatar")}
+              <span>${esc(atual.username)}</span>
+              <b aria-hidden="true"><svg width="15" height="9" viewBox="0 0 15 9" fill="none"><path d="m1.5 1.5 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></b>
+            </button>
             <span class="bz-user-pop bz-profile-pop" data-profile-pop hidden>
-              <span class="bz-pop-identity"><i>${esc(initials)}</i><span><strong>${esc(atual.username)}</strong><small>Conta do VP Bazaar</small></span></span>
-              <a href="chat.html">♢ Minhas conversas ${resumo.unread ? `<b>${resumo.unread}</b>` : ""}</a>
-              <a href="meus-anuncios.html">▤ Meus anúncios</a>
-              <a href="conta.html">⚙ Minha conta</a>
-              <a href="perfil.html?user=${encodeURIComponent(atual.username)}">◎ Perfil público</a>
-              <button type="button" data-conta-sair>⏻ Sair da conta</button>
+              <span class="bz-pop-identity">${avatarMarkup(atual, "bz-pop-avatar")}<span><strong>${esc(atual.username)}</strong><small>Conta do VP Bazaar</small></span></span>
+              <a href="meus-anuncios.html"><span class="bz-menu-icon">☰</span>Meus anúncios</a>
+              <a href="chat.html"><span class="bz-menu-icon">◇</span>Meus chats ${resumo.unread ? `<b>${resumo.unread}</b>` : ""}</a>
+              <a href="perfil.html?user=${encodeURIComponent(atual.username)}"><span class="bz-menu-icon">☺</span>Meu perfil público</a>
+              <a href="conta.html"><span class="bz-menu-icon">⚙</span>Minha conta</a>
+              <button type="button" data-conta-sair><span class="bz-menu-icon">⏻</span>Sair da conta</button>
             </span>
           </span>`
         : `<button type="button" class="bz-conta-entrar" data-conta-entrar>Login / Registrar</button>`;
@@ -198,5 +216,5 @@
   const start = () => { if (!hydration) hydration = hydrate(); return hydration; };
   document.addEventListener("DOMContentLoaded", start);
   if (document.readyState !== "loading") start();
-  window.VPConta = { contaAtual, sair, pedirLogin, exigirConta, renderHeader, ready: start };
+  window.VPConta = { contaAtual, sair, pedirLogin, exigirConta, renderHeader, avatarUrl, avatarMarkup, ready: start };
 })();
