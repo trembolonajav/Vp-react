@@ -221,3 +221,58 @@ PRÓXIMA ETAPA: (1) rodar `docker compose build --no-cache && up -d` para fechar
   /bazaar/conta e páginas restantes da Store; (3) desativar APIs Node substituídas;
   (4) remover a ponte legada do Docker.
 ```
+
+---
+
+## 12. Validação Docker do baseline (2026-07-31)
+
+```
+ETAPA: Validação Docker do baseline
+STATUS: CONCLUÍDA
+HEAD: b3512b9 (auditoria) → e depois o commit desta validação de doc
+GIT STATUS: limpo (0) antes, durante e depois do ciclo de build
+BUILD SEM CACHE: `docker compose build --no-cache` -> SUCESSO (backend + frontend
+  reconstruídos do zero). Contexto de build só contém o estado committado; os 17 MB
+  de quarentena estão FORA do repositório, logo não entram na imagem.
+CONTAINERS (docker compose up -d): 4/4 no ar
+  - vpertz-postgres  healthy
+  - vpertz-minio     healthy
+  - vpertz-backend   healthy
+  - vpertz-frontend  up (nginx; sem healthcheck definido)
+FLYWAY: 8 migrations validadas; schema "public" na versão 8; "up to date".
+POSTGRESQL: PostgreSQL 16.14; Hikari conectou (HikariPool-1 Start completed); sem erros.
+MINIO: healthy; bucket `vpertz-media`; STORAGE_TYPE=s3 (endpoint http://minio:9000).
+ROTAS REACT (via nginx :8090) — todas 200:
+  / , /bazaar/ , /bazaar/anuncio/an-3 , /vplab/ , /vplab/pokedex , /vplab/pokefipe ,
+  /vplab/rota , /vplab/breeding , /vplab/clas , /vplab/profissoes
+ROTAS API (via proxy nginx → Spring) — 200:
+  /api/v1/config (retorna whatsapp,banners,games,bazaar,contatos)
+  /api/v1/listings (12 anúncios)
+PERSISTÊNCIA APÓS REINÍCIO:
+  - Postgres: após `restart backend`, /api/v1/listings continua com 12 (dados no volume pgdata).
+  - MinIO: upload e2e novo (login vpadmin → POST /api/v1/media → 200 url /media/img-...png →
+    GET 200); após `restart minio`, o mesmo objeto continua servindo 200 (volume miniodata).
+  - Uploads: pipeline ponta-a-ponta OK. (Obs: 1 anúncio legado referencia
+    /media/img-1785247696079-...png que dá 404 — dado antigo do storage em disco anterior,
+    NÃO relacionado a esta consolidação.)
+LOGS: sem exceptions no boot do Spring; nginx subiu workers normalmente.
+BASELINE INTEGRALMENTE REPRODUZÍVEL: SIM
+  (build sem cache + 4 containers + rotas + persistência todos aprovados, a partir
+   exclusivamente do estado committado; nenhum arquivo necessário fora do Git.)
+PROBLEMAS ENCONTRADOS (pré-existentes, NÃO causados pela consolidação):
+  1. nginx `proxy_pass http://backend:8080` SEM diretiva `resolver` → resolve o IP do
+     backend só no boot. Um `restart` isolado do backend troca o IP e o proxy passa a
+     dar 502 até o nginx reiniciar/recarregar. O `up` do stack inteiro funciona 100%.
+     Correção sugerida (etapa futura, não agora): adicionar `resolver 127.0.0.11 valid=10s;`
+     + variável no `proxy_pass`, ou reiniciar o frontend junto do backend.
+  2. Anúncio legado aponta para objeto de mídia inexistente no bucket atual (404) —
+     resíduo do storage em disco anterior; limpar na migração de dados futura.
+  3. Docker Desktop/WSL2 apresentou instabilidade intermitente sob reinícios sucessivos
+     e rápidos de serviços isolados (daemon/port-proxy travando por alguns minutos).
+     Ambiente, não código; recuperou sozinho.
+PRÓXIMA ETAPA: migrar as 5 páginas restantes começando por /bazaar/como-funciona e
+  /bazaar/conta; depois desativar APIs Node substituídas e remover a ponte legada do Docker.
+```
+
+> **Recomendação do usuário registrada:** compactar `../vpertz-consolidacao-quarantine/`
+> (17 MB) e preservá-la até o fim da migração geral, sem devolver ao Git.
