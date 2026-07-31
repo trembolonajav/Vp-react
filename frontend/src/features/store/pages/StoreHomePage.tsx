@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useConfig } from "../../../hooks/useConfig";
 import { Handles } from "../../shared/Contatos";
+import { assetUrl } from "../../../utils/assets";
 
 export function StoreHomePage() {
   const { config } = useConfig();
@@ -22,7 +23,7 @@ export function StoreHomePage() {
             {games.map((g) => (
               <Link key={g.id} className="game-card" to={`/store/negociar?g=${encodeURIComponent(g.id)}`}>
                 <div className="game-art">
-                  <img src={g.img} alt={g.nome} />
+                  <img src={assetUrl(g.img)} alt={g.nome} />
                 </div>
                 <div className="game-cta">
                   <span>{g.botao}</span>

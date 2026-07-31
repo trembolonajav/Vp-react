@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import type { Listing } from "../../../types/listing";
 import { brl, numeroBR, spriteUrl, DIAMANTE } from "../../../utils/format";
+import { assetUrl } from "../../../utils/assets";
 import { TYPE_COLOR, TYPE_LABEL } from "../constants";
 
 const HEART =
@@ -12,7 +13,7 @@ function Arte({ listing }: { listing: Listing }) {
     return <img src={spriteUrl(listing.dex, listing.shiny)} alt="" loading="lazy" />;
   }
   if (listing.img) {
-    return <img src={listing.img} alt="" loading="lazy" />;
+    return <img src={assetUrl(listing.img)} alt="" loading="lazy" />;
   }
   return (
     <span className="bz-noart" aria-hidden="true">
@@ -111,17 +112,6 @@ export function ProductCard({
         </div>
       </div>
 
-      {listing.vendedor && (
-        <div className="bz-seller">
-          <Link className="bz-seller-name" to={`/bazaar/perfil/${encodeURIComponent(listing.vendedor)}`}>
-            {listing.vendedor}
-          </Link>
-          <span className={`bz-online ${listing.vendedorOnline ? "" : "off"}`}>
-            {listing.vendedorOnline ? "Online" : "Offline"}
-          </span>
-        </div>
-      )}
-
       <div className="bz-card-price">
         <Preco listing={listing} />
         {listing.negociavel && !vendido && (
@@ -132,6 +122,19 @@ export function ProductCard({
           </span>
         )}
       </div>
+
+      {listing.vendedor && (
+        <div className="bz-card-seller">
+          <Link className="bz-card-seller-link" to={`/bazaar/perfil/${encodeURIComponent(listing.vendedor)}`}>
+            <span className="bz-card-avatar">{listing.vendedor.slice(0, 2).toUpperCase()}</span>
+            <span>{listing.vendedor}</span>
+            {listing.vendedorVerificado && <span className="bz-card-verified" title="Vendedor verificado">✓</span>}
+          </Link>
+          <span className={`bz-online ${listing.vendedorOnline ? "" : "off"}`}>
+            {listing.vendedorOnline ? "Online" : "Offline"}
+          </span>
+        </div>
+      )}
 
       <Link className="bz-cta" to={`/bazaar/anuncio/${listing.id}`}>
         {vendido ? "Ver anúncio encerrado" : "Ver anúncio"}

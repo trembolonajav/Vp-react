@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { isExternal } from "../../utils/whatsapp";
+import { assetUrl } from "../../utils/assets";
 import type { Banner } from "../../types/config";
 
 export function Carousel({ banners }: { banners: Banner[] }) {
@@ -26,7 +27,7 @@ export function Carousel({ banners }: { banners: Banner[] }) {
             href={b.link || "#"}
             {...(isExternal(b.link) ? { target: "_blank", rel: "noreferrer" } : {})}
           >
-            <img src={b.img} alt={b.alt || "Banner"} />
+            <img src={assetUrl(b.img)} alt={b.alt || "Banner"} />
           </a>
         ))}
       </div>

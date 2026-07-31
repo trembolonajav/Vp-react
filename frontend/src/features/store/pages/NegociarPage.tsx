@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useConfig } from "../../../hooks/useConfig";
 import { brl } from "../../../utils/format";
 import { waLink } from "../../../utils/whatsapp";
+import { assetUrl } from "../../../utils/assets";
 
 const CHIPS = [50, 100, 250, 500, 1000];
 const clampInt = (v: number, min: number, max: number) =>
@@ -70,7 +71,7 @@ export function NegociarPage() {
 
         <div className="trade-layout">
           <aside className="trade-side">
-            {game.icone && <img className="diamond" src={game.icone} alt="Item do jogo" />}
+            {game.icone && <img className="diamond" src={assetUrl(game.icone)} alt={game.item} />}
             <div>
               <span className="game-tag">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
