@@ -490,6 +490,7 @@ h2{font-size:clamp(23px,3vw,32px);font-weight:700}
   display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;
   max-width:1020px;margin:0 auto;
 }
+.contact-grid-single{grid-template-columns:minmax(280px,360px);justify-content:center}
 .contact-card{
   display:flex;align-items:center;gap:15px;
   padding:20px;border-radius:var(--radius);
@@ -512,6 +513,7 @@ h2{font-size:clamp(23px,3vw,32px);font-weight:700}
 .contact-card span{font-size:12px;color:var(--muted)}
 .contact-card .go{margin-left:auto;color:var(--faint);font-size:18px;transition:color .2s,transform .2s}
 .contact-card:hover .go{color:var(--gold);transform:translateX(3px)}
+.contact-card.whatsapp-card .icon{color:#38d878;background:rgba(31,190,93,.1);border-color:rgba(56,216,120,.34)}
 .community-card.whatsapp-card .icon{color:#38d878;background:rgba(31,190,93,.1);border-color:rgba(56,216,120,.34)}
 .community-card.discord-card .icon{color:#9da7ff;background:rgba(88,101,242,.13);border-color:rgba(125,138,255,.38)}
 .community-card:last-child:nth-child(3n + 2){grid-column:2}
