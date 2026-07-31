@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;color:#f7eee7;font-family:Inter,system-ui,Arial,sans-serif;line-height:1.55;
+    background:#0a0605 url('assets/background-vp-store.webp') center top/cover fixed no-repeat}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1100px 520px at 50% -10%,rgba(194,54,41,.12),transparent 60%),rgba(7,4,4,.74)}
+  a{color:#e5b34f;text-decoration:none}
+  a:hover{color:#fff4d4}
+  button,input,select{font:inherit;color:inherit}
+  input,select{width:100%;min-width:0;padding:10px 12px;border:1px solid rgba(216,138,74,.18);border-radius:10px;background:#0b0706;color:#f7eee7;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{outline:none;border-color:#e5b34f;box-shadow:0 0 0 3px rgba(229,179,79,.09)}
+  input[type=number]{appearance:textfield;-moz-appearance:textfield}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+  @keyframes vpPulse{0%{box-shadow:0 0 0 0 rgba(226,75,53,.55)}70%{box-shadow:0 0 0 7px rgba(226,75,53,0)}100%{box-shadow:0 0 0 0 rgba(226,75,53,0)}}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2b1a16;border-radius:9px}
+  body.vplab-embed{background:transparent}
+  body.vplab-embed::before{display:none}
+  body.vplab-embed .prototype-shell{display:none!important}
+  body.vplab-embed main{padding:0}
+  body.vplab-embed main>div{width:100%;margin:0}
+</style>
+</helmet>
+
+<div class="prototype-shell" style="display:flex;align-items:center;gap:12px;padding:7px 0;background:linear-gradient(90deg,#170807,#2a0f0b 50%,#170807);border-bottom:1px solid rgba(226,75,53,.2)">
+  <div style="width:min(1280px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:12px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:7px;padding-right:12px;border-right:1px solid rgba(226,75,53,.26)">
+      <span style="width:18px;height:18px;background-image:url(apps/vpertz-store/public/assets/logo-vpertsz-quadrada.webp);background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+      <span style="font-family:Cinzel,serif;font-size:10.5px;font-weight:800;letter-spacing:.16em;color:#e8c9a8">VPERTSZ</span>
+    </a>
+    <div style="display:flex;gap:4px;flex:1">
+      <sc-for list="{{ family }}" as="m" hint-placeholder-count="4">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;border:1px solid {{ m.edge }};background:{{ m.bg }};color:{{ m.color }};font-size:10.5px;font-weight:800;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.4)">
+          <span style="width:5px;height:5px;border-radius:50%;background:{{ m.dot }}"></span>{{ m.label }}
+        </span>
+      </sc-for>
+    </div>
+    <span style="display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;color:#e8c9a8;white-space:nowrap">
+      <span style="width:6px;height:6px;border-radius:50%;background:#e24b35;animation:vpPulse 2s infinite"></span>
+      Live na <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">twitch.tv/vpertsz</a>
+    </span>
+  </div>
+</div>
+
+<header class="prototype-shell" style="position:sticky;top:0;z-index:40;background:rgba(10,6,5,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(216,138,74,.18)">
+  <div style="width:min(1280px,calc(100% - 44px));margin-inline:auto;min-height:78px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:12px">
+      <span style="width:54px;height:54px;background-image:url(assets/logo-vplab.webp);background-size:contain;background-repeat:no-repeat;background-position:center;mix-blend-mode:screen"></span>
+      <span style="line-height:1.1">
+        <strong style="display:block;font-family:Cinzel,serif;font-weight:800;font-size:21px;background:linear-gradient(180deg,#ff6a4d,#b32418);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.04em">VPLab</strong>
+        <span style="font-size:10px;color:#7d6d64;letter-spacing:.18em;text-transform:uppercase;font-weight:700">Ferramentas</span>
+      </span>
+    </a>
+    <nav style="display:flex;justify-content:center;gap:6px">
+      <sc-for list="{{ navLinks }}" as="l" hint-placeholder-count="4">
+        <a href="#" style="padding:9px 13px;border-radius:9px;font-size:13px;font-weight:700;color:{{ l.color }};background:{{ l.bg }}" style-hover="color:#fff;background:rgba(194,54,41,.1)">{{ l.label }}</a>
+      </sc-for>
+    </nav>
+    <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:800;color:#cbb3ff;background:rgba(145,70,255,.1);border:1px solid rgba(145,70,255,.38)">Live</a>
+  </div>
+  <div style="border-top:1px solid rgba(216,138,74,.14);background:linear-gradient(180deg,rgba(30,18,16,.96),rgba(13,8,7,.96))">
+    <div style="width:min(1280px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:14px;padding:9px 0;flex-wrap:wrap">
+      <sc-for list="{{ toolGroups }}" as="g" hint-placeholder-count="3">
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <span style="font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7d6d64">{{ g.label }}</span>
+          <sc-for list="{{ g.tools }}" as="t" hint-placeholder-count="3">
+            <span style="position:relative;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:9px;border:1px solid {{ t.edge }};background:{{ t.bg }};color:{{ t.color }};font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.32)">
+              <span style="width:16px;height:16px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:{{ t.filter }}"></span>
+              {{ t.label }}
+              <span style="position:absolute;left:{{ t.barInset }};right:{{ t.barInset }};bottom:-10px;height:2px;border-radius:2px;background:linear-gradient(90deg,#e24b35,#e5b34f)"></span>
+            </span>
+          </sc-for>
+        </span>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<main style="padding:24px 0 90px">
+<div style="width:min(1280px,calc(100% - 44px));margin-inline:auto;display:grid;gap:16px">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+    <div>
+      <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">Avaliar IV</span>
+      <h1 style="font-family:Cinzel,serif;font-size:27px;margin:0 0 5px">Esse Pokémon é bom — e é melhor que o outro?</h1>
+      <p style="color:#b5a196;font-size:13px;margin:0;max-width:720px">Preencha manualmente ou solte o print do card. O VPLab estima <b style="color:#f7eee7">cada IV individual</b>, dá a faixa provável do IV total com nível de confiança, <b style="color:#f7eee7">compara dois Pokémon stat por stat</b> e gera um card para você mandar no Discord.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span onClick="{{ onHelp }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border-radius:11px;border:1px solid rgba(216,138,74,.24);background:rgba(255,255,255,.03);color:#e8c9a8;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.4)">? Como usar</span>
+      <span onClick="{{ onExample }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border-radius:11px;border:1px solid rgba(229,179,79,.3);background:rgba(229,179,79,.08);color:#e5b34f;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="background:rgba(229,179,79,.16);color:#fff4d4">↻ Preencher exemplo</span>
+      <span onClick="{{ onReset }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border-radius:11px;border:1px solid rgba(216,138,74,.2);background:rgba(255,255,255,.03);color:#b5a196;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="color:#fff">× Resetar dados</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start">
+    <sc-for list="{{ slots }}" as="s" hint-placeholder-count="2">
+      <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid {{ s.frame }};border-radius:20px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px">
+          <span style="display:inline-flex;align-items:center;gap:9px">
+            <span style="width:9px;height:9px;border-radius:50%;background:{{ s.tone }}"></span>
+            <b style="font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:{{ s.tone }}">{{ s.title }}</b>
+          </span>
+          <span style="display:flex;gap:4px;padding:3px;border-radius:10px;background:rgba(0,0,0,.34);border:1px solid rgba(216,138,74,.14)">
+            <sc-for list="{{ s.modes }}" as="m" hint-placeholder-count="2">
+              <span onClick="{{ m.onPick }}" style="padding:6px 11px;border-radius:8px;background:{{ m.bg }};color:{{ m.color }};font-size:11px;font-weight:800;cursor:pointer">{{ m.label }}</span>
+            </sc-for>
+          </span>
+        </div>
+
+        <sc-if value="{{ s.imageMode }}" hint-placeholder-val="{{ false }}">
+          <div onDragOver="{{ s.onDragOver }}" onDrop="{{ s.onDrop }}" style="margin-bottom:13px;padding:14px;border:1px dashed rgba(226,75,53,.3);border-radius:14px;background:linear-gradient(160deg,rgba(194,54,41,.09),rgba(13,8,7,.5))">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="width:64px;height:64px;flex:0 0 64px;border-radius:12px;border:1px solid rgba(229,179,79,.26);background-color:rgba(0,0,0,.4);background-image:url({{ s.preview }});background-size:cover;background-position:center"></span>
+              <div style="display:grid;gap:5px;min-width:0;flex:1">
+                <b style="font-size:12.5px;color:#f7eee7">Preencher por print</b>
+                <small style="font-size:11px;color:#b5a196;line-height:1.45">Card completo, sem cortes, com nome, nível, qualidade, IV total, Power e os 6 stats visíveis.</small>
+                <label style="display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:9px;border:1px solid rgba(229,179,79,.3);background:rgba(229,179,79,.08);color:#e5b34f;font-size:11.5px;font-weight:800;cursor:pointer;justify-self:start">
+                  Selecionar print
+                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange="{{ s.onFile }}" style="display:none">
+                </label>
+                <small style="font-size:10.5px;color:#7d6d64">Ou tire o print e pressione <b style="color:#e8c9a8">Ctrl + V</b> aqui.</small>
+                <small style="font-size:10.5px;color:{{ s.scanColor }};font-weight:700;line-height:1.4">{{ s.scanStatus }}</small>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:11px">
+          <div style="position:relative;width:88px;height:88px;border-radius:15px;border:1px solid rgba(229,179,79,.26);background:radial-gradient(70% 70% at 50% 35%,rgba(194,54,41,.2),rgba(0,0,0,.55))">
+            <span style="position:absolute;inset:5px;background-image:url({{ s.sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:drop-shadow(0 6px 11px rgba(0,0,0,.6))"></span>
+          </div>
+          <div style="display:grid;gap:8px;min-width:0">
+            <label style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Pokémon</span>
+              <select value="{{ s.slug }}" onChange="{{ s.onSpecies }}">
+                <sc-for list="{{ roster }}" as="r" hint-placeholder-count="8">
+                  <option value="{{ r.slug }}">{{ r.label }}</option>
+                </sc-for>
+              </select>
+            </label>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <sc-for list="{{ s.tipos }}" as="t" hint-placeholder-count="2">
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 3px;border-radius:99px;border:1px solid rgba(216,138,74,.2);background:rgba(0,0,0,.4);font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#e8c9a8">
+                  <span style="width:17px;height:17px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                  {{ t.label }}
+                </span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:9px">
+          <sc-for list="{{ s.cardFields }}" as="f" hint-placeholder-count="4">
+            <label style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#b5a196;font-weight:700">{{ f.label }}</span>
+              <input class="mono" type="number" step="{{ f.step }}" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="{{ f.placeholder }}" style="padding:10px 5px;text-align:center">
+            </label>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:12px">
+          <sc-for list="{{ s.statFields }}" as="f" hint-placeholder-count="6">
+            <label style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <span style="font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:#b5a196;font-weight:700;text-align:center">{{ f.label }}</span>
+              <input class="mono" type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" placeholder="—" style="padding:10px 3px;text-align:center;border-color:{{ f.edge }}">
+            </label>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ s.ready }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:11px">
+            <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:12px 13px;border:1px solid {{ s.verdictEdge }};border-radius:14px;background:{{ s.verdictBg }}">
+              <span class="mono" style="font-size:26px;font-weight:700;color:{{ s.verdictColor }};line-height:1">{{ s.potential }}%</span>
+              <div style="display:grid;gap:2px;min-width:0;flex:1">
+                <b style="font-family:Cinzel,serif;font-size:15px;color:{{ s.verdictColor }}">{{ s.verdictLabel }}</b>
+                <small style="font-size:10.5px;color:#b5a196">Qualidade {{ s.qualityLabel }} · Power calculado {{ s.power }}</small>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64;margin-bottom:7px">IVs individuais estimados</div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+                <sc-for list="{{ s.ivs }}" as="iv" hint-placeholder-count="6">
+                  <div style="padding:8px 9px;border:1px solid rgba(216,138,74,.14);border-radius:10px;background:rgba(0,0,0,.28)">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:6px">
+                      <span style="font-size:9.5px;font-weight:700;color:#b5a196">{{ iv.label }}</span>
+                      <b class="mono" style="font-size:11px;color:{{ iv.color }}">{{ iv.text }}</b>
+                    </div>
+                    <span style="display:block;margin-top:5px;height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden">
+                      <span style="display:block;height:100%;border-radius:inherit;width:{{ iv.pct }}%;background:linear-gradient(90deg,{{ iv.color }},{{ iv.color }}88)"></span>
+                    </span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:9.5px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64;margin-bottom:7px">Faixa estimada de IV total</div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+                <sc-for list="{{ s.range }}" as="r" hint-placeholder-count="3">
+                  <div style="padding:10px;border:1px solid {{ r.edge }};border-radius:11px;background:{{ r.bg }};text-align:center">
+                    <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64">{{ r.label }}</div>
+                    <div class="mono" style="margin-top:4px;font-size:{{ r.size }};font-weight:700;color:{{ r.color }}">{{ r.value }}</div>
+                    <sc-if value="{{ r.hasTag }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:5px;padding:2px 7px;border-radius:99px;border:1px solid {{ r.tagEdge }};background:{{ r.tagBg }};font-size:8.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:{{ r.tagColor }}">{{ r.tag }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:8px 0 0;font-size:10.5px;color:#b5a196;line-height:1.45">{{ s.rangeNote }}</p>
+              <sc-if value="{{ s.hasAlert }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px;display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid {{ s.alertColor }}55;border-radius:10px;background:{{ s.alertColor }}14">
+                  <span style="width:22px;height:22px;flex:0 0 22px;background-image:url(assets/route/alerts/recebe-atencao.png);background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                  <b style="font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:{{ s.alertColor }}">{{ s.alertText }}</b>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span onClick="{{ s.onShare }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:11px;border:1px solid rgba(226,75,53,.4);background:linear-gradient(180deg,rgba(226,75,53,.2),rgba(142,29,25,.28));color:#ffd9cf;font-size:12px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">⧉ Gerar e copiar card</span>
+              <span onClick="{{ s.onDownload }}" style="display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:11px;border:1px solid rgba(229,179,79,.3);background:rgba(229,179,79,.08);color:#e5b34f;font-size:12px;font-weight:800;cursor:pointer" style-hover="background:rgba(229,179,79,.16);color:#fff4d4">↓ Baixar imagem</span>
+              <span style="align-self:center;font-size:10.5px;color:#7d6d64">{{ s.shareNote }}</span>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.notReady }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 16px;border:1px dashed rgba(216,138,74,.2);border-radius:14px;text-align:center;color:#7d6d64;font-size:12px;line-height:1.6">
+            Preencha <b style="color:#b5a196">nível</b>, <b style="color:#b5a196">qualidade</b> e os <b style="color:#b5a196">6 stats</b> deste card.
+          </div>
+        </sc-if>
+      </section>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ soloOnly }}" hint-placeholder-val="{{ false }}">
+    <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">Previsão</span>
+          <h2 style="font-family:Cinzel,serif;font-size:20px;margin:0 0 4px">Como esse {{ soloName }} fica mais na frente</h2>
+          <p style="color:#b5a196;font-size:13px;margin:0;max-width:620px">Growth e qualidade não mudam com o nível: com os IVs estimados, dá para ver os stats e o Power em qualquer nível futuro.</p>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:5px;width:160px;min-width:0">
+          <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Projetar no nível</span>
+          <input class="mono" type="number" min="1" max="999" value="{{ target }}" onChange="{{ onTarget }}" style="text-align:center;border-color:rgba(229,179,79,.3);color:#e5b34f;font-weight:700">
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:10px;margin-bottom:13px">
+        <sc-for list="{{ projPower }}" as="p" hint-placeholder-count="4">
+          <div style="padding:13px 14px;border:1px solid {{ p.edge }};border-radius:14px;background:{{ p.bg }}">
+            <div style="font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64">{{ p.label }}</div>
+            <div class="mono" style="margin-top:6px;font-size:21px;font-weight:700;color:{{ p.color }}">{{ p.value }}</div>
+            <div style="margin-top:4px;font-size:10.5px;color:#b5a196;line-height:1.4">{{ p.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:9px">
+        <sc-for list="{{ projStats }}" as="s" hint-placeholder-count="6">
+          <div style="padding:11px 13px;border:1px solid rgba(216,138,74,.14);border-radius:13px;background:rgba(0,0,0,.26)">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+              <span style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#b5a196">{{ s.label }}</span>
+              <span class="mono" style="font-size:9.5px;color:#7d6d64">IV {{ s.iv }}</span>
+            </div>
+            <div style="margin-top:5px;display:flex;align-items:baseline;gap:7px">
+              <b class="mono" style="font-size:18px;font-weight:700;color:#f7eee7">{{ s.future }}</b>
+              <small style="font-size:11px;color:{{ s.deltaColor }};font-weight:700">{{ s.delta }}</small>
+            </div>
+            <div style="margin-top:7px;height:5px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden">
+              <span style="display:block;height:100%;border-radius:inherit;width:{{ s.pct }}%;background:linear-gradient(90deg,#e24b35,#e5b34f)"></span>
+            </div>
+            <div style="margin-top:5px;font-size:10px;color:#7d6d64">hoje {{ s.now }} · teto {{ s.cap }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{ canCompare }}" hint-placeholder-val="{{ true }}">
+    <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+      <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">Comparação</span>
+      <h2 style="font-family:Cinzel,serif;font-size:20px;margin:0 0 14px">Stat por stat — {{ compareTitle }}</h2>
+
+      <div style="overflow:auto;border:1px solid rgba(216,138,74,.16);border-radius:15px;background:rgba(0,0,0,.24)">
+        <div style="display:grid;grid-template-columns:150px minmax(120px,1fr) minmax(120px,1fr) 104px 92px;min-width:660px">
+          <div style="padding:12px 14px;border-bottom:1px solid rgba(216,138,74,.14);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64">Stat</div>
+          <sc-for list="{{ compareHeads }}" as="h" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid rgba(216,138,74,.14);border-left:1px solid rgba(216,138,74,.09);background:{{ h.bg }}">
+              <span style="width:34px;height:34px;flex:0 0 34px;background-image:url({{ h.sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated"></span>
+              <span style="display:grid;gap:1px;min-width:0">
+                <b style="font-size:12.5px;color:{{ h.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ h.nome }}</b>
+                <small class="mono" style="font-size:9.5px;color:#7d6d64">Nv {{ h.level }} · Q {{ h.quality }}</small>
+              </span>
+            </div>
+          </sc-for>
+          <div style="padding:12px 14px;border-bottom:1px solid rgba(216,138,74,.14);border-left:1px solid rgba(216,138,74,.09);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64;text-align:right">Diferença</div>
+          <div style="padding:12px 14px;border-bottom:1px solid rgba(216,138,74,.14);border-left:1px solid rgba(216,138,74,.09);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64;text-align:right">%</div>
+
+          <sc-for list="{{ compareRows }}" as="row" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(216,138,74,.07);background:{{ row.bg }};font-size:12px;font-weight:700;color:#f7eee7">{{ row.label }}</div>
+            <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="2">
+              <div style="display:grid;gap:2px;justify-items:end;padding:11px 14px;border-bottom:1px solid rgba(216,138,74,.07);border-left:1px solid rgba(216,138,74,.09);background:{{ c.bg }}">
+                <b class="mono" style="font-size:13.5px;color:{{ c.color }}">{{ c.value }}</b>
+                <small class="mono" style="font-size:9px;color:#7d6d64">{{ c.sub }}</small>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;justify-content:flex-end;padding:11px 14px;border-bottom:1px solid rgba(216,138,74,.07);border-left:1px solid rgba(216,138,74,.09);background:{{ row.bg }}">
+              <b class="mono" style="font-size:12.5px;color:{{ row.diffColor }}">{{ row.diff }}</b>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;padding:11px 14px;border-bottom:1px solid rgba(216,138,74,.07);border-left:1px solid rgba(216,138,74,.09);background:{{ row.bg }}">
+              <b class="mono" style="font-size:12.5px;color:{{ row.diffColor }}">{{ row.pct }}</b>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:13px;padding:13px 15px;border:1px solid rgba(229,179,79,.3);border-radius:14px;background:linear-gradient(160deg,rgba(229,179,79,.09),rgba(13,8,7,.5))">
+        <span style="width:40px;height:40px;flex:0 0 40px;background-image:url({{ winner.sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated"></span>
+        <div style="display:grid;gap:2px;min-width:0;flex:1">
+          <b style="font-family:Cinzel,serif;font-size:16px;color:#e5b34f">{{ winner.label }}</b>
+          <small style="font-size:11px;color:#b5a196;line-height:1.4">{{ winner.detail }}</small>
+        </div>
+        <span onClick="{{ onCompareShare }}" style="padding:10px 14px;border-radius:11px;border:1px solid rgba(229,179,79,.32);background:rgba(229,179,79,.1);color:#e5b34f;font-size:12px;font-weight:800;cursor:pointer" style-hover="color:#fff4d4">↓ Baixar comparação</span>
+      </div>
+    </section>
+  </sc-if>
+
+  <p style="margin:0;color:#7d6d64;font-size:11px;line-height:1.6;max-width:880px">Fórmulas oficiais: stat = arredondar((base + 2×IV) × nível/100 × Qualidade^exp) e Power = arredondar(soma dos stats × Qualidade). A faixa de IV vem do arredondamento do jogo: um stat exibido representa um intervalo real, e em níveis baixos esse intervalo é largo — por isso a confiança cai. Catálogo de espécies do próprio VPLab.</p>
+
+</div>
+</main>
+
+<sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ onCloseHelp }}" style="position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:rgba(6,3,3,.78);backdrop-filter:blur(4px)">
+    <div style="width:min(980px,100%);max-height:88vh;overflow:auto;padding:26px;border:1px solid rgba(229,179,79,.3);border-radius:22px;background:linear-gradient(160deg,rgba(30,18,16,.99),rgba(13,8,7,.99));box-shadow:0 30px 70px -30px #000">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px">
+        <div>
+          <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:10.5px;font-weight:800;margin-bottom:7px">Guia rápido</span>
+          <h2 style="font-family:Cinzel,serif;font-size:24px;margin:0 0 5px">Como avaliar seu Pokémon</h2>
+          <p style="margin:0;color:#b5a196;font-size:12.5px">Preencha os dados manualmente ou deixe o VPLab ler um print do card.</p>
+        </div>
+        <span onClick="{{ onCloseHelp }}" style="display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid rgba(216,138,74,.24);border-radius:10px;background:rgba(0,0,0,.4);color:#b5a196;font-size:16px;cursor:pointer" style-hover="color:#fff">×</span>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start">
+        <div style="display:grid;gap:14px">
+          <div>
+            <b style="display:block;font-family:Cinzel,serif;font-size:14px;color:#e5b34f;margin-bottom:8px">Preencher por imagem</b>
+            <div style="display:grid;gap:8px">
+              <sc-for list="{{ helpSteps }}" as="h" hint-placeholder-count="4">
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                  <span class="mono" style="display:grid;place-items:center;width:20px;height:20px;flex:0 0 20px;border-radius:6px;border:1px solid rgba(229,179,79,.3);background:rgba(229,179,79,.1);font-size:10px;font-weight:700;color:#e5b34f">{{ h.n }}</span>
+                  <span style="font-size:12px;color:#d9c9bf;line-height:1.5">{{ h.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="padding:12px 14px;border:1px solid rgba(79,196,122,.28);border-radius:12px;background:rgba(79,196,122,.07);font-size:11.5px;color:#cfe9d8;line-height:1.5">
+            <b style="color:#fff">Privacidade:</b> a imagem é lida no seu navegador e não é enviada nem armazenada pelo VPLab.
+          </div>
+          <div>
+            <b style="display:block;font-family:Cinzel,serif;font-size:14px;color:#e5b34f;margin-bottom:8px">Para uma leitura melhor</b>
+            <div style="display:grid;gap:6px">
+              <sc-for list="{{ helpTips }}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;gap:9px;align-items:flex-start;font-size:11.5px;color:#b5a196;line-height:1.5">
+                  <span style="color:#ff8f7d;font-weight:800">•</span>{{ t }}
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;gap:12px">
+          <div style="padding:14px;border:1px solid rgba(216,138,74,.2);border-radius:15px;background:rgba(0,0,0,.3)">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:11px">
+              <span style="width:62px;height:62px;flex:0 0 62px;border-radius:12px;border:1px solid rgba(79,196,122,.4);background-color:rgba(0,0,0,.4);background-image:url({{ helpSprite }});background-size:78%;background-repeat:no-repeat;background-position:center;image-rendering:pixelated"></span>
+              <div style="display:grid;gap:3px">
+                <b style="font-family:Cinzel,serif;font-size:17px;color:#f7eee7">Scizor</b>
+                <small class="mono" style="font-size:10.5px;color:#b5a196">Nível 302 · 6.661 Poder</small>
+                <span style="display:flex;gap:4px;flex-wrap:wrap">
+                  <sc-for list="{{ helpChips }}" as="c" hint-placeholder-count="3">
+                    <span style="padding:2px 8px;border-radius:6px;border:1px solid {{ c.edge }};background:{{ c.bg }};font-size:8.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:{{ c.color }}">{{ c.label }}</span>
+                  </sc-for>
+                </span>
+              </div>
+            </div>
+            <div style="display:grid;gap:5px">
+              <sc-for list="{{ helpStats }}" as="hs" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 46px;gap:8px;align-items:center">
+                  <span class="mono" style="font-size:9.5px;color:#7d6d64">{{ hs.label }}</span>
+                  <span style="display:block;height:7px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden">
+                    <span style="display:block;height:100%;border-radius:inherit;width:{{ hs.pct }}%;background:linear-gradient(90deg,#4fc47a,#2f8a4a)"></span>
+                  </span>
+                  <b class="mono" style="font-size:10.5px;color:#f7eee7;text-align:right">{{ hs.value }}</b>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin:10px 0 0;font-size:10.5px;color:#4fc47a;line-height:1.45"><b>Exemplo válido:</b> card completo, texto nítido e todos os seis stats visíveis.</p>
+          </div>
+          <span onClick="{{ onCloseHelp }}" style="justify-self:end;padding:11px 17px;border-radius:11px;border:1px solid rgba(226,75,53,.4);background:linear-gradient(180deg,rgba(226,75,53,.24),rgba(142,29,25,.3));color:#ffd9cf;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Entendi, vamos avaliar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400}}">
+const T = { normal:"Normal", fire:"Fogo", water:"Água", electric:"Elétrico", grass:"Planta", ice:"Gelo",
+  fighting:"Lutador", poison:"Veneno", ground:"Terra", flying:"Voador", psychic:"Psíquico", bug:"Inseto",
+  rock:"Pedra", ghost:"Fantasma", dragon:"Dragão", dark:"Sombrio", steel:"Aço", fairy:"Fada" };
+const TI = (k) => `assets/route/types-v2/${k}.png`;
+const TICONS = {
+  pokedex:"assets/header/pokedex.png",
+  avaliar:"assets/header/evaluate-iv.webp",
+  fipe:"assets/logo-pokefipe-transparente.webp",
+  rota:"assets/header/map.png",
+  breeding:"assets/header/breeding.png",
+  clas:"assets/header/clans.png",
+  prof:"assets/header/professions.png"
+};
+const TOOL_GROUPS = [
+  { label:"Consultar", tools:[["pokedex","Pokédex"]] },
+  { label:"Avaliar", tools:[["avaliar","Avaliar IV"],["fipe","PokeFipe"]] },
+  { label:"Planejar", tools:[["rota","Rota de caça"],["breeding","Breeding"],["clas","Clãs"],["prof","Profissões"]] }
+];
+const FAMILY = [["hub","VPertsz"],["store","VP Store"],["bazaar","VP Bazaar"],["lab","VPLab"]];
+const NAV_LINKS = ["Ferramentas","VP Store","VP Bazaar","Comunidade"];
+
+const EXP = [0.95, 0.80, 0.80, 0.80, 0.80, 0.95];
+const STAT = ["HP","Ataque","Defesa","Atq. Esp.","Def. Esp.","Velocid."];
+const SHORT = ["HP","ATK","DEF","SPA","SPD","VEL"];
+/* Faixas oficiais da Poképedia (systems/quality). 1,80 é o teto de CAPTURA SELVAGEM;
+   shiny e breeding passam disso e alcançam Mítico, Ancião e Divino. */
+const WILD_CAP = 1.8;
+const TIERS = [
+  { min:.8, max:1, nome:"Fraca", cor:"#8d8d9c", origem:"captura selvagem" },
+  { min:1, max:1.1, nome:"Comum", cor:"#b5a196", origem:"captura selvagem" },
+  { min:1.1, max:1.3, nome:"Incomum", cor:"#4fc47a", origem:"captura selvagem" },
+  { min:1.3, max:1.5, nome:"Rara", cor:"#5b9bd8", origem:"captura selvagem" },
+  { min:1.5, max:1.7, nome:"Épica", cor:"#a86fd8", origem:"captura selvagem" },
+  { min:1.7, max:1.81, nome:"Lendária", cor:"#e5b34f", origem:"teto da captura selvagem" },
+  { min:1.81, max:2, nome:"Acima do selvagem", cor:"#ffb347", origem:"só shiny ou breeding" },
+  { min:2, max:3, nome:"Mítica", cor:"#ff8f7d", origem:"só shiny ou breeding" },
+  { min:3, max:4, nome:"Anciã", cor:"#83b9ff", origem:"breeding de alta geração" },
+  { min:4, max:99, nome:"Divina", cor:"#4fd8b0", origem:"breeding de altíssima geração" }
+];
+let DEX = [];
+const num = (n) => Math.round(n || 0).toLocaleString("pt-BR");
+const dec = (n, d = 1) => Number(n || 0).toFixed(d).replace(".", ",");
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const sprite = (n) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const statAt = (base, iv, lvl, q, i) => Math.round((base + 2*iv) * (lvl/100) * Math.pow(q, EXP[i]));
+const powerOf = (sp, lvl, q, ivs) => Math.round(sp.baseStats.reduce((s, b, i) => s + statAt(b, Array.isArray(ivs) ? ivs[i] : ivs, lvl, q, i), 0) * q);
+const tierOf = (q) => TIERS.find((t) => q >= t.min && q < t.max) || TIERS[TIERS.length-1];
+const ivColor = (iv) => iv >= 27 ? "#4fc47a" : iv >= 18 ? "#e5b34f" : iv >= 12 ? "#e0a93c" : "#ff6b55";
+const EXAMPLE_IVS = [28,31,24,17,26,22];
+const OCR_PATHS = {
+  workerPath:new URL("vendor/worker.min.js", location.href).href,
+  corePath:new URL("vendor/tesseract-core", location.href).href,
+  langPath:new URL("vendor/lang-data", location.href).href
+};
+const normalizeName = (value) => String(value || "").normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+class Component extends DCLogic {
+  state = {
+    helpOpen:false, note:{ a:"", b:"" }, target:300,
+    a:{ slug:"scizor", mode:"manual", level:"", quality:"", power:"", ivTotal:"", stats:["","","","","",""], preview:"", scan:"" },
+    b:{ slug:"scizor", mode:"manual", level:"", quality:"", power:"", ivTotal:"", stats:["","","","","",""], preview:"", scan:"" }
+  };
+
+  componentDidMount(){
+    fetch("vplab-dex.json").then((r) => r.json()).then((raw) => {
+      DEX = raw.map((d) => ({ dexNo:d.n, slug:d.s, nome:d.m, tipos:d.t, baseStats:d.bs, boss:d.boss }));
+      this.forceUpdate();
+    }).catch(() => {});
+    this._paste = (e) => {
+      const item = [...(e.clipboardData?.items || [])].find((i) => i.type.startsWith("image/"));
+      if (!item) return;
+      const file = item.getAsFile();
+      if (file) this.loadImage(this._lastSlot || "a", file);
+    };
+    window.addEventListener("paste", this._paste);
+  }
+  componentWillUnmount(){ window.removeEventListener("paste", this._paste); }
+
+  findSpecies(searchText){
+    const haystack = ` ${normalizeName(searchText)} `;
+    return [...DEX].sort((a,b) => b.nome.length - a.nome.length)
+      .find((entry) => haystack.includes(` ${normalizeName(entry.nome)} `));
+  }
+
+  async loadImage(key, file){
+    if (!file || !window.IvScan?.isAcceptedImage(file)) {
+      this.patch(key, { mode:"image", scan:"Formato não suportado. Envie PNG, JPG ou WebP." });
+      return;
+    }
+    const tickets = (this._scanTickets ||= { a:0, b:0 });
+    const currentTicket = ++tickets[key];
+    const oldPreview = this.state[key].preview;
+    const url = URL.createObjectURL(file);
+    this.patch(key, { preview:url, mode:"image", scan:"Preparando a leitura do print… 0%" });
+    this._lastSlot = key;
+    if (oldPreview?.startsWith("blob:")) URL.revokeObjectURL(oldPreview);
+    if (!window.Tesseract) {
+      this.patch(key, { scan:"Não foi possível carregar o leitor de imagens. Atualize a página e tente novamente." });
+      return;
+    }
+    try {
+      const read = await window.IvScan.readCard(file, {
+        paths:OCR_PATHS,
+        onProgress:(label, progress) => {
+          if (tickets[key] !== currentTicket) return;
+          this.patch(key, { scan:`${label}… ${Math.round((progress || 0) * 100)}%` });
+        }
+      });
+      if (tickets[key] !== currentTicket) return;
+      const fields = read.fields || {};
+      const found = this.findSpecies(read.searchText);
+      const values = {
+        level:fields.level || "",
+        quality:fields.quality || "",
+        power:fields.power || "",
+        ivTotal:fields.total || "",
+        stats:(fields.stats || []).map((value) => value || "")
+      };
+      while (values.stats.length < 6) values.stats.push("");
+      const readCount = [values.level, values.quality, values.power, values.ivTotal, ...values.stats]
+        .filter(Boolean).length;
+      this.patch(key, {
+        ...values,
+        ...(found ? { slug:found.slug } : {}),
+        scan:readCount
+          ? `Leitura concluída (${read.layout === "compact" ? "tooltip compacto" : "card completo"}). ${readCount} campos reconhecidos${found ? `, incluindo ${found.nome}` : ""}. Confira os valores.`
+          : "A imagem foi aberta, mas os números não ficaram legíveis. Tente um print maior e sem cortes."
+      });
+    } catch (error) {
+      if (tickets[key] !== currentTicket) return;
+      console.error("Falha ao ler card:", error);
+      this.patch(key, { scan:"Não consegui ler este print. Use uma imagem nítida do card completo ou do tooltip compacto." });
+    }
+  }
+
+  patch(key, changes){ this.setState({ [key]:{ ...this.state[key], ...changes } }); }
+  species(key){ return DEX.find((d) => d.slug === this.state[key].slug) || DEX[0]; }
+
+  analyse(key){
+    const s = this.state[key];
+    const sp = this.species(key);
+    if (!sp) return null;
+    const lvl = +s.level, q = +String(s.quality).replace(",", ".");
+    const stats = s.stats.map((v) => +v);
+    if (!lvl || !(q >= 0.8 && q <= 12) || stats.some((v) => !v)) return null;
+    const rawIv = (shown, i) => (shown/((lvl/100)*Math.pow(q, EXP[i])) - sp.baseStats[i])/2;
+    const ivOf = (shown, i) => clamp(rawIv(shown, i), 0, 32);
+    const mid = stats.map((v,i) => ivOf(v, i));
+    const rawMid = stats.map((v,i) => rawIv(v, i));
+    const rawLow = stats.map((v,i) => rawIv(v - 0.5, i));
+    const rawHigh = stats.map((v,i) => rawIv(v + 0.5, i));
+    const low = stats.map((v,i) => ivOf(v - 0.5, i));
+    const high = stats.map((v,i) => ivOf(v + 0.5, i));
+    const ivs = mid.map(Math.round);
+    const sum = (arr) => arr.reduce((a,b) => a+b, 0);
+    /* O spread usa os limites NÃO clampeados: se o IV satura em 32 a incerteza não desaparece. */
+    const spread = sum(rawHigh) - sum(rawLow);
+    const impossible = rawMid.some((v) => v < -0.35 || v > 32.35);
+    const saturated = rawMid.filter((v) => v >= 31.9).length;
+    let confidence = clamp(100 - spread*2.2, 35, 99);
+    if (saturated >= 3) confidence = Math.min(confidence, 62);
+    if (impossible) confidence = Math.min(confidence, 40);
+    const physical = Math.pow(Math.max(0, sp.baseStats[1]), 4), special = Math.pow(Math.max(0, sp.baseStats[3]), 4);
+    const offTotal = Math.max(1, physical + special);
+    const w = [.11, .695*(physical/offTotal), .09, .695*(special/offTotal), .09, .015];
+    /* Potencial usa o teto selvagem como 100%; acima disso (shiny/breed) passa de 100 e é rotulado à parte. */
+    const potential = clamp(w.reduce((acc, ww, i) => acc + ww*clamp(mid[i]/32, 0, 1), 0) * Math.pow(q/WILD_CAP, 1.15) * 100, 0, 400);
+    return { sp, lvl, q, stats, mid, ivs, potential, confidence, impossible, saturated,
+      total:{ min:Math.floor(sum(low)), likely:Math.round(sum(mid)), max:Math.ceil(sum(high)) },
+      power:Math.round(sum(stats) * q) };
+  }
+
+  cardCanvas(a){
+    const W = 1000, H = 580, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+
+    /* fundo brasa da VP Store */
+    g.fillStyle = "#0d0807"; g.fillRect(0, 0, W, H);
+    const glow = g.createRadialGradient(210, 160, 20, 210, 160, 640);
+    glow.addColorStop(0, "rgba(194,54,41,.32)"); glow.addColorStop(1, "rgba(194,54,41,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    const sheen = g.createLinearGradient(0, 0, W, H);
+    sheen.addColorStop(0, "rgba(255,255,255,.05)"); sheen.addColorStop(.55, "rgba(255,255,255,0)");
+    g.fillStyle = sheen; g.fillRect(0, 0, W, H);
+
+    /* faixa rubi da família */
+    const band = g.createLinearGradient(0, 0, W, 0);
+    band.addColorStop(0, "#170807"); band.addColorStop(.5, "#a3231a"); band.addColorStop(1, "#170807");
+    g.fillStyle = band; g.fillRect(0, 0, W, 56);
+    g.fillStyle = "#f6dca8"; g.font = "800 18px Cinzel, Georgia, serif";
+    g.fillText("V P L A B", 34, 36);
+    g.fillStyle = "rgba(246,220,168,.72)"; g.font = "700 12px Inter, sans-serif";
+    g.fillText("AVALIAÇÃO DE IV", 152, 35);
+    g.textAlign = "right";
+    g.fillStyle = "rgba(246,220,168,.62)";
+    g.fillText("twitch.tv/vpertsz", W - 34, 35);
+    g.textAlign = "left";
+
+    /* moldura dourada com cantos chanfrados */
+    const frame = (inset, color, width) => {
+      const c = 22, x = inset, y = inset, w = W - inset*2, h = H - inset*2;
+      g.strokeStyle = color; g.lineWidth = width;
+      g.beginPath();
+      g.moveTo(x + c, y); g.lineTo(x + w - c, y); g.lineTo(x + w, y + c);
+      g.lineTo(x + w, y + h - c); g.lineTo(x + w - c, y + h);
+      g.lineTo(x + c, y + h); g.lineTo(x, y + h - c); g.lineTo(x, y + c);
+      g.closePath(); g.stroke();
+    };
+    frame(11, "rgba(229,179,79,.78)", 2.5);
+    frame(17, "rgba(226,75,53,.32)", 1);
+
+    /* medalhão do Pokémon */
+    const cx = 178, cy = 212;
+    const medal = g.createRadialGradient(cx, cy - 24, 10, cx, cy, 106);
+    medal.addColorStop(0, "rgba(229,179,79,.24)"); medal.addColorStop(1, "rgba(0,0,0,.5)");
+    g.fillStyle = medal;
+    g.beginPath(); g.arc(cx, cy, 94, 0, Math.PI*2); g.fill();
+    g.strokeStyle = "rgba(229,179,79,.8)"; g.lineWidth = 2.5;
+    g.beginPath(); g.arc(cx, cy, 94, 0, Math.PI*2); g.stroke();
+    g.strokeStyle = "rgba(226,75,53,.5)"; g.lineWidth = 1;
+    g.beginPath(); g.arc(cx, cy, 86, 0, Math.PI*2); g.stroke();
+    const img = this._sprites && this._sprites[a.sp.dexNo];
+    if (img) g.drawImage(img, cx - 76, cy - 80, 152, 152);
+
+    g.textAlign = "center";
+    g.fillStyle = "#f7eee7"; g.font = "800 30px Cinzel, Georgia, serif";
+    g.fillText(a.sp.nome.toUpperCase(), cx, 352);
+    g.strokeStyle = "rgba(229,179,79,.42)"; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(cx - 94, 368); g.lineTo(cx + 94, 368); g.stroke();
+    g.fillStyle = "#e5b34f"; g.font = "700 15px Inter, sans-serif";
+    g.fillText("Nível " + num(a.lvl) + "  ·  Power " + num(a.power), cx, 392);
+    a.sp.tipos.forEach((t, i) => {
+      const tw = 92, total = a.sp.tipos.length*tw + (a.sp.tipos.length-1)*10;
+      const x = cx - total/2 + i*(tw+10);
+      g.fillStyle = "rgba(226,75,53,.15)"; g.fillRect(x, 414, tw, 30);
+      g.strokeStyle = "rgba(229,179,79,.5)"; g.lineWidth = 1.2; g.strokeRect(x, 414, tw, 30);
+      g.fillStyle = "#e8c9a8"; g.font = "800 12px Inter, sans-serif";
+      g.fillText(T[t].toUpperCase(), x + tw/2, 433);
+    });
+    g.textAlign = "left";
+
+    /* divisor */
+    const div = g.createLinearGradient(0, 90, 0, H - 70);
+    div.addColorStop(0, "rgba(229,179,79,0)"); div.addColorStop(.5, "rgba(229,179,79,.45)"); div.addColorStop(1, "rgba(229,179,79,0)");
+    g.strokeStyle = div; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(348, 90); g.lineTo(348, H - 70); g.stroke();
+
+    /* potencial */
+    const L = 392;
+    g.fillStyle = "#d98350"; g.font = "800 13px Inter, sans-serif";
+    g.fillText("POTENCIAL DO EXEMPLAR", L, 106);
+    const grad = g.createLinearGradient(L, 112, L, 178);
+    grad.addColorStop(0, "#ffe6a8"); grad.addColorStop(1, "#d98a1e");
+    g.fillStyle = grad; g.font = "800 66px Cinzel, Georgia, serif";
+    g.fillText(dec(a.potential, 0).replace(",0","") + "%", L, 172);
+    const verdict = a.potential > 100 ? "ACIMA DO SELVAGEM" : a.potential >= 80 ? "EXCEPCIONAL" : a.potential >= 62 ? "MUITO BOM" : a.potential >= 45 ? "BOM" : a.potential >= 28 ? "MEDIANO" : "FRACO";
+    g.font = "800 24px Cinzel, Georgia, serif";
+    const vw = g.measureText(verdict).width + 34;
+    g.fillStyle = "rgba(226,75,53,.2)"; g.fillRect(W - 60 - vw, 128, vw, 46);
+    g.strokeStyle = "rgba(226,75,53,.6)"; g.lineWidth = 1.5; g.strokeRect(W - 60 - vw, 128, vw, 46);
+    g.fillStyle = "#ffd9cf"; g.textAlign = "center";
+    g.fillText(verdict, W - 60 - vw/2, 160);
+    g.textAlign = "left";
+
+    /* qualidade e IV total */
+    [["QUALIDADE", dec(a.q, 2) + " · " + tierOf(a.q).nome, L], ["IV TOTAL", a.total.likely + " / 192", L + 268]].forEach(([label, value, x]) => {
+      g.fillStyle = "#b5a196"; g.font = "700 12px Inter, sans-serif";
+      g.fillText(label, x, 214);
+      g.fillStyle = "#f7eee7"; g.font = "700 24px ui-monospace, monospace";
+      g.fillText(value, x, 244);
+      g.strokeStyle = "rgba(226,75,53,.65)"; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(x, 254); g.lineTo(x + 42, 254); g.stroke();
+    });
+
+    /* stats */
+    STAT.forEach((label, i) => {
+      const col = i % 2, row = Math.floor(i/2);
+      const x = L + col*268, y = 302 + row*66;
+      g.fillStyle = "#b5a196"; g.font = "700 11px Inter, sans-serif";
+      g.fillText(label.toUpperCase(), x, y);
+      g.fillStyle = ivColor(a.mid[i]); g.font = "700 15px ui-monospace, monospace";
+      g.textAlign = "right";
+      g.fillText(dec(a.mid[i], 1) + "/32", x + 226, y);
+      g.textAlign = "left";
+      g.fillStyle = "rgba(255,255,255,.07)"; g.fillRect(x, y + 10, 226, 9);
+      const bar = g.createLinearGradient(x, 0, x + 226, 0);
+      bar.addColorStop(0, "#e24b35"); bar.addColorStop(1, ivColor(a.mid[i]));
+      g.fillStyle = bar; g.fillRect(x, y + 10, Math.max(4, 226*a.mid[i]/32), 9);
+      g.strokeStyle = "rgba(229,179,79,.3)"; g.lineWidth = 1; g.strokeRect(x, y + 10, 226, 9);
+    });
+
+    /* rodapé */
+    g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(17, H - 58, W - 34, 41);
+    g.fillStyle = "#7d6d64"; g.font = "500 12px Inter, sans-serif";
+    g.fillText(dec(a.confidence, 0).replace(",0","") + "% de confiança na estimativa", 40, H - 32);
+    g.textAlign = "right";
+    g.fillStyle = "#e5b34f"; g.font = "800 13px Cinzel, Georgia, serif";
+    g.fillText("VP STORE · FERRAMENTA OFICIAL", W - 40, H - 32);
+    g.textAlign = "left";
+    return cv;
+  }
+
+  async withSprite(a, run){
+    this._sprites = this._sprites || {};
+    if (!this._sprites[a.sp.dexNo]) {
+      this._sprites[a.sp.dexNo] = await new Promise((res) => {
+        const i = new Image(); i.crossOrigin = "anonymous";
+        i.onload = () => res(i); i.onerror = () => res(null); i.src = sprite(a.sp.dexNo);
+      });
+    }
+    run();
+  }
+
+  shareCard(key, download){
+    const a = this.analyse(key);
+    if (!a) return;
+    this.withSprite(a, () => {
+      const cv = this.cardCanvas(a);
+      if (download) {
+        const link = document.createElement("a");
+        link.download = `vplab-${a.sp.slug}.png`;
+        link.href = cv.toDataURL("image/png"); link.click();
+        this.setState({ note:{ ...this.state.note, [key]:"Imagem baixada." } });
+        return;
+      }
+      cv.toBlob((blob) => {
+        if (navigator.clipboard && window.ClipboardItem) {
+          navigator.clipboard.write([new ClipboardItem({ "image/png":blob })])
+            .then(() => this.setState({ note:{ ...this.state.note, [key]:"Card copiado — use Ctrl + V no Discord." } }))
+            .catch(() => this.setState({ note:{ ...this.state.note, [key]:"Não deu para copiar; use Baixar imagem." } }));
+        } else {
+          this.setState({ note:{ ...this.state.note, [key]:"Seu navegador não copia imagem; use Baixar imagem." } });
+        }
+      });
+    });
+  }
+
+  compareCanvas(A, B){
+    const W = 1100, H = 620, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const bg = g.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, "#1e1210"); bg.addColorStop(1, "#0a0605");
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.strokeStyle = "rgba(229,179,79,.5)"; g.lineWidth = 3; g.strokeRect(8, 8, W-16, H-16);
+    g.fillStyle = "#d98350"; g.font = "800 15px Inter, sans-serif";
+    g.fillText("VPLAB · COMPARAÇÃO", 44, 54);
+    g.fillStyle = "#f7eee7"; g.font = "800 34px Cinzel, Georgia, serif";
+    g.fillText(`${A.sp.nome} vs ${B.sp.nome}`, 44, 98);
+    [[A, 470], [B, 700]].forEach(([side, x]) => {
+      g.fillStyle = "#e5b34f"; g.font = "800 14px Inter, sans-serif"; g.textAlign = "right";
+      g.fillText(side.sp.nome + " Nv " + num(side.lvl), x + 100, 140);
+      g.textAlign = "left";
+    });
+    const rows = [...STAT.map((label, i) => [label, A.stats[i], B.stats[i], A.mid[i], B.mid[i]]),
+      ["Power", A.power, B.power, null, null]];
+    rows.forEach(([label, va, vb, ia, ib], r) => {
+      const y = 190 + r*58;
+      g.fillStyle = r % 2 ? "rgba(255,255,255,.02)" : "transparent";
+      g.fillRect(40, y - 28, W - 80, 50);
+      g.fillStyle = "#f7eee7"; g.font = "700 16px Inter, sans-serif";
+      g.fillText(label, 56, y);
+      g.textAlign = "right";
+      g.font = "700 20px ui-monospace, monospace";
+      g.fillStyle = va >= vb ? "#e5b34f" : "#f7eee7"; g.fillText(num(va), 570, y);
+      g.fillStyle = vb >= va ? "#e5b34f" : "#f7eee7"; g.fillText(num(vb), 800, y);
+      const d = vb - va;
+      g.fillStyle = d > 0 ? "#4fc47a" : d < 0 ? "#ff6b55" : "#7d6d64";
+      g.font = "700 17px ui-monospace, monospace";
+      g.fillText((d > 0 ? "+" : "") + num(d), 950, y);
+      g.fillText(va ? (d >= 0 ? "+" : "") + dec(d/va*100, 1) + "%" : "—", 1050, y);
+      if (ia !== null) {
+        g.fillStyle = "#7d6d64"; g.font = "500 11px ui-monospace, monospace";
+        g.fillText("IV " + dec(ia, 1), 570, y + 16);
+        g.fillText("IV " + dec(ib, 1), 800, y + 16);
+      }
+      g.textAlign = "left";
+    });
+    g.fillStyle = "#7d6d64"; g.font = "500 12px Inter, sans-serif";
+    g.fillText("Estimativa do VPLab · vpertsz", 44, H - 26);
+    return cv;
+  }
+
+  slotVals(key, tone, title){
+    const st = this.state[key];
+    const sp = this.species(key);
+    const a = this.analyse(key);
+    const tier = a ? tierOf(a.q) : null;
+    const verdict = !a ? null
+      : a.potential > 100 ? { label:"Acima do teto selvagem", color:"#4fd8b0" }
+      : a.potential >= 80 ? { label:"Exemplar excepcional", color:"#4fc47a" }
+      : a.potential >= 62 ? { label:"Muito bom", color:"#4fc47a" }
+      : a.potential >= 45 ? { label:"Bom", color:"#e5b34f" }
+      : a.potential >= 28 ? { label:"Mediano", color:"#e0a93c" }
+      : { label:"Fraco", color:"#ff6b55" };
+    return {
+      key, title, tone,
+      frame:key === "a" ? "rgba(91,155,216,.3)" : "rgba(79,196,122,.3)",
+      slug:st.slug, sprite:sp ? sprite(sp.dexNo) : "",
+      tipos:sp ? sp.tipos.map((t) => ({ key:t, label:T[t], icon:TI(t) })) : [],
+      imageMode:st.mode === "image", preview:st.preview, scanStatus:st.scan || "Nenhuma imagem carregada.",
+      scanColor:st.scan ? "#e0a93c" : "#7d6d64",
+      modes:[["manual","Manual"],["image","Usar imagem"]].map(([m, label]) => ({ key:m, label,
+        color:st.mode === m ? "#fff" : "#b5a196",
+        bg:st.mode === m ? "rgba(226,75,53,.24)" : "transparent",
+        onPick:() => { this._lastSlot = key; this.patch(key, { mode:m }); } })),
+      cardFields:[
+        { key:"level", label:"Nível", value:st.level, step:"1", placeholder:"302", onChange:(e) => this.patch(key, { level:e.target.value }) },
+        { key:"quality", label:"Qualidade", value:st.quality, step:"0.001", placeholder:"1.78", onChange:(e) => this.patch(key, { quality:e.target.value }) },
+        { key:"ivTotal", label:"IV total", value:st.ivTotal, step:"1", placeholder:"opcional", onChange:(e) => this.patch(key, { ivTotal:e.target.value }) },
+        { key:"power", label:"Power", value:st.power, step:"1", placeholder:"opcional", onChange:(e) => this.patch(key, { power:e.target.value }) }
+      ],
+      statFields:SHORT.map((label, i) => ({ key:i, label, value:st.stats[i],
+        edge:st.stats[i] ? "rgba(216,138,74,.18)" : "rgba(226,75,53,.3)",
+        onChange:(e) => { const stats = [...st.stats]; stats[i] = e.target.value; this.patch(key, { stats }); } })),
+      onSpecies:(e) => this.patch(key, { slug:e.target.value }),
+      onFile:(e) => { const f = e.target.files && e.target.files[0]; if (f) this.loadImage(key, f); },
+      onDragOver:(e) => { e.preventDefault(); this._lastSlot = key; },
+      onDrop:(e) => {
+        e.preventDefault();
+        this._lastSlot = key;
+        const f = [...(e.dataTransfer?.files || [])].find((file) => file.type.startsWith("image/"));
+        if (f) this.loadImage(key, f);
+        else this.patch(key, { mode:"image", scan:"Solte aqui uma imagem PNG, JPG ou WebP." });
+      },
+      onShare:() => this.shareCard(key, false),
+      onDownload:() => this.shareCard(key, true),
+      shareNote:this.state.note[key] || "",
+      ready:Boolean(a), notReady:!a,
+      potential:a ? dec(a.potential, 1) : "",
+      verdictLabel:verdict ? verdict.label : "", verdictColor:verdict ? verdict.color : "#b5a196",
+      verdictEdge:verdict ? verdict.color + "55" : "rgba(216,138,74,.16)",
+      verdictBg:verdict ? verdict.color + "12" : "rgba(0,0,0,.26)",
+      qualityLabel:a ? `${dec(a.q, 3)} · ${tier.nome} (${tier.origem})` : "",
+      power:a ? num(a.power) : "",
+      ivs:a ? a.mid.map((v, i) => ({ key:i, label:STAT[i], text:dec(v, 1) + "/32",
+        pct:clamp(v/32*100, 2, 100), color:ivColor(v) })) : [],
+      range:a ? [
+        { key:"min", label:"Mínimo", value:num(a.total.min), size:"15px", color:"#b5a196", edge:"rgba(216,138,74,.14)", bg:"rgba(0,0,0,.28)", hasTag:false },
+        { key:"likely", label:"Mais provável", value:num(a.total.likely), size:"22px", color:"#e5b34f",
+          edge:"rgba(229,179,79,.4)", bg:"rgba(229,179,79,.09)", hasTag:true,
+          tag:`${dec(a.confidence, 0).replace(",0","")}% · ${a.confidence >= 85 ? "alta" : a.confidence >= 65 ? "média" : "baixa"} confiança`,
+          tagColor:a.confidence >= 85 ? "#4fc47a" : a.confidence >= 65 ? "#e5b34f" : "#ff8f7d",
+          tagEdge:a.confidence >= 85 ? "rgba(79,196,122,.4)" : a.confidence >= 65 ? "rgba(229,179,79,.4)" : "rgba(255,143,125,.4)",
+          tagBg:a.confidence >= 85 ? "rgba(79,196,122,.1)" : a.confidence >= 65 ? "rgba(229,179,79,.1)" : "rgba(255,143,125,.1)" },
+        { key:"max", label:"Máximo", value:num(a.total.max), size:"15px", color:"#b5a196", edge:"rgba(216,138,74,.14)", bg:"rgba(0,0,0,.28)", hasTag:false }
+      ] : [],
+      rangeNote:a
+        ? (a.impossible
+            ? `Estes números não fecham: com nível ${num(a.lvl)} e qualidade ${dec(a.q, 3)}, os stats informados exigiriam IV fora da faixa 0–32. Confira principalmente o nível — é o campo que mais distorce a leitura.`
+            : a.saturated >= 3
+              ? `${a.saturated} status bateram no teto de 32. Quando isso acontece não dá para saber o quanto sobrou, então a estimativa perde confiança: revise o nível e a qualidade.`
+              : (+st.ivTotal > 0
+                  ? (a.total.likely >= +st.ivTotal - 2 && a.total.likely <= +st.ivTotal + 2
+                      ? `Confere com o IV total ${num(+st.ivTotal)} que você informou.`
+                      : `Você informou ${num(+st.ivTotal)}, a estimativa deu ${a.total.likely}. Revise nível, qualidade e stats — equips e bônus de clã distorcem.`)
+                  : `Em níveis baixos o arredondamento do jogo alarga a faixa. Suba de nível e recalcule para apertar a estimativa.`))
+        : "",
+      hasAlert:Boolean(a && (a.impossible || a.saturated >= 3)),
+      alertText:a ? (a.impossible ? "Dados inconsistentes" : "Estimativa saturada no teto") : "",
+      alertColor:a && a.impossible ? "#ff6b55" : "#e0a93c"
+    };
+  }
+
+  renderVals(){
+    const st = this.state;
+    const shell = {
+      family:FAMILY.map(([key, label]) => ({ key, label,
+        color:key === "lab" ? "#fff" : "#c9b8ae",
+        bg:key === "lab" ? "rgba(194,54,41,.24)" : "transparent",
+        edge:key === "lab" ? "rgba(226,75,53,.45)" : "rgba(226,75,53,.16)",
+        dot:key === "lab" ? "#e5b34f" : "rgba(229,179,79,.3)" })),
+      navLinks:NAV_LINKS.map((label, i) => ({ key:label, label,
+        color:i === 0 ? "#fff" : "#c9b8ae", bg:i === 0 ? "rgba(194,54,41,.1)" : "transparent" })),
+      toolGroups:TOOL_GROUPS.map((g) => ({ key:g.label, label:g.label,
+        tools:g.tools.map(([key, label]) => ({ key, label, icon:TICONS[key],
+          color:key === "avaliar" ? "#fff" : "#c9b8ae",
+          bg:key === "avaliar" ? "rgba(194,54,41,.14)" : "transparent",
+          edge:key === "avaliar" ? "rgba(226,75,53,.4)" : "rgba(216,138,74,.14)",
+          filter:key === "avaliar" ? "saturate(.95) brightness(1.04)" : "grayscale(.6) sepia(.24) brightness(.9)",
+          barInset:key === "avaliar" ? "11px" : "50%" })) }))
+    };
+
+    const A = this.analyse("a"), B = this.analyse("b");
+    const both = Boolean(A && B);
+    const solo = !both && (A || B) ? (A || B) : null;
+    const target = Math.max(1, Math.floor(+st.target || 1));
+    const cell = (v, other, sub) => ({ value:num(v), sub, color:v >= other ? "#e5b34f" : "#f7eee7",
+      bg:v >= other ? "rgba(229,179,79,.06)" : "transparent" });
+
+    const compareRows = both ? [
+      ...STAT.map((label, i) => {
+        const va = A.stats[i], vb = B.stats[i], d = vb - va;
+        return { key:label, label, bg:i % 2 ? "rgba(255,255,255,.015)" : "transparent",
+          cells:[
+            { key:"a", ...cell(va, vb, "IV " + dec(A.mid[i], 1)) },
+            { key:"b", ...cell(vb, va, "IV " + dec(B.mid[i], 1)) }
+          ],
+          diff:(d > 0 ? "+" : "") + num(d), pct:va ? (d >= 0 ? "+" : "") + dec(d/va*100, 2) + "%" : "—",
+          diffColor:d > 0 ? "#4fc47a" : d < 0 ? "#ff6b55" : "#7d6d64" };
+      }),
+      (() => { const d = B.power - A.power;
+        return { key:"power", label:"Power", bg:"rgba(229,179,79,.05)",
+          cells:[
+            { key:"a", ...cell(A.power, B.power, "IV total ~" + A.total.likely) },
+            { key:"b", ...cell(B.power, A.power, "IV total ~" + B.total.likely) }
+          ],
+          diff:(d > 0 ? "+" : "") + num(d), pct:A.power ? (d >= 0 ? "+" : "") + dec(d/A.power*100, 2) + "%" : "—",
+          diffColor:d > 0 ? "#4fc47a" : d < 0 ? "#ff6b55" : "#7d6d64" };
+      })()
+    ] : [];
+
+    const better = both ? (A.potential >= B.potential ? A : B) : null;
+    const worse = both ? (better === A ? B : A) : null;
+
+    return {
+      ...shell,
+      roster:[...DEX].sort((a,b) => a.nome.localeCompare(b.nome)).map((d) => ({ key:d.slug, slug:d.slug, label:d.nome })),
+      slots:[this.slotVals("a", "#5b9bd8", "Pokémon A"), this.slotVals("b", "#4fc47a", "Pokémon B")],
+      canCompare:both,
+      compareTitle:both ? `${A.sp.nome} Nv ${num(A.lvl)} × ${B.sp.nome} Nv ${num(B.lvl)}` : "",
+      compareHeads:both ? [
+        { key:"a", nome:A.sp.nome, sprite:sprite(A.sp.dexNo), level:num(A.lvl), quality:dec(A.q, 3), color:"#8fc4ea", bg:"rgba(91,155,216,.06)" },
+        { key:"b", nome:B.sp.nome, sprite:sprite(B.sp.dexNo), level:num(B.lvl), quality:dec(B.q, 3), color:"#8fd48a", bg:"rgba(79,196,122,.06)" }
+      ] : [],
+      compareRows,
+      winner:both ? { sprite:sprite(better.sp.dexNo),
+        label:`${better.sp.nome} tem mais potencial (${dec(better.potential, 1)}% contra ${dec(worse.potential, 1)}%)`,
+        detail:`Qualidade ${dec(better.q, 3)} contra ${dec(worse.q, 3)} · IV total estimado ${better.total.likely} contra ${worse.total.likely}. Entre os dois, a Qualidade pesa quase o dobro do IV no resultado final.` }
+        : { sprite:"", label:"", detail:"" },
+      onCompareShare:() => { if (!both) return;
+        this.withSprite(A, () => {
+          const cv = this.compareCanvas(A, B);
+          const link = document.createElement("a");
+          link.download = "vplab-comparacao.png";
+          link.href = cv.toDataURL("image/png"); link.click();
+        });
+      },
+      soloOnly:Boolean(solo), target:st.target,
+      soloName:solo ? solo.sp.nome : "",
+      onTarget:(e) => this.setState({ target:e.target.value }),
+      projPower:solo ? [
+        { key:1, label:`Power no nível ${num(target)}`, value:num(powerOf(solo.sp, target, solo.q, solo.ivs)),
+          note:`hoje, no nível ${num(solo.lvl)}: ${num(solo.power)}`,
+          color:"#e5b34f", edge:"rgba(229,179,79,.32)", bg:"linear-gradient(160deg,rgba(229,179,79,.1),rgba(13,8,7,.5))" },
+        { key:2, label:"Se o IV fosse 32", value:num(powerOf(solo.sp, target, solo.q, 32)),
+          note:`+${dec((powerOf(solo.sp, target, solo.q, 32)/powerOf(solo.sp, target, solo.q, solo.ivs)-1)*100, 1)}% — o que o IV está custando`,
+          color:"#f7eee7", edge:"rgba(216,138,74,.16)", bg:"rgba(0,0,0,.26)" },
+        { key:3, label:solo.q >= WILD_CAP ? "Se a qualidade fosse 3,00 (Anciã)" : "Se a qualidade fosse 1,80",
+          value:num(powerOf(solo.sp, target, solo.q >= WILD_CAP ? 3 : WILD_CAP, solo.ivs)),
+          note:`+${dec((powerOf(solo.sp, target, solo.q >= WILD_CAP ? 3 : WILD_CAP, solo.ivs)/powerOf(solo.sp, target, solo.q, solo.ivs)-1)*100, 1)}% — peso da qualidade`,
+          color:"#f7eee7", edge:"rgba(216,138,74,.16)", bg:"rgba(0,0,0,.26)" },
+        { key:4, label:"Teto de captura selvagem", value:num(powerOf(solo.sp, target, WILD_CAP, 32)),
+          note:`IV 32 com qualidade 1,80 — você está em ${dec(powerOf(solo.sp, target, solo.q, solo.ivs)/powerOf(solo.sp, target, WILD_CAP, 32)*100, 1)}%. Breeding passa desse teto.`,
+          color:"#ff8f7d", edge:"rgba(226,75,53,.32)", bg:"linear-gradient(160deg,rgba(194,54,41,.12),rgba(13,8,7,.5))" }
+      ] : [],
+      projStats:solo ? solo.sp.baseStats.map((b, i) => {
+        const now = solo.stats[i];
+        const future = statAt(b, solo.ivs[i], target, solo.q, i);
+        const cap = statAt(b, 32, target, Math.max(WILD_CAP, solo.q), i);
+        const d = future - now;
+        return { key:i, label:SHORT[i], iv:`${solo.ivs[i]}/32`, now:num(now), future:num(future), cap:num(cap),
+          delta:(d >= 0 ? "+" : "−") + num(Math.abs(d)), deltaColor:d >= 0 ? "#4fc47a" : "#ff6b55",
+          pct:clamp(future/cap*100, 3, 100) };
+      }) : [],
+      helpOpen:st.helpOpen,
+      onHelp:() => this.setState({ helpOpen:true }),
+      onCloseHelp:() => this.setState({ helpOpen:false }),
+      helpSprite:sprite(212),
+      helpChips:[
+        { key:1, label:"Inseto", color:"#d9e88f", edge:"rgba(188,212,79,.4)", bg:"rgba(188,212,79,.12)" },
+        { key:2, label:"Aço", color:"#d7e2ea", edge:"rgba(200,212,221,.35)", bg:"rgba(200,212,221,.1)" },
+        { key:3, label:"Lendária ×1,78", color:"#e5b34f", edge:"rgba(229,179,79,.45)", bg:"rgba(229,179,79,.12)" }
+      ],
+      helpStats:[["HP",575],["Atk",766],["Def",747],["SpA",560],["SpD",556],["Vel",538]]
+        .map(([label, value]) => ({ key:label, label, value:num(value), pct:clamp(value/800*100, 5, 100) })),
+      helpSteps:[
+        { key:1, n:1, text:"Abra o card completo do Pokémon no jogo. Se precisar, aumente o zoom para os números ficarem nítidos." },
+        { key:2, n:2, text:"Tire um print sem cortes mostrando nome, nível, qualidade, Power, IV total e os seis stats." },
+        { key:3, n:3, text:"Clique em Selecionar print, arraste o arquivo ou simplesmente cole com Ctrl + V. PNG, JPG e WebP funcionam." },
+        { key:4, n:4, text:"Confira os valores antes de considerar o resultado — se algum número sair errado, corrija o campo na mão." }
+      ],
+      helpTips:[
+        "Use imagem nítida, sem compressão forte ou partes cobertas.",
+        "Evite prints muito pequenos, borrados ou com o card cortado.",
+        "Nível baixo deixa a estimativa de IV imprecisa: quanto maior o nível, mais apertada a faixa."
+      ],
+      onExample:() => {
+        const sp = DEX.find((d) => d.slug === "scizor") || DEX[0];
+        if (!sp) return;
+        const mk = (lvl, q, ivs) => ({ level:lvl, quality:q, stats:sp.baseStats.map((b,i) => String(statAt(b, ivs[i], lvl, q, i))),
+          power:String(Math.round(sp.baseStats.reduce((s,b,i) => s + statAt(b, ivs[i], lvl, q, i), 0) * q)),
+          ivTotal:String(ivs.reduce((x,y) => x+y, 0)), slug:sp.slug, mode:"manual", scan:"", preview:"" });
+        this.setState({ a:{ ...this.state.a, ...mk(302, 1.245, EXAMPLE_IVS) },
+          b:{ ...this.state.b, ...mk(302, 1.78, [22,26,19,14,21,18]) } });
+      },
+      onReset:() => this.setState({
+        a:{ ...this.state.a, level:"", quality:"", power:"", ivTotal:"", stats:["","","","","",""], preview:"", scan:"" },
+        b:{ ...this.state.b, level:"", quality:"", power:"", ivTotal:"", stats:["","","","","",""], preview:"", scan:"" },
+        note:{ a:"", b:"" } })
+    };
+  }
+}
+</script>
+<script src="vendor/tesseract.min.js"></script>
+<script src="iv-scan.js"></script>
+<script src="./prototype-embed.js" data-page="avaliar"></script>
+</body>
+</html>

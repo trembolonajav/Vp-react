@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;color:#f7eee7;font-family:Inter,system-ui,Arial,sans-serif;line-height:1.55;
+    background:#0a0605 url('apps/vpertz-lab/public/assets/background-vp-store.webp') center top/cover fixed no-repeat}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1100px 520px at 50% -10%,rgba(194,54,41,.12),transparent 60%),rgba(7,4,4,.74)}
+  a{color:#e5b34f;text-decoration:none}
+  a:hover{color:#fff4d4}
+  button,input,select{font:inherit;color:inherit}
+  input,select{width:100%;min-width:0;padding:11px 13px;border:1px solid rgba(216,138,74,.18);border-radius:10px;background:#0b0706;color:#f7eee7;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{outline:none;border-color:#e5b34f;box-shadow:0 0 0 3px rgba(229,179,79,.09)}
+  .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+  @keyframes vpPulse{0%{box-shadow:0 0 0 0 rgba(226,75,53,.55)}70%{box-shadow:0 0 0 7px rgba(226,75,53,0)}100%{box-shadow:0 0 0 0 rgba(226,75,53,0)}}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2b1a16;border-radius:9px}
+  body.vplab-embed{background:transparent}
+  body.vplab-embed::before{display:none}
+  body.vplab-embed .prototype-shell{display:none!important}
+  body.vplab-embed main{padding:0}
+  body.vplab-embed main>div{width:100%;margin:0}
+</style>
+</helmet>
+
+<div class="prototype-shell" style="display:flex;align-items:center;gap:12px;padding:7px 0;background:linear-gradient(90deg,#170807,#2a0f0b 50%,#170807);border-bottom:1px solid rgba(226,75,53,.2)">
+  <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:12px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:7px;padding-right:12px;border-right:1px solid rgba(226,75,53,.26)">
+      <span style="width:18px;height:18px;background-image:url(apps/vpertz-store/public/assets/logo-vpertsz-quadrada.webp);background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+      <span style="font-family:Cinzel,serif;font-size:10.5px;font-weight:800;letter-spacing:.16em;color:#e8c9a8">VPERTSZ</span>
+    </a>
+    <div style="display:flex;gap:4px;flex:1">
+      <sc-for list="{{ family }}" as="m" hint-placeholder-count="4">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;border:1px solid {{ m.edge }};background:{{ m.bg }};color:{{ m.color }};font-size:10.5px;font-weight:800;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.4)">
+          <span style="width:5px;height:5px;border-radius:50%;background:{{ m.dot }}"></span>{{ m.label }}
+        </span>
+      </sc-for>
+    </div>
+    <span style="display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;color:#e8c9a8;white-space:nowrap">
+      <span style="width:6px;height:6px;border-radius:50%;background:#e24b35;animation:vpPulse 2s infinite"></span>
+      Live na <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">twitch.tv/vpertsz</a>
+    </span>
+  </div>
+</div>
+
+<header class="prototype-shell" style="position:sticky;top:0;z-index:40;background:rgba(10,6,5,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(216,138,74,.18)">
+  <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;min-height:78px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:12px">
+      <span style="width:54px;height:54px;background-image:url(apps/vpertz-lab/public/assets/logo-vplab.webp);background-size:contain;background-repeat:no-repeat;background-position:center;mix-blend-mode:screen"></span>
+      <span style="line-height:1.1">
+        <strong style="display:block;font-family:Cinzel,serif;font-weight:800;font-size:21px;background:linear-gradient(180deg,#ff6a4d,#b32418);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.04em">VPLab</strong>
+        <span style="font-size:10px;color:#7d6d64;letter-spacing:.18em;text-transform:uppercase;font-weight:700">Ferramentas</span>
+      </span>
+    </a>
+    <nav style="display:flex;justify-content:center;gap:6px">
+      <sc-for list="{{ navLinks }}" as="l" hint-placeholder-count="4">
+        <a href="#" style="padding:9px 13px;border-radius:9px;font-size:13px;font-weight:700;color:{{ l.color }};background:{{ l.bg }}" style-hover="color:#fff;background:rgba(194,54,41,.1)">{{ l.label }}</a>
+      </sc-for>
+    </nav>
+    <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:800;color:#cbb3ff;background:rgba(145,70,255,.1);border:1px solid rgba(145,70,255,.38)">Live</a>
+  </div>
+  <div style="border-top:1px solid rgba(216,138,74,.14);background:linear-gradient(180deg,rgba(30,18,16,.96),rgba(13,8,7,.96))">
+    <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:14px;padding:9px 0;flex-wrap:wrap">
+      <sc-for list="{{ toolGroups }}" as="g" hint-placeholder-count="3">
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <span style="font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7d6d64">{{ g.label }}</span>
+          <sc-for list="{{ g.tools }}" as="t" hint-placeholder-count="3">
+            <span style="position:relative;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:9px;border:1px solid {{ t.edge }};background:{{ t.bg }};color:{{ t.color }};font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.32)">
+              <span style="width:16px;height:16px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:{{ t.filter }}"></span>
+              {{ t.label }}
+              <span style="position:absolute;left:{{ t.barInset }};right:{{ t.barInset }};bottom:-10px;height:2px;border-radius:2px;background:linear-gradient(90deg,#e24b35,#e5b34f)"></span>
+            </span>
+          </sc-for>
+        </span>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<main style="padding:26px 0 90px">
+<div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:grid;gap:16px">
+
+  <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:22px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:15px">
+      <div>
+        <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">Pokédex</span>
+        <h2 style="font-family:Cinzel,serif;font-size:21px;margin:0 0 4px">Tudo sobre a espécie, em uma tela</h2>
+        <p style="color:#b5a196;font-size:13px;margin:0;max-width:660px">Onde caçar, o que ele derruba, quanto vale, quais golpes ele aprende e — o que faltava — <b style="color:#f7eee7">contra quem ele é forte, fraco e imune</b>.</p>
+      </div>
+      <div class="mono" style="display:grid;gap:2px;text-align:right">
+        <span style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7d6d64;font-family:Inter,sans-serif">No catálogo</span>
+        <b style="font-size:20px;color:#e5b34f">{{ total }}</b>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:12px">
+      <label style="display:flex;flex-direction:column;gap:5px;min-width:0">
+        <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Buscar</span>
+        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="Nome ou número da dex…">
+      </label>
+      <label style="display:flex;flex-direction:column;gap:5px;min-width:0">
+        <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Nível de hunt</span>
+        <select value="{{ bandFilter }}" onChange="{{ onBand }}">
+          <sc-for list="{{ bandOptions }}" as="b" hint-placeholder-count="6">
+            <option value="{{ b.value }}">{{ b.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:5px;min-width:0">
+        <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Ordenar</span>
+        <select value="{{ sort }}" onChange="{{ onSort }}">
+          <sc-for list="{{ sortOptions }}" as="o" hint-placeholder-count="4">
+            <option value="{{ o.value }}">{{ o.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+    </div>
+
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
+      <sc-for list="{{ typeFilters }}" as="t" hint-placeholder-count="18">
+        <span onClick="{{ t.onToggle }}" style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px 4px 4px;border-radius:99px;border:1px solid {{ t.edge }};background:{{ t.bg }};font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:{{ t.color }};cursor:pointer">
+          <span style="width:17px;height:17px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+          {{ t.label }}
+        </span>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <sc-for list="{{ rarityFilters }}" as="r" hint-placeholder-count="6">
+        <span onClick="{{ r.onPick }}" style="padding:7px 12px;border-radius:99px;border:1px solid {{ r.edge }};background:{{ r.bg }};color:{{ r.color }};font-size:11px;font-weight:800;cursor:pointer">{{ r.label }} <span class="mono" style="opacity:.65">{{ r.count }}</span></span>
+      </sc-for>
+      <span style="margin-left:auto;font-size:11.5px;color:#7d6d64">{{ resultNote }}</span>
+    </div>
+  </section>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:16px;align-items:start">
+
+    <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:22px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;max-height:760px;overflow:auto">
+        <sc-for list="{{ list }}" as="p" hint-placeholder-count="12">
+          <div onClick="{{ p.onPick }}" style="display:grid;gap:5px;justify-items:center;padding:11px 9px;border:1px solid {{ p.edge }};border-radius:13px;background:{{ p.bg }};cursor:pointer" style-hover="border-color:rgba(229,179,79,.42)">
+            <span style="width:62px;height:62px;background-image:url({{ p.sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:drop-shadow(0 5px 9px rgba(0,0,0,.6))"></span>
+            <b style="font-size:12px;color:#f7eee7;text-align:center;line-height:1.2">{{ p.nome }}</b>
+            <span class="mono" style="font-size:9px;color:#7d6d64">{{ p.num }} · {{ p.hunt }}</span>
+            <span style="display:flex;gap:3px">
+              <sc-for list="{{ p.tipos }}" as="t" hint-placeholder-count="2">
+                <span style="width:18px;height:18px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+              </sc-for>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:34px 18px;text-align:center;color:#7d6d64;font-size:12.5px">Nada encontrado com esses filtros.</div>
+      </sc-if>
+    </section>
+
+    <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(229,179,79,.24);border-radius:22px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.35);position:sticky;top:150px">
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+        <div style="position:relative;width:132px;height:132px;flex:0 0 132px;border-radius:18px;border:1px solid rgba(229,179,79,.3);background:radial-gradient(70% 70% at 50% 35%,rgba(194,54,41,.24),rgba(0,0,0,.55))">
+          <span style="position:absolute;inset:7px;background-image:url({{ sel.sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:drop-shadow(0 8px 14px rgba(0,0,0,.65))"></span>
+        </div>
+        <div style="display:grid;gap:8px;min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span class="mono" style="font-size:12px;color:#7d6d64">{{ sel.num }}</span>
+            <h2 style="font-family:Cinzel,serif;font-size:26px;margin:0">{{ sel.nome }}</h2>
+            <span style="padding:4px 11px;border-radius:99px;border:1px solid {{ sel.rarityColor }}55;background:{{ sel.rarityColor }}16;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:{{ sel.rarityColor }}">{{ sel.raridade }}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ sel.tipos }}" as="t" hint-placeholder-count="2">
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 11px 4px 4px;border-radius:99px;border:1px solid rgba(216,138,74,.22);background:rgba(0,0,0,.4);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#e8c9a8">
+                <span style="width:20px;height:20px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                {{ t.label }}
+              </span>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:7px">
+            <sc-for list="{{ sel.facts }}" as="f" hint-placeholder-count="4">
+              <div style="padding:8px 10px;border:1px solid rgba(216,138,74,.16);border-radius:11px;background:rgba(0,0,0,.28)">
+                <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d6d64">{{ f.label }}</div>
+                <div class="mono" style="margin-top:3px;font-size:13.5px;font-weight:700;color:{{ f.color }}">{{ f.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:14px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px">
+            <span style="font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64">Base stats</span>
+            <span class="mono" style="font-size:11px;color:#b5a196">total {{ sel.statTotal }}</span>
+          </div>
+          <div style="display:grid;gap:6px">
+            <sc-for list="{{ sel.stats }}" as="s" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:74px minmax(0,1fr) 38px;gap:9px;align-items:center">
+                <span style="font-size:11px;font-weight:700;color:#b5a196">{{ s.label }}</span>
+                <span style="display:block;height:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;border:1px solid rgba(216,138,74,.12)">
+                  <span style="display:block;height:100%;border-radius:inherit;width:{{ s.pct }}%;background:linear-gradient(90deg,{{ s.color }},{{ s.color2 }})"></span>
+                </span>
+                <b class="mono" style="font-size:11.5px;color:{{ s.color }};text-align:right">{{ s.value }}</b>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div>
+          <span style="display:block;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64;margin-bottom:8px">Contra ele — o que usar e o que evitar</span>
+          <div style="display:grid;gap:7px">
+            <sc-for list="{{ sel.matchup }}" as="m" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:118px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border:1px solid {{ m.edge }};border-radius:11px;background:{{ m.bg }}">
+                <span style="display:flex;align-items:center;gap:7px">
+                  <span style="width:22px;height:22px;background-image:url({{ m.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                  <span style="display:grid;gap:1px">
+                    <b style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:{{ m.color }}">{{ m.label }}</b>
+                    <small class="mono" style="font-size:9px;color:#7d6d64">{{ m.x }}</small>
+                  </span>
+                </span>
+                <span style="display:flex;gap:4px;flex-wrap:wrap">
+                  <sc-for list="{{ m.types }}" as="t" hint-placeholder-count="4">
+                    <span title="{{ t.label }}" style="width:22px;height:22px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                  </sc-for>
+                  <sc-if value="{{ m.none }}" hint-placeholder-val="{{ false }}">
+                    <small style="font-size:10.5px;color:#7d6d64">nenhum</small>
+                  </sc-if>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px">
+            <span style="font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64">Golpes que ele aprende</span>
+            <span style="font-size:11px;color:#7d6d64">{{ sel.moveNote }}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;max-height:150px;overflow:auto">
+            <sc-for list="{{ sel.moves }}" as="mv" hint-placeholder-count="8">
+              <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 5px;border-radius:10px;border:1px solid rgba(216,138,74,.16);background:rgba(0,0,0,.28)">
+                <span style="width:20px;height:20px;background-image:url({{ mv.icon }});background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+                <span style="display:grid;gap:1px;line-height:1.2">
+                  <b style="font-size:11px;color:#f7eee7">{{ mv.nome }}</b>
+                  <small class="mono" style="font-size:9px;color:#7d6d64">{{ mv.meta }}</small>
+                </span>
+              </span>
+            </sc-for>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px">
+            <span style="font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#7d6d64">Loot</span>
+            <span class="mono" style="font-size:11px;color:#b5a196">média {{ sel.lootAvg }} por abate</span>
+          </div>
+          <div style="border:1px solid rgba(216,138,74,.16);border-radius:12px;background:rgba(0,0,0,.26);overflow:hidden">
+            <sc-for list="{{ sel.loot }}" as="l" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 84px 92px;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid rgba(216,138,74,.08);background:{{ l.bg }}">
+                <span style="display:grid;gap:1px;min-width:0">
+                  <b style="font-size:11.5px;color:{{ l.color }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ l.nome }}</b>
+                  <small style="font-size:9.5px;color:#7d6d64">{{ l.qty }}</small>
+                </span>
+                <span class="mono" style="font-size:11px;color:{{ l.color }};text-align:right">{{ l.chance }}</span>
+                <span class="mono" style="font-size:11px;color:#b5a196;text-align:right">{{ l.value }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ sel.noLoot }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px;text-align:center;font-size:11.5px;color:#7d6d64">Sem loot registrado no catálogo.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px solid rgba(216,138,74,.12)">
+          <sc-for list="{{ sel.actions }}" as="a" hint-placeholder-count="3">
+            <span style="display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:11px;border:1px solid {{ a.edge }};background:{{ a.bg }};color:{{ a.color }};font-size:12px;font-weight:800;cursor:pointer" style-hover="color:#fff">
+              <span style="width:18px;height:18px;background-image:url({{ a.icon }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated"></span>
+              {{ a.label }}
+            </span>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <p style="margin:0;color:#7d6d64;font-size:11px;line-height:1.6;max-width:880px">Dados do catálogo do VPLab (<span class="mono">data.js</span> · Poképedia oficial com os spawns conferidos no mapa do jogo em 17/07/2026): nível de hunt, raridade, base stats, golpes, XP, preço no NPC e tabela de loot com chance real. Vantagens e imunidades são calculadas pela tabela de tipos do jogo.</p>
+
+</div>
+</main>
+</x-dc>
+<script src="./prototype-embed.js" data-page="pokedex"></script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400}}">
+const T = { normal:"Normal", fire:"Fogo", water:"Água", electric:"Elétrico", grass:"Planta", ice:"Gelo",
+  fighting:"Lutador", poison:"Veneno", ground:"Terra", flying:"Voador", psychic:"Psíquico", bug:"Inseto",
+  rock:"Pedra", ghost:"Fantasma", dragon:"Dragão", dark:"Sombrio", steel:"Aço", fairy:"Fada" };
+const TI = (k) => `apps/vpertz-lab/public/assets/route/types-v2/${k}.png`;
+const AI = (k) => `apps/vpertz-lab/public/assets/route/alerts/${k}.png`;
+const CHART = {
+  normal:{rock:.5,ghost:0,steel:.5},
+  fire:{fire:.5,water:.5,grass:2,ice:2,bug:2,rock:.5,dragon:.5,steel:2},
+  water:{fire:2,water:.5,grass:.5,ground:2,rock:2,dragon:.5},
+  electric:{water:2,electric:.5,grass:.5,ground:0,flying:2,dragon:.5},
+  grass:{fire:.5,water:2,grass:.5,poison:.5,ground:2,flying:.5,bug:.5,rock:2,dragon:.5,steel:.5},
+  ice:{fire:.5,water:.5,grass:2,ice:.5,ground:2,flying:2,dragon:2,steel:.5},
+  fighting:{normal:2,ice:2,poison:.5,flying:.5,psychic:.5,bug:.5,rock:2,ghost:0,dark:2,steel:2,fairy:.5},
+  poison:{grass:2,poison:.5,ground:.5,rock:.5,ghost:.5,steel:0,fairy:2},
+  ground:{fire:2,electric:2,grass:.5,poison:2,flying:0,bug:.5,rock:2,steel:2},
+  flying:{electric:.5,grass:2,fighting:2,bug:2,rock:.5,steel:.5},
+  psychic:{fighting:2,poison:2,psychic:.5,dark:0,steel:.5},
+  bug:{fire:.5,grass:2,fighting:.5,poison:.5,flying:.5,psychic:2,ghost:.5,dark:2,steel:.5,fairy:.5},
+  rock:{fire:2,ice:2,fighting:.5,ground:.5,flying:2,bug:2,steel:.5},
+  ghost:{normal:0,psychic:2,ghost:2,dark:.5},
+  dragon:{dragon:2,steel:.5,fairy:0},
+  dark:{fighting:.5,psychic:2,ghost:2,dark:.5,fairy:.5},
+  steel:{fire:.5,water:.5,electric:.5,ice:2,rock:2,steel:.5,fairy:2},
+  fairy:{fire:.5,fighting:2,poison:.5,dragon:2,dark:2,steel:.5}
+};
+const RARITY = { "Comum":"#b5a196", "Incomum":"#4fc47a", "Raro":"#5b9bd8", "Épico":"#a86fd8", "Lendário":"#e5b34f", "Mítico":"#ff8f7d" };
+const STAT = ["HP","Ataque","Defesa","Atq. Esp.","Def. Esp.","Velocid."];
+const TICONS = {
+  pokedex:"apps/vpertz-lab/public/assets/header/pokedex.png",
+  avaliar:"apps/vpertz-lab/public/assets/header/evaluate-iv.webp",
+  fipe:"apps/vpertz-lab/public/assets/logo-pokefipe-transparente.webp",
+  rota:"apps/vpertz-lab/public/assets/header/map.png",
+  breeding:"apps/vpertz-lab/public/assets/header/breeding.png",
+  clas:"apps/vpertz-lab/public/assets/header/clans.png",
+  prof:"apps/vpertz-lab/public/assets/header/professions.png"
+};
+const TOOL_GROUPS = [
+  { label:"Consultar", tools:[["pokedex","Pokédex"]] },
+  { label:"Avaliar", tools:[["avaliar","Avaliar IV"],["fipe","PokeFipe"]] },
+  { label:"Planejar", tools:[["rota","Rota de caça"],["breeding","Breeding"],["clas","Clãs"],["prof","Profissões"]] }
+];
+const FAMILY = [["hub","VPertsz"],["store","VP Store"],["bazaar","VP Bazaar"],["lab","VPLab"]];
+const NAV_LINKS = ["Ferramentas","VP Store","VP Bazaar","Comunidade"];
+
+let DEX = [];
+const num = (n) => Math.round(n || 0).toLocaleString("pt-BR");
+const sprite = (n) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const eff = (atk, defs) => defs.reduce((m, d) => m * (CHART[atk] && CHART[atk][d] !== undefined ? CHART[atk][d] : 1), 1);
+const statColor = (v) => v >= 120 ? "#4fc47a" : v >= 90 ? "#e5b34f" : v >= 60 ? "#e0a93c" : "#ff8f7d";
+
+class Component extends DCLogic {
+  state = { query:"", band:"all", rarity:"Todas", types:[], sort:"dex", pick:6, loaded:false };
+
+  componentDidMount(){
+    fetch("vplab-dex.json").then((r) => r.json()).then((raw) => {
+      DEX = raw.map((d) => ({ dexNo:d.n, slug:d.s, nome:d.m, tipos:d.t, huntLevel:d.h, raridade:d.r,
+        baseStats:d.bs, xp:d.xp, npc:d.npc, sell:d.sell, lootAvg:d.la, boss:d.boss,
+        loot:(d.loot || []).map(([nome, chance, mn, mx, value]) => ({ nome, chance, mn, mx, value })),
+        golpes:(d.g || []).map(([nome, tipo, categoria, poder, nivel]) => ({ nome, tipo, categoria, poder, nivel })) }));
+      this.setState({ loaded:true });
+    }).catch(() => {});
+  }
+
+  renderVals(){
+    const st = this.state;
+    const shell = {
+      family:FAMILY.map(([key, label]) => ({ key, label,
+        color:key === "lab" ? "#fff" : "#c9b8ae",
+        bg:key === "lab" ? "rgba(194,54,41,.24)" : "transparent",
+        edge:key === "lab" ? "rgba(226,75,53,.45)" : "rgba(226,75,53,.16)",
+        dot:key === "lab" ? "#e5b34f" : "rgba(229,179,79,.3)" })),
+      navLinks:NAV_LINKS.map((label, i) => ({ key:label, label,
+        color:i === 0 ? "#fff" : "#c9b8ae", bg:i === 0 ? "rgba(194,54,41,.1)" : "transparent" })),
+      toolGroups:TOOL_GROUPS.map((g) => ({ key:g.label, label:g.label,
+        tools:g.tools.map(([key, label]) => ({ key, label, icon:TICONS[key],
+          color:key === "pokedex" ? "#fff" : "#c9b8ae",
+          bg:key === "pokedex" ? "rgba(194,54,41,.14)" : "transparent",
+          edge:key === "pokedex" ? "rgba(226,75,53,.4)" : "rgba(216,138,74,.14)",
+          filter:key === "pokedex" ? "saturate(.95) brightness(1.04)" : "grayscale(.6) sepia(.24) brightness(.9)",
+          barInset:key === "pokedex" ? "11px" : "50%" })) }))
+    };
+    if (!DEX.length) return { ...shell, total:"…", query:"", list:[], typeFilters:[], rarityFilters:[],
+      bandOptions:[], sortOptions:[], resultNote:"lendo o catálogo…", empty:false,
+      sel:{ nome:"Carregando…", num:"", sprite:"", tipos:[], facts:[], stats:[], matchup:[], moves:[], loot:[], actions:[] },
+      onQuery:() => {}, onBand:() => {}, onSort:() => {} };
+
+    const bands = [...new Set(DEX.map((d) => d.huntLevel))].sort((a,b) => a-b);
+    const q = st.query.trim().toLowerCase();
+    let list = DEX.filter((d) => {
+      if (q && !(d.nome.toLowerCase().includes(q) || String(d.dexNo).padStart(3,"0").includes(q))) return false;
+      if (st.band !== "all" && d.huntLevel !== +st.band) return false;
+      if (st.rarity !== "Todas" && d.raridade !== st.rarity) return false;
+      if (st.types.length && !st.types.every((t) => d.tipos.includes(t))) return false;
+      return true;
+    });
+    const total = DEX.reduce((s,d) => s + d.baseStats.reduce((a,b) => a+b, 0), 0);
+    list = [...list].sort((a,b) =>
+      st.sort === "nome" ? a.nome.localeCompare(b.nome)
+      : st.sort === "hunt" ? a.huntLevel - b.huntLevel || a.dexNo - b.dexNo
+      : st.sort === "stats" ? b.baseStats.reduce((x,y) => x+y, 0) - a.baseStats.reduce((x,y) => x+y, 0)
+      : st.sort === "xp" ? (b.xp || 0) - (a.xp || 0)
+      : a.dexNo - b.dexNo);
+
+    const sel = DEX.find((d) => d.dexNo === st.pick) || list[0] || DEX[0];
+    const groups = { 4:[], 2:[], 1:[], .5:[], .25:[], 0:[] };
+    Object.keys(T).forEach((atk) => {
+      const m = eff(atk, sel.tipos);
+      (groups[m] = groups[m] || []).push(atk);
+    });
+    const mkRow = (key, label, icon, color, edge, bg, keys, x) => ({
+      key, label, icon, color, edge, bg, x,
+      types:(keys || []).map((t) => ({ key:t, label:T[t], icon:TI(t) })), none:!keys || !keys.length
+    });
+    const matchup = [
+      mkRow("dbl", "Fraqueza dupla", AI("dano-super"), "#4fc47a", "rgba(79,196,122,.3)", "rgba(79,196,122,.07)", groups[4], "×4 → ×5,5 na hunt"),
+      mkRow("weak", "Fraco contra", AI("dano-vantagem"), "#8fd48a", "rgba(79,196,122,.22)", "rgba(79,196,122,.05)", groups[2], "×2 → ×2,5 na hunt"),
+      mkRow("res", "Resiste a", AI("dano-resistido"), "#e0a93c", "rgba(224,169,60,.26)", "rgba(224,169,60,.06)", [...(groups[.5] || []), ...(groups[.25] || [])], "×0,5 ou menos"),
+      mkRow("imm", "Imune a", AI("imunidade"), "#83b9ff", "rgba(131,185,255,.3)", "rgba(131,185,255,.07)", groups[0], "×0 — não sofre nada")
+    ];
+    const statSum = sel.baseStats.reduce((a,b) => a+b, 0);
+    const lootSorted = [...sel.loot].sort((a,b) => (b.chance || 0) - (a.chance || 0));
+
+    return {
+      ...shell, total:num(DEX.length), query:st.query, bandFilter:st.band, sort:st.sort,
+      bandOptions:[{ key:"all", value:"all", label:"Todos os níveis" },
+        ...bands.map((b) => ({ key:b, value:String(b), label:`Hunt Nv ${b}` }))],
+      sortOptions:[["dex","Número da dex"],["nome","Nome (A–Z)"],["hunt","Nível de hunt"],["stats","Base stats"],["xp","XP por abate"]]
+        .map(([value, label]) => ({ key:value, value, label })),
+      typeFilters:Object.keys(T).map((t) => {
+        const on = st.types.includes(t);
+        return { key:t, label:T[t], icon:TI(t),
+          color:on ? "#fff" : "#b5a196",
+          bg:on ? "rgba(226,75,53,.2)" : "rgba(0,0,0,.3)",
+          edge:on ? "rgba(226,75,53,.45)" : "rgba(216,138,74,.16)",
+          onToggle:() => this.setState({ types:on ? st.types.filter((x) => x !== t) : [...st.types, t] }) };
+      }),
+      rarityFilters:["Todas", ...Object.keys(RARITY)].map((label) => ({ key:label, label,
+        count:label === "Todas" ? DEX.length : DEX.filter((d) => d.raridade === label).length,
+        color:st.rarity === label ? "#fff" : (RARITY[label] || "#b5a196"),
+        bg:st.rarity === label ? "rgba(226,75,53,.2)" : "rgba(0,0,0,.3)",
+        edge:st.rarity === label ? "rgba(226,75,53,.45)" : "rgba(216,138,74,.16)",
+        onPick:() => this.setState({ rarity:label }) })),
+      resultNote:`${num(list.length)} de ${num(DEX.length)} espécies`,
+      empty:list.length === 0,
+      list:list.map((d) => ({ key:d.dexNo, nome:d.nome, sprite:sprite(d.dexNo),
+        num:"#" + String(d.dexNo).padStart(3,"0"), hunt:d.boss ? "boss" : "Nv " + d.huntLevel,
+        tipos:d.tipos.map((t) => ({ key:t, icon:TI(t) })),
+        edge:d.dexNo === st.pick ? "rgba(229,179,79,.5)" : "rgba(216,138,74,.14)",
+        bg:d.dexNo === st.pick ? "rgba(229,179,79,.09)" : "rgba(0,0,0,.26)",
+        onPick:() => this.setState({ pick:d.dexNo }) })),
+      sel:{
+        nome:sel.nome, num:"#" + String(sel.dexNo).padStart(3,"0"), sprite:sprite(sel.dexNo),
+        raridade:sel.raridade, rarityColor:RARITY[sel.raridade] || "#b5a196",
+        tipos:sel.tipos.map((t) => ({ key:t, label:T[t], icon:TI(t) })),
+        facts:[
+          { key:1, label:"Hunt", value:sel.boss ? "Boss" : "Nv " + sel.huntLevel, color:sel.boss ? "#ff8f7d" : "#e5b34f" },
+          { key:2, label:"XP por abate", value:num(sel.xp), color:"#f7eee7" },
+          { key:3, label:"Preço no NPC", value:sel.npc ? "$" + num(sel.npc) : "—", color:"#f7eee7" },
+          { key:4, label:"Golpes", value:num(sel.golpes.length), color:"#f7eee7" }
+        ],
+        statTotal:num(statSum),
+        stats:sel.baseStats.map((v, i) => ({ key:i, label:STAT[i], value:num(v),
+          pct:Math.max(3, Math.min(100, v/200*100)), color:statColor(v), color2:statColor(v) + "88" })),
+        matchup,
+        moveNote:`${sel.golpes.length} no total`,
+        moves:sel.golpes.map((g, i) => ({ key:i, nome:g.nome, icon:TI(g.tipo),
+          meta:`${T[g.tipo]} · ${g.categoria === "fisico" ? "físico" : "especial"} · ${g.poder}` })),
+        lootAvg:sel.lootAvg ? "$" + num(sel.lootAvg) : "—",
+        noLoot:lootSorted.length === 0,
+        loot:lootSorted.map((l, i) => ({ key:l.nome + i, nome:l.nome,
+          qty:l.mn === l.mx ? `${l.mn} unidade${l.mn > 1 ? "s" : ""}` : `${l.mn}–${l.mx} unidades`,
+          chance:l.chance ? (l.chance/1000).toFixed(l.chance >= 1000 ? 1 : 2).replace(".", ",") + "%" : "raríssimo",
+          value:l.value ? "$" + num(l.value) : "—",
+          color:!l.chance ? "#e5b34f" : l.chance >= 40000 ? "#b5a196" : l.chance >= 5000 ? "#4fc47a" : "#e5b34f",
+          bg:i % 2 ? "rgba(255,255,255,.015)" : "transparent" })),
+        actions:[
+          { key:1, label:"Avaliar IV", icon:TICONS.avaliar, color:"#e8c9a8", edge:"rgba(216,138,74,.24)", bg:"rgba(255,255,255,.03)" },
+          { key:2, label:"Planejar rota", icon:TICONS.rota, color:"#ffd9cf", edge:"rgba(226,75,53,.4)", bg:"linear-gradient(180deg,rgba(226,75,53,.2),rgba(142,29,25,.26))" },
+          { key:3, label:"Ver na PokeFipe", icon:TICONS.fipe, color:"#e5b34f", edge:"rgba(229,179,79,.3)", bg:"rgba(229,179,79,.08)" }
+        ]
+      },
+      onQuery:(e) => this.setState({ query:e.target.value }),
+      onBand:(e) => this.setState({ band:e.target.value }),
+      onSort:(e) => this.setState({ sort:e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;color:#f7eee7;font-family:Inter,system-ui,Arial,sans-serif;line-height:1.55;
+    background:#0a0605 url('apps/vpertz-lab/public/assets/background-vp-store.webp') center top/cover fixed no-repeat}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(1100px 520px at 50% -10%,rgba(194,54,41,.12),transparent 60%),rgba(7,4,4,.72)}
+  a{color:#e5b34f;text-decoration:none}
+  a:hover{color:#fff4d4}
+  button,input,select{font:inherit;color:inherit}
+  input,select{width:100%;min-width:0;padding:11px 13px;border:1px solid rgba(216,138,74,.18);border-radius:10px;background:#0b0706;color:#f7eee7;transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus{outline:none;border-color:#e5b34f;box-shadow:0 0 0 3px rgba(229,179,79,.09)}
+  input[type=number]{appearance:textfield;-moz-appearance:textfield}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .mono{font-variant-numeric:tabular-nums;font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+  @keyframes vpPulse{0%{box-shadow:0 0 0 0 rgba(226,75,53,.55)}70%{box-shadow:0 0 0 7px rgba(226,75,53,0)}100%{box-shadow:0 0 0 0 rgba(226,75,53,0)}}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2b1a16;border-radius:9px}
+  body.vplab-embed{background:transparent}
+  body.vplab-embed::before{display:none}
+  body.vplab-embed .prototype-shell{display:none!important}
+  body.vplab-embed main{padding:0}
+  body.vplab-embed main>div{width:100%;margin:0}
+</style>
+</helmet>
+
+<div class="prototype-shell" style="display:flex;align-items:center;gap:12px;padding:7px 0;background:linear-gradient(90deg,#170807,#2a0f0b 50%,#170807);border-bottom:1px solid rgba(226,75,53,.2)">
+  <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:12px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:7px;padding-right:12px;border-right:1px solid rgba(226,75,53,.26)">
+      <span style="width:18px;height:18px;background-image:url(apps/vpertz-store/public/assets/logo-vpertsz-quadrada.webp);background-size:contain;background-repeat:no-repeat;background-position:center"></span>
+      <span style="font-family:Cinzel,serif;font-size:10.5px;font-weight:800;letter-spacing:.16em;color:#e8c9a8">VPERTSZ</span>
+    </a>
+    <div style="display:flex;gap:4px;flex:1">
+      <sc-for list="{{ family }}" as="m" hint-placeholder-count="4">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;border:1px solid {{ m.edge }};background:{{ m.bg }};color:{{ m.color }};font-size:10.5px;font-weight:800;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.4)">
+          <span style="width:5px;height:5px;border-radius:50%;background:{{ m.dot }}"></span>{{ m.label }}
+        </span>
+      </sc-for>
+    </div>
+    <span style="display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;color:#e8c9a8;white-space:nowrap">
+      <span style="width:6px;height:6px;border-radius:50%;background:#e24b35;animation:vpPulse 2s infinite"></span>
+      Live na <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">twitch.tv/vpertsz</a>
+    </span>
+  </div>
+</div>
+
+<header class="prototype-shell" style="position:sticky;top:0;z-index:40;background:rgba(10,6,5,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(216,138,74,.18)">
+  <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;min-height:78px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px">
+    <a href="#" style="display:inline-flex;align-items:center;gap:12px">
+      <span style="width:54px;height:54px;background-image:url(apps/vpertz-lab/public/assets/logo-vplab.webp);background-size:contain;background-repeat:no-repeat;background-position:center;mix-blend-mode:screen"></span>
+      <span style="line-height:1.1">
+        <strong style="display:block;font-family:Cinzel,serif;font-weight:800;font-size:21px;background:linear-gradient(180deg,#ff6a4d,#b32418);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.04em">VPLab</strong>
+        <span style="font-size:10px;color:#7d6d64;letter-spacing:.18em;text-transform:uppercase;font-weight:700">Ferramentas</span>
+      </span>
+    </a>
+    <nav style="display:flex;justify-content:center;gap:6px">
+      <sc-for list="{{ navLinks }}" as="l" hint-placeholder-count="4">
+        <a href="#" style="padding:9px 13px;border-radius:9px;font-size:13px;font-weight:700;color:{{ l.color }};background:{{ l.bg }}" style-hover="color:#fff;background:rgba(194,54,41,.1)">{{ l.label }}</a>
+      </sc-for>
+    </nav>
+    <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:800;color:#cbb3ff;background:rgba(145,70,255,.1);border:1px solid rgba(145,70,255,.38)">Live</a>
+  </div>
+  <div style="border-top:1px solid rgba(216,138,74,.14);background:linear-gradient(180deg,rgba(30,18,16,.96),rgba(13,8,7,.96))">
+    <div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:flex;align-items:center;gap:14px;padding:9px 0;flex-wrap:wrap">
+      <sc-for list="{{ toolGroups }}" as="g" hint-placeholder-count="3">
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <span style="font-size:9px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7d6d64">{{ g.label }}</span>
+          <sc-for list="{{ g.tools }}" as="t" hint-placeholder-count="3">
+            <span style="position:relative;display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:9px;border:1px solid {{ t.edge }};background:{{ t.bg }};color:{{ t.color }};font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer" style-hover="color:#fff;border-color:rgba(229,179,79,.32)">
+              <span style="width:16px;height:16px;background-image:url({{ t.icon }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:{{ t.filter }}"></span>
+              {{ t.label }}
+              <span style="position:absolute;left:{{ t.barInset }};right:{{ t.barInset }};bottom:-10px;height:2px;border-radius:2px;background:linear-gradient(90deg,#e24b35,#e5b34f)"></span>
+            </span>
+          </sc-for>
+        </span>
+      </sc-for>
+    </div>
+  </div>
+</header>
+
+<main style="padding:26px 0 90px">
+<div style="width:min(1200px,calc(100% - 44px));margin-inline:auto;display:grid;gap:18px">
+
+  <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:18px">
+      <div>
+        <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">PokeFipe · modelo 2.0</span>
+        <h2 style="font-family:Cinzel,serif;font-size:21px;margin:0 0 4px">Quanto vale esse Pokémon hoje?</h2>
+        <p style="color:#b5a196;font-size:13px;margin:0;max-width:700px">Base por espécie calibrada com o mercado + bônus pelo resultado <b style="color:#f7eee7">IV × multiplicador</b> + valor dos levels. Você recebe as três referências que importam numa negociação: <b style="color:#f7eee7">venda rápida</b>, <b style="color:#f7eee7">valor justo</b> e <b style="color:#f7eee7">preço para anunciar</b>.</p>
+      </div>
+      <div style="display:grid;gap:6px;padding:12px 14px;border:1px solid rgba(79,196,122,.28);border-radius:14px;background:rgba(79,196,122,.07);min-width:210px">
+        <span style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7d6d64">Precisão do modelo</span>
+        <span style="display:flex;align-items:baseline;gap:8px">
+          <b class="mono" style="font-size:19px;color:#4fc47a">± R$ 0,29</b>
+          <s class="mono" style="font-size:12px;color:#7d6d64">R$ 10,47</s>
+        </span>
+        <small style="font-size:10.5px;color:#b5a196;line-height:1.4">Erro médio nas 6 vendas confirmadas — a tabela antiga errava 66,9%, a 2.0 erra 2,0%.</small>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:16px;align-items:start">
+
+      <div style="display:grid;gap:12px;min-width:0">
+        <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Entradas</div>
+
+        <div style="display:grid;grid-template-columns:104px minmax(0,1fr);gap:13px;align-items:center">
+          <div style="position:relative;width:104px;height:104px;border-radius:16px;border:1px solid rgba(229,179,79,.28);background:radial-gradient(70% 70% at 50% 35%,rgba(194,54,41,.22),rgba(0,0,0,.55))">
+            <span style="position:absolute;inset:5px;background-image:url({{ sprite }});background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated;filter:drop-shadow(0 6px 12px rgba(0,0,0,.6))"></span>
+          </div>
+          <div style="display:grid;gap:9px;min-width:0">
+            <label style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Espécie</span>
+              <select value="{{ slug }}" onChange="{{ onSpecies }}">
+                <sc-for list="{{ species }}" as="s" hint-placeholder-count="8">
+                  <option value="{{ s.slug }}">{{ s.label }}</option>
+                </sc-for>
+              </select>
+            </label>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:99px;border:1px solid {{ qualityTierColor }}55;background:{{ qualityTierColor }}14;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:{{ qualityTierColor }}">Quality {{ qualityTier }}</span>
+              <span style="display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:99px;border:1px solid {{ confColor }}55;background:{{ confColor }}14;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:{{ confColor }}">Confiança {{ confidence }}</span>
+              <small style="font-size:11px;color:#7d6d64">{{ origin }}</small>
+            </div>
+            <small style="font-size:10.5px;color:#b5a196;line-height:1.4">{{ qualityTierNote }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px">
+          <sc-for list="{{ fields }}" as="f" hint-placeholder-count="3">
+            <label style="display:flex;flex-direction:column;gap:5px;min-width:0">
+              <span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">{{ f.label }}</span>
+              <input class="mono" type="number" value="{{ f.value }}" onChange="{{ f.onChange }}" style="text-align:center">
+              <small style="font-size:9.5px;color:#7d6d64">{{ f.hint }}</small>
+            </label>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ isManual }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:13px;border:1px solid rgba(168,111,216,.35);border-radius:13px;background:rgba(168,111,216,.09);font-size:12px;color:#e0d0f0;line-height:1.5">
+            <b style="color:#fff">Fora do modelo.</b> Shiny e itens raros não seguem a curva de mercado — precisam de avaliação manual, em tabela separada.
+          </div>
+        </sc-if>
+
+      </div>
+
+      <div style="display:grid;gap:12px;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+          <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#b5a196;font-weight:700">Avaliação</div>
+          <div style="font-size:11px;color:#7d6d64">{{ readNote }}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+          <sc-for list="{{ prices }}" as="p" hint-placeholder-count="3">
+            <div style="padding:15px 14px;border:1px solid {{ p.edge }};border-radius:16px;background:{{ p.bg }};text-align:center">
+              <div style="font-size:9.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:{{ p.tone }}">{{ p.label }}</div>
+              <div class="mono" style="margin-top:7px;font-size:{{ p.size }};font-weight:700;color:{{ p.color }};line-height:1.1">{{ p.value }}</div>
+              <div style="margin-top:5px;font-size:10.5px;color:#b5a196;line-height:1.35">{{ p.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 15px;border:1px solid rgba(229,179,79,.28);border-radius:14px;background:linear-gradient(160deg,rgba(229,179,79,.09),rgba(13,8,7,.5))">
+          <div style="display:flex;align-items:center;gap:11px">
+            <img src="/assets/diamante-pokeidle-oficial.png" alt="" width="44" height="38" style="object-fit:contain;filter:drop-shadow(0 3px 7px rgba(0,133,255,.35))">
+            <div style="display:grid;gap:2px">
+              <span style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7d6d64">Equivalente em diamonds</span>
+              <b class="mono" style="font-size:19px;color:#e5b34f">{{ dd }} DD</b>
+            </div>
+          </div>
+        </div>
+
+        <div style="border:1px solid rgba(216,138,74,.16);border-radius:16px;background:rgba(0,0,0,.24);overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(216,138,74,.12)">
+            <span style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7d6d64">De onde vem o valor justo</span>
+            <span class="mono" style="font-size:11px;color:#7d6d64">{{ formula }}</span>
+          </div>
+          <sc-for list="{{ breakdown }}" as="b" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(216,138,74,.07);background:{{ b.bg }}">
+              <span style="display:grid;gap:2px;min-width:0">
+                <b style="font-size:12px;color:#f7eee7">{{ b.label }}</b>
+                <small style="font-size:10.5px;color:#b5a196;line-height:1.4">{{ b.note }}</small>
+              </span>
+              <b class="mono" style="font-size:14px;color:{{ b.color }};white-space:nowrap">{{ b.value }}</b>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <span onClick="{{ onExport }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;border:1px solid rgba(229,179,79,.32);background:rgba(229,179,79,.08);color:#e5b34f;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="background:rgba(229,179,79,.16);color:#fff4d4">↓ Exportar avaliação</span>
+          <span onClick="{{ onCopy }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:11px;border:1px solid rgba(216,138,74,.2);background:rgba(255,255,255,.03);color:#b5a196;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="color:#fff">⧉ Copiar texto do anúncio</span>
+          <span style="align-self:center;font-size:11px;color:#7d6d64">{{ actionNote }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:linear-gradient(160deg,rgba(30,18,16,.95),rgba(13,8,7,.95));border:1px solid rgba(216,138,74,.18);border-radius:22px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <span style="display:block;color:#d98350;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px">Base de mercado · 28/07/2026</span>
+        <h2 style="font-family:Cinzel,serif;font-size:20px;margin:0 0 4px">Tabela por espécie e nível de confiança</h2>
+        <p style="color:#b5a196;font-size:13px;margin:0;max-width:660px">Base <b style="color:#4fc47a">Alta</b> tem venda confirmada; <b style="color:#e5b34f">Média</b> tem anúncios comparáveis; <b style="color:#ff6b55">Baixa</b> é provisória e deve ser revisada quando aparecer venda real.</p>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <sc-for list="{{ confFilters }}" as="c" hint-placeholder-count="4">
+          <span onClick="{{ c.onPick }}" style="padding:8px 13px;border-radius:99px;border:1px solid {{ c.edge }};background:{{ c.bg }};color:{{ c.color }};font-size:11.5px;font-weight:800;cursor:pointer" style-hover="color:#fff">{{ c.label }} <span class="mono" style="opacity:.7">{{ c.count }}</span></span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:9px">
+      <sc-for list="{{ table }}" as="r" hint-placeholder-count="12">
+        <div onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid {{ r.edge }};border-radius:12px;background:{{ r.bg }};cursor:pointer" style-hover="border-color:rgba(229,179,79,.4)">
+          <span style="width:44px;height:44px;flex:0 0 44px;border-radius:11px;border:1px solid rgba(216,138,74,.16);background-color:rgba(0,0,0,.34);background-image:url({{ r.sprite }});background-size:78%;background-repeat:no-repeat;background-position:center;image-rendering:pixelated"></span>
+          <span style="display:grid;gap:2px;min-width:0;flex:1">
+            <b style="font-size:12.5px;color:#f7eee7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.nome }}</b>
+            <small style="font-size:10px;color:{{ r.confColor }};font-weight:700;letter-spacing:.06em;text-transform:uppercase">{{ r.confidence }}</small>
+          </span>
+          <b class="mono" style="font-size:13.5px;color:#e5b34f;white-space:nowrap">{{ r.base }}</b>
+        </div>
+      </sc-for>
+    </div>
+    <p style="margin:14px 0 0;color:#7d6d64;font-size:11px;line-height:1.6">Parâmetros gerais: R$ 0,12 por diamond · R$ 0,03 por level até o 400 e R$ 0,08 por level acima · base padrão R$ 4,00 quando a espécie não tem referência · venda rápida 85% e anúncio 110% do valor justo. Anúncio não vendido não é preço de mercado — vendas confirmadas têm prioridade na próxima calibragem.</p>
+  </section>
+
+</div>
+</main>
+</x-dc>
+<script src="./prototype-embed.js" data-page="fipe"></script>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400}}">
+/* Modelo extraído da planilha "Calculadora_Pokeidle_Atualizada_Base_Mercado_28-07-2026" (abas CALCULADORA 2.0 e PARAMETROS_2.0). */
+const P = { dd:0.12, perLevel:0.03, levelCut:400, perLevelAfter:0.08, breedFloor:5, defaultBase:4, quickFactor:0.85, listFactor:1.10 };
+
+const SPECIES = [
+  ["abra","Abra",5,"Média","Calibrada por mercado","2 anúncios comparáveis em nível baixo",63],
+  ["alakazam","Alakazam",6,"Média","Calibrada por mercado","2 anúncios; valores normalizados consistentes",65],
+  ["blastoise","Blastoise",5.5,"Alta","Calibrada por mercado","3 referências, incluindo 2 vendas",9],
+  ["charizard","Charizard",4.5,"Alta","Calibrada por mercado","5 referências, incluindo venda confirmada",6],
+  ["charmander","Charmander",4,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",4],
+  ["ditto-shiny","Ditto (Shiny)",null,"Manual","Manual / fora do modelo","Shiny deve ser avaliado em tabela separada",132],
+  ["dragonite","Dragonite",5,"Baixa","Provisória","Preço informado sem level, IV ou multiplicador",149],
+  ["electabuzz","Electabuzz",4.5,"Baixa","Provisória","Apenas anúncio level 507; não permite isolar a base",125],
+  ["flareon","Flareon",5.5,"Baixa","Provisória","Uma referência de anúncio",136],
+  ["gastly","Gastly",3,"Baixa","Provisória","Sem preço; inferência conservadora pela linha evolutiva",92],
+  ["gengar","Gengar",5.5,"Alta","Calibrada por mercado","5 referências, incluindo venda confirmada",94],
+  ["geodude","Geodude",4,"Média","Calibrada por mercado","Referência em real e referência em diamantes",74],
+  ["golem","Golem",4.5,"Alta","Calibrada por mercado","5 referências, incluindo venda confirmada",76],
+  ["granbull","Granbull",4,"Baixa","Provisória","Preço visível, mas multiplicador encoberto",210],
+  ["grimer","Grimer",2.5,"Baixa","Provisória","Sem preço; base provisória conservadora",88],
+  ["growlithe","Growlithe",6,"Baixa","Provisória","Uma referência; anúncio pode conter prêmio da espécie",58],
+  ["kadabra","Kadabra",4.5,"Baixa","Provisória","Sem preço; inferência pela linha do Alakazam",64],
+  ["kakuna","Kakuna",1.5,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",14],
+  ["lapras","Lapras",4,"Baixa","Provisória","Preço apenas em DD e sem level/multiplicador",131],
+  ["magmar","Magmar",4,"Baixa","Provisória","Preço apenas em DD e sem level/multiplicador",126],
+  ["marowak","Marowak",4,"Baixa","Provisória","Somente anúncio de level alto",105],
+  ["oddish","Oddish",2,"Baixa","Provisória","Sem preço; base provisória conservadora",43],
+  ["paras","Paras",2,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",46],
+  ["parasect","Parasect",3.5,"Baixa","Provisória","Sem preço; base provisória",47],
+  ["pichu","Pichu",4,"Baixa","Provisória","Uma referência level 1",172],
+  ["pidgey","Pidgey",1.5,"Baixa","Provisória","Uma referência level 1",16],
+  ["poliwrath","Poliwrath",4.5,"Baixa","Provisória","Somente anúncio de level alto",62],
+  ["primeape","Primeape",4,"Baixa","Provisória","Somente anúncio de level alto",57],
+  ["rattata","Rattata",1.5,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",19],
+  ["rhydon","Rhydon",4,"Baixa","Provisória","Preço apenas em DD e sem level/multiplicador",112],
+  ["scizor","Scizor",5,"Baixa","Provisória","Preço informado sem level, IV ou multiplicador",212],
+  ["shellder","Shellder",1,"Baixa","Provisória","Uma referência de preço em nível baixo",90],
+  ["spearow","Spearow",1.5,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",21],
+  ["tentacool","Tentacool",2.5,"Baixa","Provisória","Sem preço; base provisória conservadora",72],
+  ["victreebel","Victreebel",5.5,"Média","Calibrada por mercado","Venda confirmada",71],
+  ["vileplume","Vileplume",3.5,"Baixa","Provisória","Sem preço; base provisória",45],
+  ["weedle","Weedle",1.5,"Baixa","Provisória","Somente anúncio de breed; piso de breed é aplicado",13]
+].map(([slug,nome,base,confidence,origin,note,dexNo]) => ({ slug, nome, base, confidence, origin, note, dexNo }));
+
+const BANDS = [
+  [0,169,-2.5,"Resultado muito baixo"], [170,189,-2.5,"Penalidade relevante"], [190,199,0,"Faixa neutra"],
+  [200,209,0.3,"Bônus leve"], [210,219,0.6,"Bônus leve"], [220,229,0.9,"Bônus moderado"],
+  [230,239,1.2,"Bônus moderado"], [240,249,1.5,"Bônus bom"], [250,259,1.8,"Bônus bom"],
+  [260,269,2.1,"Bônus alto"], [270,279,2.4,"Bônus alto"], [280,289,2.7,"Bônus alto"],
+  [290,309,3,"Bônus muito alto"], [310,329,3.5,"Bônus muito alto"], [330,349,4,"Bônus excepcional"],
+  [350,999,4.5,"Teto provisório"]
+].map(([from,to,bonus,read]) => ({ from, to, bonus, read }));
+
+const CONF_COLOR = { Alta:"#4fc47a", "Média":"#e5b34f", Baixa:"#ff6b55", Manual:"#a86fd8" };
+const TICON = {
+  pokedex:"apps/vpertz-lab/public/assets/header/pokedex.png",
+  avaliar:"apps/vpertz-lab/public/assets/header/evaluate-iv.webp",
+  fipe:"apps/vpertz-lab/public/assets/logo-pokefipe-transparente.webp",
+  rota:"apps/vpertz-lab/public/assets/header/map.png",
+  breeding:"apps/vpertz-lab/public/assets/header/breeding.png",
+  clas:"apps/vpertz-lab/public/assets/header/clans.png",
+  prof:"apps/vpertz-lab/public/assets/header/professions.png"
+};
+const TOOL_GROUPS = [
+  { label:"Consultar", tools:[["pokedex","Pokédex"]] },
+  { label:"Avaliar", tools:[["avaliar","Avaliar IV"],["fipe","PokeFipe"]] },
+  { label:"Planejar", tools:[["rota","Rota de caça"],["breeding","Breeding"],["clas","Clãs"],["prof","Profissões"]] }
+];
+const FAMILY = [["hub","VPertsz"],["store","VP Store"],["bazaar","VP Bazaar"],["lab","VPLab"]];
+const NAV_LINKS = ["Ferramentas","VP Store","VP Bazaar","Comunidade"];
+
+const brl = (n) => "R$ " + Number(n || 0).toFixed(2).replace(".", ",");
+const num = (n) => Math.round(n || 0).toLocaleString("pt-BR");
+const sprite = (n) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
+const bandFor = (result) => BANDS.slice().reverse().find((b) => Math.floor(result) >= b.from) || BANDS[0];
+/* Faixas oficiais de Quality (Poképedia systems/quality) — o "multiplicador" do card é a Quality.
+   1,80 é o teto de captura selvagem; só shiny e breeding passam disso. */
+const QTIERS = [[.8,"Fraca"],[1,"Comum"],[1.1,"Incomum"],[1.3,"Rara"],[1.5,"Épica"],[1.7,"Lendária"],[2,"Mítica"],[3,"Anciã"],[4,"Divina"]];
+const QCOLOR = { "Fraca":"#8d8d9c", "Comum":"#b5a196", "Incomum":"#4fc47a", "Rara":"#5b9bd8", "Épica":"#a86fd8", "Lendária":"#e5b34f", "Mítica":"#ff8f7d", "Anciã":"#83b9ff", "Divina":"#4fd8b0" };
+const tierName = (q) => ([...QTIERS].reverse().find(([m]) => q >= m - 1e-9) || QTIERS[0])[1];
+const levelValue = (lvl) => {
+  const L = Math.max(1, lvl);
+  const raw = L <= P.levelCut ? (L-1)*P.perLevel : (P.levelCut-1)*P.perLevel + (L-P.levelCut)*P.perLevelAfter;
+  return Math.round(raw*100)/100;
+};
+
+class Component extends DCLogic {
+  state = { slug:"charizard", level:300, iv:120, mult:1.8, segment:"Geral", filter:"Todas",
+    actionNote:"", exportBusy:false };
+
+  evaluate(){
+    const sp = SPECIES.find((s) => s.slug === this.state.slug) || SPECIES[0];
+    const level = Math.max(1, Math.floor(+this.state.level || 1));
+    const iv = Math.max(0, +this.state.iv || 0);
+    const mult = Math.max(0, +this.state.mult || 0);
+    const result = iv * mult;
+    const band = bandFor(result);
+    const base = sp.base === null ? null : sp.base;
+    const levels = levelValue(level);
+    if (base === null) return { sp, level, iv, mult, result, band, manual:true };
+    const breedFloor = this.state.segment === "Breed" && level <= 20 && iv >= 150 ? P.breedFloor : 0;
+    const fair = Math.round(Math.max(base + band.bonus + levels, breedFloor)*100)/100;
+    return { sp, level, iv, mult, result, band, base, levels, breedFloor, manual:false, fair,
+      quick:Math.round(fair*P.quickFactor*100)/100, list:Math.round(fair*P.listFactor*100)/100,
+      dd:Math.round(fair/P.dd) };
+  }
+
+  async exportPng(){
+    const e = this.evaluate();
+    if (e.manual) { this.setState({ actionNote:"Shiny é avaliado manualmente — nada a exportar." }); return; }
+    const W = 900, H = 560, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const bg = g.createLinearGradient(0,0,W,H); bg.addColorStop(0,"#1e1210"); bg.addColorStop(1,"#0a0605");
+    g.fillStyle = bg; g.fillRect(0,0,W,H);
+    g.strokeStyle = "rgba(216,138,74,.35)"; g.lineWidth = 3; g.strokeRect(6,6,W-12,H-12);
+    g.fillStyle = "#d98350"; g.font = "800 16px Inter, sans-serif";
+    g.fillText("VPLAB · POKEFIPE 2.0", 44, 56);
+    g.fillStyle = "#f7eee7"; g.font = "800 40px Cinzel, Georgia, serif";
+    g.fillText(e.sp.nome, 44, 104);
+    g.fillStyle = "#7d6d64"; g.font = "500 15px Inter, sans-serif";
+    g.fillText(`Nível ${num(e.level)} · IV ${num(e.iv)} · multiplicador ${e.mult} · resultado ${num(e.result)}`, 44, 132);
+
+    const img = await new Promise((res) => { const i = new Image(); i.crossOrigin = "anonymous";
+      i.onload = () => res(i); i.onerror = () => res(null); i.src = sprite(e.sp.dexNo); });
+    if (img) g.drawImage(img, W-190, 46, 128, 128);
+
+    const cards = [["VENDA RÁPIDA", brl(e.quick), "#b5a196"], ["VALOR JUSTO", brl(e.fair), "#e5b34f"], ["ANUNCIAR", brl(e.list), "#4fc47a"]];
+    cards.forEach(([label, value, color], i) => {
+      const x = 44 + i*272;
+      g.fillStyle = i === 1 ? "rgba(229,179,79,.10)" : "rgba(255,255,255,.03)";
+      g.fillRect(x, 176, 252, 116);
+      g.strokeStyle = i === 1 ? "rgba(229,179,79,.4)" : "rgba(216,138,74,.2)"; g.lineWidth = 1.5;
+      g.strokeRect(x, 176, 252, 116);
+      g.fillStyle = "#7d6d64"; g.font = "800 12px Inter, sans-serif"; g.fillText(label, x+18, 206);
+      g.fillStyle = color; g.font = "700 34px ui-monospace, monospace"; g.fillText(value, x+18, 254);
+    });
+
+    const rows = [
+      ["Base da espécie", brl(e.base)],
+      ["Bônus do resultado IV × mult.", (e.band.bonus >= 0 ? "+ " : "− ") + brl(Math.abs(e.band.bonus)) + "  (" + e.band.read.toLowerCase() + ")"],
+      ["Valor dos levels", "+ " + brl(e.levels)],
+      ["Equivalente em diamonds", num(e.dd) + " DD"],
+      ["Confiança da base", e.sp.confidence]
+    ];
+    g.font = "600 15px Inter, sans-serif";
+    rows.forEach(([k, v], i) => {
+      const y = 340 + i*36;
+      g.fillStyle = "#b5a196"; g.fillText(k, 44, y);
+      g.fillStyle = "#f7eee7"; g.font = "700 16px ui-monospace, monospace";
+      g.fillText(v, 520, y); g.font = "600 15px Inter, sans-serif";
+    });
+    g.fillStyle = "#7d6d64"; g.font = "500 12px Inter, sans-serif";
+    g.fillText("Base de mercado 28/07/2026 · erro médio ± R$ 0,29 · vplab · twitch.tv/vpertsz", 44, H-28);
+
+    const a = document.createElement("a");
+    a.download = `pokefipe-${e.sp.slug}.png`;
+    a.href = cv.toDataURL("image/png"); a.click();
+    this.setState({ actionNote:"Imagem gerada — confira os downloads." });
+  }
+
+  copyText(){
+    const e = this.evaluate();
+    if (e.manual) { this.setState({ actionNote:"Shiny é avaliado manualmente." }); return; }
+    const txt = `${e.sp.nome} · Nv ${num(e.level)} · IV ${num(e.iv)} · mult ${e.mult}\n`
+      + `Valor justo ${brl(e.fair)} (${num(e.dd)} DD)\n`
+      + `Aceito a partir de ${brl(e.quick)} · anunciado por ${brl(e.list)}\n`
+      + `Avaliado no VPLab · PokeFipe 2.0`;
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => {});
+    this.setState({ actionNote:"Texto do anúncio copiado." });
+  }
+
+  renderVals(){
+    const st = this.state;
+    const e = this.evaluate();
+    const counts = { Todas:SPECIES.length };
+    ["Alta","Média","Baixa","Manual"].forEach((c) => { counts[c] = SPECIES.filter((s) => s.confidence === c).length; });
+    const visible = st.filter === "Todas" ? SPECIES : SPECIES.filter((s) => s.confidence === st.filter);
+
+    const shell = {
+      family:FAMILY.map(([key, label]) => ({ key, label,
+        color:key === "lab" ? "#fff" : "#c9b8ae",
+        bg:key === "lab" ? "rgba(194,54,41,.24)" : "transparent",
+        edge:key === "lab" ? "rgba(226,75,53,.45)" : "rgba(226,75,53,.16)",
+        dot:key === "lab" ? "#e5b34f" : "rgba(229,179,79,.3)" })),
+      navLinks:NAV_LINKS.map((label, i) => ({ key:label, label,
+        color:i === 0 ? "#fff" : "#c9b8ae", bg:i === 0 ? "rgba(194,54,41,.1)" : "transparent" })),
+      toolGroups:TOOL_GROUPS.map((g) => ({ key:g.label, label:g.label,
+        tools:g.tools.map(([key, label]) => ({ key, label, icon:TICON[key],
+          color:key === "fipe" ? "#fff" : "#c9b8ae",
+          bg:key === "fipe" ? "rgba(194,54,41,.14)" : "transparent",
+          edge:key === "fipe" ? "rgba(226,75,53,.4)" : "rgba(216,138,74,.14)",
+          filter:key === "fipe" ? "saturate(.95) brightness(1.04)" : "grayscale(.6) sepia(.24) brightness(.9)",
+          barInset:key === "fipe" ? "11px" : "50%" })) }))
+    };
+
+    const common = {
+      ...shell, slug:st.slug, sprite:sprite(e.sp.dexNo),
+      species:SPECIES.map((s) => ({ key:s.slug, slug:s.slug, label:s.nome })),
+      confidence:e.sp.confidence, confColor:CONF_COLOR[e.sp.confidence], origin:e.sp.origin, note:e.sp.note,
+      isManual:e.manual, result:num(e.result), actionNote:st.actionNote,
+      fields:[
+        { key:"level", label:"Level", value:st.level, hint:"R$ 0,03/level até 400", onChange:(ev) => this.setState({ level:ev.target.value, actionNote:"" }) },
+        { key:"iv", label:"IV total", value:st.iv, hint:"como aparece no card", onChange:(ev) => this.setState({ iv:ev.target.value, actionNote:"" }) },
+        { key:"mult", label:"Multiplicador", value:st.mult, hint:"Quality do card · ex.: 1,80", onChange:(ev) => this.setState({ mult:ev.target.value, actionNote:"" }) }
+      ],
+      qualityTier:tierName(e.mult),
+      qualityTierColor:QCOLOR[tierName(e.mult)] || "#b5a196",
+      qualityTierNote:e.mult > 1.8 + 1e-9
+        ? "acima do teto de captura selvagem — só shiny ou breeding chega aqui, e o mercado paga prêmio por isso"
+        : "dentro da faixa de captura selvagem (teto 1,80)",
+      segments:["Geral","Breed"].map((label) => ({ key:label, label,
+        color:st.segment === label ? "#fff" : "#b5a196",
+        bg:st.segment === label ? "rgba(226,75,53,.2)" : "rgba(255,255,255,.03)",
+        edge:st.segment === label ? "rgba(226,75,53,.45)" : "rgba(216,138,74,.18)",
+        onPick:() => this.setState({ segment:label, actionNote:"" }) })),
+      bands:BANDS.map((b) => {
+        const active = b === e.band;
+        const positive = b.bonus > 0, negative = b.bonus < 0;
+        const color = negative ? "#ff6b55" : positive ? "#4fc47a" : "#b5a196";
+        return { key:b.from, range:b.to === 999 ? `${b.from}+` : `${b.from}–${b.to}`,
+          bonus:(b.bonus > 0 ? "+" : b.bonus < 0 ? "−" : "") + brl(Math.abs(b.bonus)).replace("R$ ", "R$"),
+          read:b.read, color, rangeColor:active ? "#e5b34f" : "#7d6d64",
+          edge:active ? "rgba(229,179,79,.5)" : "rgba(216,138,74,.14)",
+          bg:active ? "rgba(229,179,79,.10)" : "rgba(0,0,0,.24)" };
+      }),
+      confFilters:["Todas","Alta","Média","Baixa","Manual"].map((label) => ({ key:label, label, count:counts[label],
+        color:st.filter === label ? "#fff" : "#b5a196",
+        bg:st.filter === label ? "rgba(226,75,53,.2)" : "rgba(255,255,255,.03)",
+        edge:st.filter === label ? "rgba(226,75,53,.45)" : "rgba(216,138,74,.18)",
+        onPick:() => this.setState({ filter:label }) })),
+      table:visible.map((s) => ({ key:s.slug, nome:s.nome, sprite:sprite(s.dexNo),
+        confidence:s.confidence, confColor:CONF_COLOR[s.confidence],
+        base:s.base === null ? "manual" : brl(s.base),
+        edge:s.slug === st.slug ? "rgba(229,179,79,.45)" : "rgba(216,138,74,.14)",
+        bg:s.slug === st.slug ? "rgba(229,179,79,.08)" : "rgba(0,0,0,.24)",
+        onPick:() => this.setState({ slug:s.slug, actionNote:"" }) })),
+      onSpecies:(ev) => this.setState({ slug:ev.target.value, actionNote:"" }),
+      onExport:() => { this.exportPng(); },
+      onCopy:() => { this.copyText(); }
+    };
+
+    if (e.manual) return { ...common, readNote:"fora do modelo", dd:"—", formula:"avaliação manual",
+      prices:[
+        { key:1, label:"Venda rápida", value:"—", note:"depende da negociação", color:"#7d6d64", tone:"#7d6d64", size:"26px", edge:"rgba(216,138,74,.16)", bg:"rgba(0,0,0,.26)" },
+        { key:2, label:"Valor justo", value:"Manual", note:"shiny sai da curva de mercado", color:"#a86fd8", tone:"#a86fd8", size:"26px", edge:"rgba(168,111,216,.4)", bg:"rgba(168,111,216,.1)" },
+        { key:3, label:"Anunciar", value:"—", note:"use tabela separada", color:"#7d6d64", tone:"#7d6d64", size:"26px", edge:"rgba(216,138,74,.16)", bg:"rgba(0,0,0,.26)" }
+      ],
+      breakdown:[{ key:1, label:"Sem base no modelo", note:"Shiny e itens raros não entram na curva por espécie.", value:"—", color:"#7d6d64", bg:"transparent" }] };
+
+    return {
+      ...common, readNote:`${e.sp.nome} · resultado ${num(e.result)}`, dd:num(e.dd),
+      formula:"base + bônus do resultado + levels",
+      prices:[
+        { key:1, label:"Venda rápida", value:brl(e.quick), note:"85% — liquidez imediata", color:"#f7eee7", tone:"#7d6d64", size:"24px", edge:"rgba(216,138,74,.18)", bg:"rgba(0,0,0,.26)" },
+        { key:2, label:"Valor justo", value:brl(e.fair), note:"referência central da negociação", color:"#e5b34f", tone:"#d98350", size:"30px", edge:"rgba(229,179,79,.42)", bg:"linear-gradient(160deg,rgba(229,179,79,.12),rgba(13,8,7,.55))" },
+        { key:3, label:"Anunciar", value:brl(e.list), note:"110% — margem de negociação", color:"#4fc47a", tone:"#7d6d64", size:"24px", edge:"rgba(79,196,122,.3)", bg:"rgba(79,196,122,.07)" }
+      ],
+      breakdown:[
+        { key:1, label:"Base da espécie", note:`${e.sp.origin} · confiança ${e.sp.confidence.toLowerCase()}`, value:brl(e.base), color:"#f7eee7", bg:"transparent" },
+        { key:2, label:`Bônus do resultado (${num(e.result)})`, note:`${e.band.read} · faixa ${e.band.to === 999 ? e.band.from + "+" : e.band.from + "–" + e.band.to}`,
+          value:(e.band.bonus > 0 ? "+ " : e.band.bonus < 0 ? "− " : "") + brl(Math.abs(e.band.bonus)),
+          color:e.band.bonus > 0 ? "#4fc47a" : e.band.bonus < 0 ? "#ff6b55" : "#b5a196", bg:"rgba(255,255,255,.015)" },
+        { key:3, label:"Valor dos levels", note:e.level > P.levelCut ? `399 levels a R$ 0,03 + ${num(e.level - P.levelCut)} a R$ 0,08` : `${num(Math.max(0, e.level-1))} levels a R$ 0,03`,
+          value:"+ " + brl(e.levels), color:"#f7eee7", bg:"transparent" },
+        ...(e.breedFloor ? [{ key:4, label:"Piso de breed aplicado", note:"level até 20 com IV a partir de 150 não vale menos que R$ 5,00", value:brl(P.breedFloor), color:"#e5b34f", bg:"rgba(229,179,79,.06)" }] : []),
+        { key:5, label:"Valor justo", note:"soma final arredondada", value:brl(e.fair), color:"#e5b34f", bg:"rgba(229,179,79,.06)" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

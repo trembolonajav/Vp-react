@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="breeding.css">
 <link rel="stylesheet" href="professions.css">
+<script src="/family-nav.js" defer></script>
 </head>
 <body>
 
@@ -79,7 +80,8 @@
     <!-- contexto do perfil; cada ferramenta mantém seus próprios controles -->
 
     <!-- ============ POKÉDEX ============ -->
-    <section class="panel card" id="tab-pokedex">
+    <section class="panel card prototype-host" id="tab-pokedex">
+      <iframe class="vplab-prototype-frame" data-prototype="pokedex" src="pokedex-v2.html?embed=1" title="Pokédex VPLab" loading="eager"></iframe>
       <span class="kicker">Catálogo do VPLab</span>
       <h2 class="sec">Pokédex</h2>
       <p class="sec-sub">Todas as 251 espécies da nossa base, com stats, golpes, evolução, hunt, preços e drops.</p>
@@ -92,7 +94,11 @@
     </section>
 
     <!-- ============ AVALIAR IV ============ -->
-    <section class="panel card active" id="tab-avaliar">
+    <section class="panel card active prototype-host" id="tab-avaliar">
+      <iframe class="vplab-prototype-frame" data-prototype="avaliar" src="avaliar-iv-v4.html?embed=1" title="Avaliar IV VPLab" loading="eager"></iframe>
+    </section>
+
+    <section class="panel card" id="tab-avaliar-legacy" hidden>
       <span class="kicker">Raio-X do seu Pokémon</span>
       <h2 class="sec">Esse Pokémon é bom?</h2>
       <p class="sec-sub">Copie do card do jogo: nível, qualidade, IV Total e os 6 stats. O VPLab estima o growth (IV, 1–32) de cada stat, confere a soma e dá o veredito.</p>
@@ -197,53 +203,56 @@
       <p class="note"><b>Growth e Qualidade são fixos:</b> evoluir não re-rola nenhum dos dois. Na dúvida entre dois da mesma espécie, a Qualidade pesa quase o dobro do IV.</p>
     </section>
 
-    <!-- ============ ROTA DE CAÇA ============ -->
+    <!-- ============ ROTA DE CAÇA V3 ============ -->
     <section class="panel card" id="tab-rota">
-      <span class="kicker">Planeje o farm</span>
-      <h2 class="sec">Rota de caça</h2>
-      <p class="sec-sub">Escolha seu Pokémon e o nível atual. O VPLab esconde as faixas já ultrapassadas e compara dano causado, dano recebido e imunidades em cada hunt futura.</p>
-
-      <div class="route-controls">
-        <label class="field search-field route-pokemon-field">
-          <span class="lbl">Meu Pokémon</span>
-          <div class="search-input-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="route-species-search" autocomplete="off" placeholder="Buscar Pokémon..." role="combobox" aria-expanded="false" aria-controls="route-species-results"><button class="search-clear" type="button" aria-label="Limpar busca" hidden>×</button></div>
-          <div class="species-results" id="route-species-results" role="listbox" hidden></div>
-          <span class="search-feedback" id="route-species-feedback" aria-live="polite"></span>
-        </label>
-        <label class="field route-level-field"><span class="lbl">Nível atual</span><input class="mono" id="rota-level" type="number" min="1" max="999" value="1"></label>
-        <div class="field">
-          <span class="lbl">Região</span>
-          <div class="seg" id="rota-region" role="group" aria-label="Região">
-            <button data-r="kanto" aria-pressed="true">Kanto</button>
-            <button data-r="outland" aria-pressed="false">Outland (Nv 150)</button>
-            <button data-r="all" aria-pressed="false">Tudo</button>
+      <div class="route-v3-intro">
+        <span class="route-v3-kicker">Rota de caça</span>
+        <h2>Peguei esse Pokémon — para onde eu vou?</h2>
+        <p>Diga quem você usa e em que nível está. O VPLab desenha a rota faixa por faixa: o <b>melhor alvo</b>, as <b>alternativas</b>, as <b>hunts seguras</b> (onde ele não consegue te acertar) e o que é <b>perda de tempo</b>.</p>
+        <div class="route-v3-dashboard">
+          <div class="route-v3-picker">
+            <div class="route-v3-pokemon">
+              <div class="route-v3-sprite"><img id="route-v3-me-sprite" alt=""></div>
+              <div>
+                <label class="search-field route-v3-search-field">
+                  <span>Meu Pokémon</span>
+                  <div class="search-input-wrap">
+                    <span class="search-icon" aria-hidden="true">⌕</span>
+                    <input id="route-v3-species-search" autocomplete="off" placeholder="Buscar Pokémon por nome ou número..." role="combobox" aria-expanded="false" aria-controls="route-v3-species-results">
+                    <button class="search-clear" type="button" aria-label="Limpar busca" hidden>×</button>
+                  </div>
+                  <div class="species-results" id="route-v3-species-results" role="listbox" hidden></div>
+                  <span class="search-feedback" id="route-v3-species-feedback" aria-live="polite"></span>
+                </label>
+                <div id="route-v3-me-types" class="route-v3-types"></div>
+              </div>
+            </div>
+            <label><span>Nível atual</span><input class="mono" id="rota-level" type="number" min="1" max="999" value="20"></label>
+            <div>
+              <span class="route-v3-label">Golpes de cobertura <em>— tipos fora dos dele</em></span>
+              <div id="route-coverage-types" class="route-v3-coverage"></div>
+              <small>Marque o que ele realmente tem liberado — a rota recalcula na hora.</small>
+            </div>
+          </div>
+          <div class="route-v3-summary">
+            <div class="route-v3-summary-head"><span>Resumo da rota</span><small id="route-v3-summary-note"></small></div>
+            <div id="route-v3-stats" class="route-v3-stats"></div>
+            <div class="route-v3-path"><span>Caminho recomendado</span><div id="route-v3-path"></div></div>
           </div>
         </div>
-        <button class="action-button subtle" id="route-reset-button" type="button">Redefinir filtros</button>
       </div>
-      <div id="route-moves"></div>
-      <div id="rota-best"></div>
-      <div class="legend">
-        <span><b style="color:var(--good)">×5.5</b> devastador</span>
-        <span><b style="color:var(--good)">×2.5</b> ótimo</span>
-        <span>×1 neutro</span>
-        <span><b style="color:var(--mid)">×0.33</b> resiste</span>
-        <span style="opacity:.55">×0 imune</span>
-        <span style="color:#83b9ff">◆ imunidade defensiva</span>
-        <span style="color:var(--bad)">! troca perigosa</span>
-        <span style="color:var(--faint)">ordem: efetividade → segurança → loot médio</span>
-      </div>
-      <div id="rota-list"></div>
+      <div id="rota-list" class="route-v3-bands"></div>
+      <p class="route-v3-source">Fonte: Poképedia oficial e spawns conferidos no mapa em 17/07/2026. Na hunt a vantagem é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistência divide por 1,5. O dano que você recebe considera o pior tipo que o alvo pode usar contra você.</p>
     </section>
-
     <!-- ============ POKEFIPE ============ -->
-    <section class="panel card" id="tab-fipe">
+    <section class="panel card prototype-host" id="tab-fipe">
+      <iframe class="vplab-prototype-frame" data-prototype="fipe" src="pokefipe-v2.html?embed=1" title="PokéFipe VPLab" loading="lazy"></iframe>
       <div class="fipe-hero">
         <div class="fipe-mark"><img src="assets/logo-pokefipe-transparente.webp" alt="PokeFipe — Preço de referência" width="300" height="300" loading="lazy" decoding="async"></div>
         <div>
           <span class="kicker">Referência da comunidade</span>
           <h2 class="sec fipe-hero-title">Descubra uma faixa justa para seu Pokémon</h2>
-          <p class="sec-sub">Informe IV, multiplicador e nível. A PokeFipe transforma a tabela da comunidade em uma consulta rápida, sem precisar abrir o Excel.</p>
+          <p class="sec-sub">Informe espécie, IV, multiplicador e nível. A PokeFipe 2.0 usa a base de mercado atualizada em 28/07/2026 para sugerir venda rápida, valor justo e preço de anúncio.</p>
         </div>
       </div>
       <div class="fipe-layout" aria-label="Calculadora PokeFipe">
@@ -256,7 +265,7 @@
             <label class="field fipe-wide">
               <span class="lbl">Pokémon meta</span>
               <select id="lab-fipe-pokemon" name="pokemon"><option value="">Selecione um Pokémon (opcional)</option></select>
-              <small class="field-hint">251 espécies disponíveis na Poképedia do PokeIdle World.</small>
+              <small class="field-hint">Espécies calibradas usam referências de mercado; as demais recebem base provisória.</small>
             </label>
             <label class="field"><span class="lbl">IV</span><input class="mono" name="iv" type="number" min="1" step="0.01" value="110" inputmode="decimal" required><small class="field-hint">Exemplo da tabela: 110</small></label>
             <label class="field"><span class="lbl">Multiplicador</span><input class="mono" name="multiplier" type="number" min="0.01" step="0.01" value="1.80" inputmode="decimal" required><small class="field-hint">Exemplo da tabela: 1,80</small></label>
@@ -283,14 +292,14 @@
               <small>Pontuação <b id="result-score">—</b></small>
             </div>
             <div class="fipe-total">
-              <span>Soma estimada — Pokémon + nível</span>
+              <span>Faixa sugerida — venda rápida até anúncio</span>
               <strong id="result-total">—</strong>
-              <small>Resumo adicional; a planilha apresenta os dois valores separadamente.</small>
+              <small>O valor justo fica no centro da faixa e o anúncio inclui margem de negociação.</small>
             </div>
             <div class="fipe-breakdown">
-              <div><span>Faixa em diamantes</span><strong id="result-diamonds">—</strong></div>
-              <div><span>Valor do Pokémon</span><strong id="result-pokemon">—</strong></div>
-              <div><span>Custo pelo nível</span><strong id="result-level">—</strong></div>
+              <div><span>Equivalente em diamonds</span><strong id="result-diamonds">—</strong></div>
+              <div><span>Venda rápida → anúncio</span><strong id="result-pokemon">—</strong></div>
+              <div><span>Valor dos níveis</span><strong id="result-level">—</strong></div>
             </div>
           </div>
           <div class="fipe-warning" id="fipe-warning" hidden>
@@ -299,7 +308,7 @@
         </div>
       </div>
       <div class="fipe-info">
-        <div><span>Base do cálculo</span><strong>IV × multiplicador</strong><small>Gera a pontuação usada para localizar a faixa.</small></div>
+        <div><span>Base do cálculo</span><strong>Espécie + resultado + níveis</strong><small>Resultado = IV × multiplicador, calibrado pela base de mercado.</small></div>
         <div><span>Cotação da tabela</span><strong><b id="diamond-rate"></b> / diamante</strong><small>Valor fixado na planilha fornecida.</small></div>
         <div><span>Importante</span><strong>Referência, não oferta</strong><small>Condição, procura e negociação podem alterar o preço final.</small></div>
       </div>
@@ -339,7 +348,9 @@
       <div id="clan-app" aria-live="polite"><div class="clan-loading">Carregando os clãs…</div></div>
     </section>
 
-    <section class="panel card breeding-lab" id="tab-breeding" aria-label="Guia de Breeding"></section>
+    <section class="panel card breeding-lab prototype-host" id="tab-breeding" aria-label="Guia de Breeding">
+      <iframe class="vplab-prototype-frame" data-prototype="breeding" src="breeding-v2.html?embed=1" title="Breeding VPLab" loading="lazy"></iframe>
+    </section>
     <section class="panel card professions-lab" id="tab-profissoes" aria-label="Guia de Profissões"></section>
   </div>
 </main>

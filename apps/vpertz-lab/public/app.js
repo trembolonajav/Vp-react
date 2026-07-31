@@ -25,6 +25,12 @@ const ALL_DEX = window.VPLAB_DEX.map((pokemon) => ({
 /* A busca, a Pokédex e a rota usam o catálogo completo de espécies caçáveis.
    A antiga whitelist deixava de fora Eevee, suas evoluções e várias hunts válidas. */
 const DEX = ALL_DEX.filter((p) => !p.boss);
+/* Espécies confirmadas nas hunts do mapa atual: a rota fica restrita
+   a estas 194 entradas; Pokédex e demais ferramentas usam DEX completo. */
+const ROUTE_DEX_NUMBERS = new Set([
+  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,114,115,120,121,122,123,124,125,126,127,128,130,131,138,139,140,141,142,143,147,148,149,152,153,154,155,156,157,158,159,160,164,169,170,171,172,173,174,177,178,179,180,181,182,183,184,186,192,195,200,202,203,204,205,207,208,209,210,212,214,216,217,218,219,220,221,226,227,228,229,230,231,232,236,237,238,239,240,241,246,247,248
+]);
+const ROUTE_DEX = ALL_DEX.filter((p) => ROUTE_DEX_NUMBERS.has(p.dexNo) && !p.boss);
 const CHART = window.VPLAB_TYPE_CHART;
 const EXP = [0.95, 0.80, 0.80, 0.80, 0.80, 0.95];
 const STAT_NAMES = ["HP", "Ataque", "Defesa", "Atq. Esp.", "Def. Esp.", "Velocid."];
@@ -65,6 +71,11 @@ const RARITY_COLOR = {
 /* ---------------------------------------------- helpers */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
+window.addEventListener("message", (event) => {
+  if (event.origin !== location.origin || event.data?.type !== "vplab-prototype-height") return;
+  const frame = document.querySelector(`.vplab-prototype-frame[data-prototype="${event.data.page}"]`);
+  if (frame && Number.isFinite(event.data.height)) frame.style.height = `${Math.max(760, event.data.height)}px`;
+});
 const esc = (s) => String(s ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
 const num = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
@@ -74,7 +85,7 @@ const fmtQuality = (n) => Number(n).toLocaleString("pt-BR", { minimumFractionDig
 const spriteUrl = (dexNo) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexNo}.png`;
 const SPRITE_PLACEHOLDER = "assets/pokemon-placeholder.webp";
 
-const tb = (t) => `<span class="tb" style="background:${TYPE_COLOR[t]||"#777"}">${TYPE_LABEL[t]||t}</span>`;
+const tb = (t) => `<span class="tb" style="background:${TYPE_COLOR[t]||"#777"}"><img src="assets/route/types-v2/${t}.png" alt="" aria-hidden="true">${TYPE_LABEL[t]||t}</span>`;
 const tbs = (arr) => arr.map(tb).join(" ");
 
 function rarTag(r){
@@ -148,7 +159,6 @@ function attacker(p){
   return { bp, bs, rec: ss >= ps ? "especial" : "fisico" };
 }
 const regionOf = () => "kanto";
-const HUNTABLE = DEX.filter((p) => !p.boss);
 
 const OUTLAND_SPECS = [
   ["Taekwondo Hitmonlee","hitmonlee"],["Taekwondo Hitmontop","hitmontop"],["Taekwondo Hitmonchan","hitmonchan"],
@@ -168,6 +178,9 @@ const OUTLAND = OUTLAND_SPECS.map(([nome, slug], i) => {
   const base = window.VPLAB_DEX.find((p) => p.slug === slug);
   return base ? { ...base, nome, baseSlug:slug, slug:`outland-${slug}-${i}`, huntLevel:150, region:"outland" } : null;
 }).filter(Boolean);
+/* A rota apresenta no mesmo fluxo as hunts do mapa-base e os mobs adicionais.
+   A região é apenas um dado interno: visualmente todos são alvos da mesma rota. */
+const HUNTABLE = [...ROUTE_DEX, ...OUTLAND];
 window.VPLAB_CLAN_CONTENT = {
   /* Clãs e rota avaliam todo o catálogo utilizável, incluindo evoluções. */
   availableIds:ALL_DEX.map((pokemon) => pokemon.dexNo),
@@ -181,7 +194,21 @@ window.VPLAB_CLAN_CONTENT = {
 let cur = null;
 let activeTab = "avaliar";
 let rotaRegion = "kanto", rotaManual = false, routePokemonSelected = false;
-let pokedexSelected = null;
+const routeCoverage = new Set();
+
+function routeTypeChip(type){
+  return `<span class="route-v3-type"><img src="assets/route/types-v2/${type}.png" alt="">${TYPE_LABEL[type]}</span>`;
+}
+function renderRouteCoverage(){
+  const box = $("#route-coverage-types");
+  if (!box || !cur) return;
+  box.innerHTML = ALL_TYPES.filter((type) => !cur.tipos.includes(type)).map((type) => `<button type="button" data-type="${type}" aria-pressed="${routeCoverage.has(type)}" title="${TYPE_LABEL[type]}"><img src="assets/route/types-v2/${type}.png" alt=""><span>${TYPE_LABEL[type]}</span></button>`).join("");
+  box.querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
+    routeCoverage.has(button.dataset.type) ? routeCoverage.delete(button.dataset.type) : routeCoverage.add(button.dataset.type);
+    renderRouteCoverage(); renderRota();
+  }));
+}
+let routeOpenBands = new Set();let pokedexSelected = null;
 
 function syncUrl(){
   const u = new URL(location.href);
@@ -481,130 +508,85 @@ async function runIvScan(file, ticket){
 /* ---------------------------------------------- render: rota */
 function renderRota(){
   const p = cur;
-  const trainerLevel = Math.max(1, Math.floor(num($("#rota-level").value) || 1));
-  if (!rotaManual) {
-    rotaRegion = "kanto";
-    $$("#rota-region button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.r === rotaRegion ? "true" : "false"));
-  }
-  if (!routePokemonSelected) {
-    $("#route-moves").innerHTML = '<div class="route-move-panel route-awaiting">Escolha seu Pokémon para liberar os golpes e calcular as melhores hunts.</div>';
-    $("#rota-best").innerHTML = "";
-    $("#rota-list").innerHTML = "";
-    return;
-  }
-  const unlocked = p.golpes.filter((move) => move.nivel <= trainerLevel);
-  $("#route-moves").innerHTML = `<div class="route-move-panel">
-    <div class="route-move-head"><div><b>Golpes do ${esc(p.nome)}</b><span>Nível ${trainerLevel} · ${unlocked.length} de ${p.golpes.length} liberados</span></div><small>O melhor golpe é escolhido para cada alvo.</small></div>
-    <div class="route-move-list">${p.golpes.length ? p.golpes.map((move) => {
-      const available = move.nivel <= trainerLevel;
-      return `<span class="route-move ${available ? "is-unlocked" : "is-locked"}"><b>${esc(move.nome)}</b>${tb(move.tipo)}<small>${available ? "Disponível" : `Libera no Nv ${move.nivel}`}</small></span>`;
-    }).join("") : '<span class="route-no-moves">Ditto não possui golpes próprios cadastrados.</span>'}</div>
-  </div>`;
-  if (!unlocked.length) {
-    $("#rota-best").innerHTML = '<div class="route-summary"><div class="route-summary-empty">Nenhum golpe disponível nesse nível. Aumente o nível ou escolha outro Pokémon.</div></div>';
-    $("#rota-list").innerHTML = "";
-    return;
-  }
-
-  const bestAgainst = (target) => unlocked.map((move) => {
-    const effect = huntAmp(effVs(move.tipo, target.tipos));
-    const stat = move.categoria === "fisico" ? p.baseStats[1] : p.baseStats[3];
-    return { move, effect, score:move.poder * Math.max(1, stat) * effect };
-  }).sort((a,b) => b.score-a.score || b.effect-a.effect || b.move.nivel-a.move.nivel)[0];
-  const enemyMovesAgainst = (target) => {
-    const available = target.golpes.filter((move) => move.nivel <= target.huntLevel);
-    const moves = available.length ? available : target.golpes;
-    return moves.map((move) => {
-      const effect = huntAmp(effVs(move.tipo, p.tipos));
-      const stat = move.categoria === "fisico" ? target.baseStats[1] : target.baseStats[3];
-      return { move, effect, score:move.poder * Math.max(1, stat) * effect };
-    }).sort((a,b) => b.score-a.score || b.effect-a.effect || b.move.poder-a.move.poder);
+  const level = Math.max(1, Math.floor(num($("#rota-level").value) || 1));
+  if (!p || !ROUTE_DEX_NUMBERS.has(p.dexNo)) cur = ROUTE_DEX.find((x) => x.slug === "charizard") || ROUTE_DEX[0];
+  const me = cur;
+  const attackTypes = [...new Set([...me.tipos, ...routeCoverage])];
+  const analyse = (target) => {
+    const attacks = attackTypes.map((type) => ({type,m:huntAmp(effVs(type,target.tipos))})).sort((a,b)=>b.m-a.m);
+    const incoming = target.tipos.map((type) => ({type,m:huntAmp(effVs(type,me.tipos))})).sort((a,b)=>b.m-a.m);
+    const best=attacks[0]||{type:me.tipos[0],m:0}, worst=incoming[0]||{type:target.tipos[0],m:1};
+    const immune=incoming.filter((x)=>x.m===0).map((x)=>x.type);
+    const dealt=best.m>=5?["dano-super","#4fc47a","dano brutal"]:best.m>=2.5?["dano-super","#4fc47a","super eficaz"]:best.m>1?["dano-vantagem","#8fd48a","acima do normal"]:best.m===1?["dano-neutro","#b5a196","sem vantagem"]:best.m>0?["dano-resistido","#e0a93c","ele resiste"]:["dano-nulo","#ff6b55","não acerta"];
+    const taken=worst.m===0?["hunt-segura","#4fd8b0","nada te acerta"]:worst.m>=2.5?["recebe-muito","#ff6b55","leva muito dano"]:worst.m>1?["recebe-atencao","#e0a93c","dano acima do normal"]:worst.m===1?["dano-neutro","#b5a196","troca equilibrada"]:["recebe-resiste","#4fc47a","você resiste"];
+    let v;
+    if(best.m===0)v=["Não caçar","alvo-evitar","#ff6b55",-100,false,"seu golpe não acerta"];
+    else if(worst.m>=2.5&&best.m<2.5)v=["Não caçar","alvo-evitar","#ff6b55",-50,false,"ele bate super e você não"];
+    else if(worst.m>=2.5)v=["Troca perigosa","recebe-muito","#ff8f7d",20,true,"você bate forte, mas ele também"];
+    else if(worst.m===0&&best.m>=2.5)v=["Alvo perfeito","alvo-ideal","#e5b34f",100,true,"bate super e é intocável"];
+    else if(worst.m===0)v=["Hunt segura","hunt-segura","#4fd8b0",70,true,"ele não consegue te acertar"];
+    else if(best.m>=2.5&&worst.m<=1)v=["Alvo ideal","alvo-ideal","#e5b34f",80,true,"bate super sem tomar dano extra"];
+    else if(best.m>=2.5)v=["Bom alvo","dano-super","#4fc47a",60,true,"dano super eficaz"];
+    else if(best.m<1)v=["Hunt lenta","hunt-lenta","#e8d9a8",worst.m<=1?10:-20,worst.m<=1,"custa tempo, ele resiste"];
+    else v=["Alvo neutro","dano-neutro","#b5a196",35,false,"troca sem vantagem"];
+    const offensive=best.m>=2.5;
+    const safeHunt=worst.m===0&&best.m>0;
+    const featured=offensive||safeHunt;
+    return {target,best,worst,immune,dealt,taken,v,offensive,safeHunt,featured,score:v[3]*10+best.m*4-worst.m*2};
   };
-  const theirBestVs = (target) => enemyMovesAgainst(target)[0] || {
-    move:{ nome:"Ataque básico", tipo:target.tipos[0], poder:0 },
-    effect:huntAmp(effVs(target.tipos[0], p.tipos)),
-    score:0
+  const analysed=HUNTABLE.map(analyse);
+  const levels=[...new Set(HUNTABLE.map((x)=>x.huntLevel))].sort((a,b)=>a-b);
+  const current=levels.filter((lv)=>lv<=level).pop()??levels[0];
+  const groups=levels.map((lv)=>({lv,items:analysed.filter((a)=>a.target.huntLevel===lv).sort((a,b)=>
+    Number(b.offensive)-Number(a.offensive)
+    || b.best.m-a.best.m
+    || Number(b.safeHunt)-Number(a.safeHunt)
+    || a.worst.m-b.worst.m
+    || b.score-a.score
+  )}));
+  const future=groups.filter((g)=>g.lv>=current);
+  const good=analysed.filter((a)=>a.featured).length;
+  const safe=analysed.filter((a)=>a.worst.m===0&&a.best.m>0).length;
+  const ideal=analysed.filter((a)=>a.best.m>=2.5&&a.worst.m<=1).length;
+  const discarded=analysed.filter((a)=>!a.featured).length;
+
+  $("#route-v3-species-search").value=me.nome;
+  $("#route-v3-me-sprite").src=spriteUrl(me.dexNo);
+  $("#route-v3-me-sprite").alt=me.nome;
+  $("#route-v3-me-types").innerHTML=me.tipos.map(routeTypeChip).join("");
+  const huntSpeciesCount=new Set(HUNTABLE.map((target)=>target.dexNo)).size;
+  $("#route-v3-summary-note").textContent=`${HUNTABLE.length} hunts no catálogo · ${huntSpeciesCount} espécies · faixa ${current}`;
+  const stats=[
+    ["Valem a pena",good,"alvos que compensam com ele","#4fc47a","rgba(79,196,122,.28)","rgba(79,196,122,.07)"],
+    ["Hunts seguras",safe,"não conseguem te acertar","#4fd8b0","rgba(79,216,176,.3)","rgba(79,216,176,.07)"],
+    ["Vantagem forte",ideal,"super eficaz sem risco extra","#e5b34f","rgba(229,179,79,.3)","rgba(229,179,79,.07)"],
+    ["Descartados",discarded,"perde tempo ou morre","#ff6b55","rgba(255,107,85,.28)","rgba(255,107,85,.06)"]
+  ];
+  $("#route-v3-stats").innerHTML=stats.map((s)=>`<div style="--tone:${s[3]};--edge:${s[4]};--fill:${s[5]}"><span>${s[0]}</span><b class="mono">${s[1]}</b><small>${s[2]}</small></div>`).join("");
+  const path=future.map((g)=>({lv:g.lv,a:g.items.find((a)=>a.featured)})).filter((x)=>x.a);
+  $("#route-v3-path").innerHTML=path.map((x,i)=>`<span class="route-v3-path-card"><img src="${spriteUrl(x.a.target.dexNo)}" alt=""><span><b>${esc(x.a.target.nome)}</b><small class="mono" style="color:${x.a.v[2]}">Nv ${x.lv} · ${fmtX(x.a.best.m)}</small></span></span>${i<path.length-1?'<i>→</i>':''}`).join("");
+
+  const row=(title,entry,meta,detail)=>`<div class="route-v3-row"><img src="assets/route/alerts/${meta[0]}.png" alt=""><span><span><em>${title}</em><b style="color:${meta[1]}">${meta[2]}</b></span><i><u style="width:${clamp(entry.m/5.5*100,3,100)}%;background:linear-gradient(90deg,${meta[1]},${meta[1]}88)"></u></i><small><img src="assets/route/types-v2/${entry.type}.png" alt="">${detail}</small></span><strong class="mono" style="color:${meta[1]}">${fmtX(entry.m)}</strong></div>`;
+  const card=(a,index,isPast)=>{
+    const t=a.target, badges=[];
+    a.immune.forEach((type)=>badges.push([`assets/route/types-v2/${type}.png`,`Imune a ${TYPE_LABEL[type]}`,"#83b9ff","rgba(131,185,255,.35)","rgba(131,185,255,.09)"]));
+    if(a.worst.m===0)badges.push(["assets/route/alerts/hunt-segura.png","Farm sem risco","#4fd8b0","rgba(79,216,176,.35)","rgba(79,216,176,.09)"]);
+    if(a.best.m>=5)badges.push(["assets/route/alerts/dano-super.png","Fraqueza dupla","#4fc47a","rgba(79,196,122,.32)","rgba(79,196,122,.07)"]);
+    if(a.worst.m>=2.5)badges.push(["assets/route/alerts/recebe-muito.png","Ele bate super em você","#ff6b55","rgba(255,107,85,.32)","rgba(255,107,85,.07)"]);
+    if(routeCoverage.has(a.best.type))badges.push([`assets/route/types-v2/${a.best.type}.png`,`Precisa de ${TYPE_LABEL[a.best.type]}`,"#e5b34f","rgba(229,179,79,.32)","rgba(229,179,79,.07)"]);
+    return `<article class="route-v3-card" style="--tone:${a.v[2]};--edge:${a.featured?a.v[2]+"55":"rgba(255,107,85,.28)"};--glow:${a.v[2]}26;opacity:${a.featured?1:.58}"><div class="route-v3-card-head"><div class="route-v3-target"><img src="${spriteUrl(t.dexNo)}" alt="${esc(t.nome)}"><span class="mono">#${pad3(t.dexNo)}</span></div><div><div class="route-v3-title"><b>${esc(t.nome)}</b>${index===0&&a.featured&&!isPast?'<em>Melhor daqui</em>':''}</div><div class="route-v3-types">${t.tipos.map(routeTypeChip).join("")}</div><div class="route-v3-verdict"><img src="assets/route/alerts/${a.v[1]}.png" alt=""><span style="color:${a.v[2]}">${a.v[0]}</span></div></div></div><div class="route-v3-rows">${row("Você causa",a.best,a.dealt,`${TYPE_LABEL[a.best.type]} · ${routeCoverage.has(a.best.type)?"golpe de cobertura":"tipo dele"}`)}${row("Você recebe",a.worst,a.taken,`pior golpe dele é ${TYPE_LABEL[a.worst.type]}`)}</div>${badges.length?`<div class="route-v3-badges">${badges.map((b)=>`<span style="--c:${b[2]};--e:${b[3]};--b:${b[4]}"><img src="${b[0]}" alt="">${b[1]}</span>`).join("")}</div>`:""}</article>`;
   };
-  const immunitiesAgainst = (target) => {
-    const seen = new Set();
-    return enemyMovesAgainst(target).filter((entry) => {
-      if (entry.effect !== 0 || seen.has(entry.move.tipo)) return false;
-      seen.add(entry.move.tipo);
-      return true;
-    });
-  };
-
-  const list = rotaRegion === "outland" ? OUTLAND : rotaRegion === "all" ? [...HUNTABLE, ...OUTLAND] : HUNTABLE;
-  const byLvl = {};
-  list.forEach((x) => (byLvl[x.huntLevel] = byLvl[x.huntLevel] || []).push(x));
-  /* O nível informado é o ponto de partida da rota. */
-  const lvls = Object.keys(byLvl).map(Number).filter((level) => level >= trainerLevel).sort((a,b) => a-b);
-
-  if (!lvls.length) {
-    $("#rota-best").innerHTML = '<div class="route-summary"><div class="route-summary-empty">Não há hunts futuras nesta região para o nível informado. Tente outra região.</div></div>';
-    $("#rota-list").innerHTML = "";
-    return;
-  }
-
-  const scored = lvls
-    .map((lv) => ({ lv, se: byLvl[lv].filter((x) => bestAgainst(x).effect >= 2.5).length }))
-    .filter((x) => x.se > 0)
-    .sort((a,b) => b.se - a.se)
-    .slice(0, 3);
-
-  $("#rota-best").innerHTML = `<div class="route-summary">${scored.length
-    ? scored.map((x, i) => `<div class="route-summary-card"><b>${i === 0 ? "★ " : ""}Hunt Nv ${x.lv}</b><span>${x.se} alvo${x.se === 1 ? "" : "s"} com golpe super eficaz</span></div>`).join("")
-    : `<div class="route-summary-empty">Nenhum alvo recebe dano super eficaz dos golpes já liberados. Aumente o nível ou troque o Pokémon.</div>`
-  }</div>`;
-
-  $("#rota-list").innerHTML = lvls.map((lv) => {
-    const mons = byLvl[lv].slice().sort((a,b) => {
-      const ma = bestAgainst(a), mb = bestAgainst(b);
-      if (ma.effect !== mb.effect) return mb.effect - ma.effect;
-      if (ma.score !== mb.score) return mb.score - ma.score;
-      const dangerA = theirBestVs(a).effect, dangerB = theirBestVs(b).effect;
-      if (dangerA !== dangerB) return dangerA - dangerB;
-      return (b.lootAvg||0) - (a.lootAvg||0) || a.dexNo - b.dexNo;
-    });
-    /* Prioriza ataque super eficaz e também defesas imunes, que são vantagens
-       importantes mesmo quando o dano causado é apenas neutro. */
-    const superEff = mons.filter((m) => bestAgainst(m).effect >= 2.5);
-    const safeImmune = mons.filter((m) => immunitiesAgainst(m).length && !superEff.includes(m));
-    const recommended = [...superEff, ...safeImmune];
-    const shown = recommended.length ? recommended : mons.slice(0, 1);
-    const note = recommended.length
-      ? `${shown.length} de ${mons.length} Pokémon · vantagens ofensivas ou defensivas`
-      : mons.length === 1
-        ? "único Pokémon da faixa — sem vantagem direta"
-        : `sem vantagem direta — mostrando a melhor das ${mons.length} opções`;
-    return `<div class="rotalvl">
-      <div class="rotalvl-h"><span class="rotalvl-n">Hunt Nv ${lv}</span><span class="rotalvl-c">${note}</span></div>
-      <div class="rotachips">${shown.map((m) => {
-        const best = bestAgainst(m), mv = best.effect, retaliation = theirBestVs(m), tv = retaliation.effect;
-        const cls = mv >= 5 ? "mt-4" : mv >= 2.5 ? "mt-2" : mv === 1 ? "mt-neu" : mv === 0 ? "mt-0" : mv <= 0.25 ? "mt-025" : "mt-05";
-        const meter = clamp((mv / 5.5) * 100, 2, 100);
-        return `<button class="rotachip ${cls}${(m.baseSlug || m.slug) === p.slug ? " me" : ""}" data-slug="${m.baseSlug || m.slug}">
-          <img class="rc-sprite" loading="lazy" src="${spriteUrl(m.dexNo)}" alt="">
-          <span class="rc-body">
-            <span class="rc-top"><span>${esc(m.nome)}</span><span class="rc-x" style="background:${multColor(mv)}">${fmtX(mv)}</span>${tv >= 2 ? '<span class="rc-d" title="Ele bate super em você">⚠️</span>' : ""}</span>
-            <span class="rc-move">${esc(best.move.nome)} · ${TYPE_LABEL[best.move.tipo]}</span>
-            <span class="route-meter" aria-label="Efetividade ${fmtX(mv)}"><span style="width:${meter}%;background:${multColor(mv)}"></span></span>
-            <span class="rc-eco mono">${fmt(m.xp)} XP · $${fmt(m.lootAvg)} loot</span>
-          </span>
-        </button>`;
-      }).join("")}</div>
-    </div>`;
+  $("#rota-list").innerHTML=future.map((g)=>{
+    const keep=g.items.filter((a)=>a.featured), drop=g.items.filter((a)=>!a.featured), open=routeOpenBands.has(g.lv), isPast=g.lv<current;
+    const shown=open?[...keep,...drop]:keep;
+    const state=g.lv===current?'<em class="is-current">Você está aqui</em>':isPast?'<em>Já passou</em>':'';
+    const top=keep[0];
+    const note=keep.length?`${keep.length} ${keep.length===1?'alvo vale a pena':'alvos valem a pena'} · ${drop.length} descartado${drop.length===1?'':'s'}${top?` · melhor: ${top.target.nome}`:''}`:`Nenhum alvo bom aqui com ${me.nome} — pule esta faixa ou libere cobertura`;
+    const hasSkipped=drop.length>0||keep.length>shown.length;
+    return `<section class="route-v3-band ${g.lv===current?'current':''}"><header><span class="route-v3-level">${g.lv}</span><div><div><h2>Faixa nível ${g.lv}</h2>${state}</div><p>${note}</p></div>${hasSkipped?`<button data-route-toggle="${g.lv}">${open?'Esconder descartadas':`Mostrar descartadas (${drop.length})`}</button>`:''}</header><div class="route-v3-grid">${shown.map((a,index)=>card(a,index,isPast)).join("")}</div></section>`;
   }).join("");
-
-  $$("#rota-list .rotachip").forEach((b) => b.addEventListener("click", () => {
-    if (!DEX.some((p) => p.slug === b.dataset.slug)) return;
-    rotaManual = false;
-    setSpecies(b.dataset.slug);
-    pokedexSelected = ALL_DEX.find((pokemon) => pokemon.slug === b.dataset.slug) || null;
-    selectTab("pokedex");
-  }));
+  $$('[data-route-toggle]').forEach((button)=>button.addEventListener('click',()=>{const lv=+button.dataset.routeToggle;routeOpenBands.has(lv)?routeOpenBands.delete(lv):routeOpenBands.add(lv);renderRota();}));
 }
-
 /* ---------------------------------------------- Pokédex */
 function renderPokedex(){
   const box = $("#pokedex-content");
@@ -703,8 +685,8 @@ function renderPokedex(){
   $$("#pokedex-content [data-pokedex-action]").forEach((button) => button.addEventListener("click", () => {
     setSpecies(pokemon.slug);
     if (button.dataset.pokedexAction === "rota") {
-      routePokemonSelected = true; $("#route-species-search").value = pokemon.nome; $("#rota-level").value = 1;
-      $("#route-species-search").parentElement.querySelector(".search-clear").hidden = false;
+      routePokemonSelected = true;
+      $("#rota-level").value = 1;
     }
     selectTab(button.dataset.pokedexAction);
   }));
@@ -749,7 +731,7 @@ const fipeQuoteModal = $("#fipe-quote-modal");
 function openFipeQuote(){
   if (!ivQuote) return;
   const { name, level, quality, ivTotal } = ivQuote;
-  const calculated = window.PokeFipe.calculateFipe({ iv:ivTotal, multiplier:quality, level });
+  const calculated = window.PokeFipe.calculateFipe({ pokemon:ivQuote.slug, iv:ivTotal, multiplier:quality, level });
   const qualityText = String(quality).replace(".", ",");
   $("#fipe-quote-title").textContent = `Quanto pedir por esse ${name}?`;
   const meta = `<div class="fipe-quote-meta">
@@ -860,7 +842,6 @@ function bindSpeciesSearch(inputId, feedbackId, resultsId, pool = DEX, onChoose 
     close();
     input.value = pokemon.nome;
     if (clearButton) clearButton.hidden = false;
-    if (inputId === "route-species-search") routePokemonSelected = true;
     onChoose(pokemon);
   };
   const paintActive = () => {
@@ -931,10 +912,17 @@ function bindSpeciesSearch(inputId, feedbackId, resultsId, pool = DEX, onChoose 
   });
 }
 bindSpeciesSearch("iv-species-search", "iv-species-feedback", "iv-species-results", ALL_DEX);
-bindSpeciesSearch("route-species-search", "route-species-feedback", "route-species-results", ALL_DEX);
 bindSpeciesSearch("pokedex-species-search", "pokedex-species-feedback", "pokedex-species-results", ALL_DEX, (pokemon) => {
   pokedexSelected = pokemon;
   renderPokedex();
+});
+bindSpeciesSearch("route-v3-species-search", "route-v3-species-feedback", "route-v3-species-results", ROUTE_DEX, (pokemon) => {
+  cur = pokemon;
+  routePokemonSelected = true;
+  routeCoverage.clear();
+  renderRouteCoverage();
+  renderRota();
+  syncUrl();
 });
 $("#x-species").addEventListener("change", () => setSpecies($("#x-species").value));
 ["x-level", "x-qual", "x-power", "x-ivtotal"].forEach((id) => $("#" + id).addEventListener("input", renderAvaliar));
@@ -1028,20 +1016,6 @@ $("#iv-reset-button").addEventListener("click", () => {
 });
 
 $("#rota-level").addEventListener("input", renderRota);
-$$("#rota-region button").forEach((b) => b.addEventListener("click", () => {
-  rotaManual = true; rotaRegion = b.dataset.r;
-  $$("#rota-region button").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-  renderRota();
-}));
-$("#route-reset-button").addEventListener("click", () => {
-  rotaManual = false; rotaRegion = "kanto";
-  routePokemonSelected = false;
-  $$("#rota-region button").forEach((button) => button.setAttribute("aria-pressed", button.dataset.r === "kanto" ? "true" : "false"));
-  $("#rota-level").value = 1;
-  $("#route-species-search").value = "";
-  $("#route-species-search").parentElement.querySelector(".search-clear").hidden = true;
-  renderRota();
-});
 
 $("#lab-fipe-form").addEventListener("submit", (event) => { event.preventDefault(); renderLabFipe(); });
 $("#lab-fipe-form").addEventListener("reset", () => requestAnimationFrame(() => {
@@ -1088,19 +1062,19 @@ $("#pokedex-species-search").parentElement.querySelector(".search-clear").addEve
   const routeLevel = Math.max(1, Math.floor(num(u.searchParams.get("level")) || 1));
   cur = DEX.find((p) => p.slug === slug) || DEX.find((p) => p.slug === "scizor") || DEX[0];
   $("#iv-species-search").value = "";
-  $("#route-species-search").value = "";
   $("#x-species-sprite").src = SPRITE_PLACEHOLDER;
   $("#x-species-sprite").alt = "";
   $("#x-species-sprite").classList.add("is-placeholder");
   $("#x-species").value = "";
   if (tab && ["pokedex","avaliar","rota","fipe","clas","breeding","profissoes"].includes(tab)) activeTab = tab;
-  if (activeTab === "rota" && slug && DEX.some((pokemon) => pokemon.slug === slug)) {
+  if (activeTab === "rota" && slug && ROUTE_DEX.some((pokemon) => pokemon.slug === slug)) {
     routePokemonSelected = true;
-    $("#route-species-search").value = cur.nome;
-    $("#route-species-search").parentElement.querySelector(".search-clear").hidden = false;
     $("#rota-level").value = routeLevel;
+  } else if (activeTab === "rota" && !ROUTE_DEX_NUMBERS.has(cur.dexNo)) {
+    cur = ROUTE_DEX.find((pokemon) => pokemon.slug === "charizard") || ROUTE_DEX[0];
   }
   $$(".main-tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === activeTab ? "true" : "false"));
   $$(".panel").forEach((s) => s.classList.toggle("active", s.id === "tab-" + activeTab));
+  renderRouteCoverage();
   renderActive();
 })();

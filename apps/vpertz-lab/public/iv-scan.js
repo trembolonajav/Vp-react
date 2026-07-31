@@ -192,7 +192,10 @@
     return {
       card: box(0, 0, bitmap.width, bitmap.height),
       quality: box(bitmap.width * .57, bitmap.height * .18, bitmap.width * .29, bitmap.height * .12),
-      statValues: statBands.map((band) => box(bitmap.width * .86, (band.start + band.end) / 2 - bitmap.height * .035, bitmap.width * .14, bitmap.height * .07))
+      /* O valor encosta na borda direita do card. Um recorte um pouco mais largo
+         preserva o primeiro algarismo fino (1/7), que o recorte antigo cortava
+         ou confundia com o fim da barra. */
+      statValues: statBands.map((band) => box(bitmap.width * .82, (band.start + band.end) / 2 - bitmap.height * .04, bitmap.width * .18, bitmap.height * .08))
     };
   }
   function parseQuality(text) {
@@ -234,6 +237,13 @@
     ];
     if (config.tryAll) {
       variants.push({ name: "nearest-contrast", smoothing: false, options: { lo: 32, hi: 185, invert: true } });
+    }
+    if (name.startsWith("barStat")) {
+      variants.push(
+        { name: "nearest-color", smoothing: false, options: null },
+        { name: "binary-125", smoothing: false, options: { threshold: 125, invert: true } },
+        { name: "binary-165", smoothing: false, options: { threshold: 165, invert: true } }
+      );
     }
     if (name === "ivWide") {
       variants.push({ name: "binary-105", smoothing: true, options: { threshold: 105, invert: true } });
@@ -324,13 +334,13 @@
       specialAttack: originalWhole.stats[3], specialDefense: originalWhole.stats[4], speed: originalWhole.stats[5]
     };
     result.iv = result.ivWide || field();
-    /* A leitura ampla com rótulos preserva o contexto e tem prioridade quando
-       conseguiu extrair um campo. Recortes existem para completar ausências,
-       não para trocar um valor contextual por um dígito isolado. */
+    /* Cada recorte conhece a posição exata do campo e tem prioridade. A leitura
+       ampla serve como fallback: em fonte pequena ela pode perder o primeiro
+       algarismo (433 -> 33, 1147 -> 147) mesmo quando o recorte o preservou. */
     const contextualValues = { ...wholeValues };
     if (/lendaria/i.test(clean(wholeData.text || "")) && +contextualValues.quality < 1.7) contextualValues.quality = "";
     for (const [name, value] of Object.entries(contextualValues)) {
-      if (value) result[name] = field(value, wholeData.confidence, wholeData.text, "whole-lanczos-contrast");
+      if (value && !result[name]?.value) result[name] = field(value, wholeData.confidence, wholeData.text, "whole-lanczos-contrast");
     }
     for (const [name, value] of Object.entries(originalValues)) {
       if (value && !result[name]?.value) result[name] = field(value, originalData.confidence, originalData.text, "whole-original");
@@ -378,6 +388,8 @@
       onProgress("Lendo atributos", .3 + i * .1);
       statFields.push(await readRegion(paths, bitmap, `barStat${i}`, regions.statValues[i], {
         psm: PSM.SINGLE_LINE, whitelist: "0123456789", numeric: true,
+        tryAll: true,
+        score: (value, text, confidence) => (value ? Math.min(String(value).length, 4) * 8 : 0) + confidence,
         parse: (text) => text.match(/\d{1,7}/)?.[0] || ""
       }, debug, diagnostic));
     }

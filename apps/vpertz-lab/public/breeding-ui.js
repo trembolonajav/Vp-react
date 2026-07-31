@@ -1,5 +1,6 @@
 (() => {
   const root = document.querySelector("#tab-breeding");
+  if (root?.querySelector(".vplab-prototype-frame")) return;
   if (!root) return;
 
   /* Dimensões intrínsecas das capturas — declaradas no HTML para reservar
@@ -18,7 +19,7 @@
       file: "rota-gratis.webp",
       alt: "Projeção de Quality do filhote sem usar Strange Pheromone",
       title: "Caminho gratuito",
-      copy: "O ganho por ovo é menor. A linhagem avança aos poucos, repetindo breeds e incubações.",
+      copy: "O ganho por ovo é menor. A linhagem avança aos poucos, repetindo breeds.",
       probabilities: [["+0,005", "50%"], ["+0,010", "35%"], ["+0,020", "12%"], ["+0,040", "3%"]]
     },
     pheromone: {
@@ -36,7 +37,7 @@
     ["De qual pai o filhote herda os IVs?", "Os IVs são herdados do pai que possui a maior Quality entre os dois."],
     ["Os pais voltam depois que o ovo nasce?", "Não. Eles são consumidos quando o breed é confirmado."],
     ["É possível subir Quality sem feromônio?", "Sim. O avanço é menor por geração, mas permite evoluir gradualmente."],
-    ["Como o ovo choca?", "Abates válidos nas hunts alimentam o contador até completar 3.000."]
+    ["Quantos abates o ovo exige?", "A incubação não entra na projeção: não há uma regra confirmada de abates por geração nesta calculadora."]
   ];
 
   /* `lazy` só a partir da segunda dobra; a primeira captura entra com a página. */
@@ -54,7 +55,7 @@
       <div class="breeding-hero-copy">
         <span class="kicker">Centro de Breeding</span>
         <h2 class="sec">Construa uma linhagem melhor</h2>
-        <p class="sec-sub">Combine dois Pokémon da mesma espécie, projete Quality e IV antes de confirmar e choque o ovo enquanto caça.</p>
+        <p class="sec-sub">Combine dois Pokémon da mesma espécie e forma e projete Quality, IV e custos antes de confirmar.</p>
         <div class="breeding-actions">
           <a href="#breeding-flow">Ver passo a passo</a>
           <button type="button" data-open-image="centro-breeding.webp">Ver tela do jogo</button>
@@ -65,7 +66,7 @@
         <div><b>Nível 60</b><span>Desbloqueio</span></div>
         <div><b>Mesma espécie</b><span>Par obrigatório</span></div>
         <div><b>Até 0,15</b><span>Diferença de Quality</span></div>
-        <div><b>3.000</b><span>Abates para chocar</span></div>
+        <div><b>$ 2.000.000</b><span>Custo base por ovo</span></div>
         <p><strong>Atenção:</strong> os dois pais são consumidos quando o ovo é criado.</p>
       </aside>
     </div>
@@ -90,7 +91,7 @@
           <li><b>Escolha dois pais compatíveis</b><span>O par deve ser da mesma espécie. No breed normal, a diferença entre as Qualities pode ser de no máximo 0,15.</span></li>
           <li><b>Confira a projeção</b><span>A análise valida a compatibilidade e mostra herança, Quality e custos antes da confirmação.</span></li>
           <li><b>Escolha os adicionais</b><span>Feromônio acelera Quality; Stones dobradas tratam da chance de IV.</span></li>
-          <li><b>Crie e incube o ovo</b><span>Os pais são consumidos e os abates nas hunts avançam a eclosão.</span></li>
+          <li><b>Crie o ovo</b><span>Os dois pais são consumidos quando o breed é confirmado.</span></li>
         </ol>
       </div>
       <figure class="breeding-figure">
@@ -140,7 +141,7 @@
         <div class="breeding-rules">
           <article><i>1</i><div><b>Herança do pai de maior Quality</b><p>O filhote copia os IVs completos do Pokémon que possui a maior Quality entre os dois pais.</p></div></article>
           <article><i>2</i><div><b>Dobrar Stones é opcional</b><p>A opção dobra as pedras exigidas naquele breed.</p></div></article>
-          <article><i>3</i><div><b>Chance de +1 por atributo</b><p>Cada slot recebe a chance indicada pelo jogo de ganhar +1 IV.</p></div></article>
+          <article><i>3</i><div><b>5% de chance de +1 IV</b><p>Com Stones dobradas, um status aleatório abaixo de 32 pode receber +1. O total máximo é 192.</p></div></article>
           <article><i>4</i><div><b>Feromônio não melhora IV</b><p>Ele atua na Quality; a melhoria de IV usa a opção das Stones.</p></div></article>
         </div>
         ${shot("melhoria-iv.webp", "Opção de dobrar as Stones exibindo a chance de ganho de IV por atributo", "Ampliar exemplo", { compact: true })}
@@ -151,27 +152,27 @@
       <header class="breeding-heading">
         <div>
           <span class="kicker">Depois do breed</span>
-          <h3 id="breeding-incubation-title">3.000 abates até a eclosão</h3>
-          <p>O ovo aparece na incubadora e cada abate válido nas hunts soma ao contador.</p>
+          <h3 id="breeding-incubation-title">Incubação fora da projeção</h3>
+          <p>Esta calculadora estima o breed e seus recursos, sem inventar uma quantidade de abates para chocar.</p>
         </div>
       </header>
       <div class="breeding-grid incubation-grid">
         ${shot("incubadora.webp", "Incubadora com os slots de ovo e o contador de progresso", "Ver incubadora", { compact: true })}
         <article class="incubation-info">
-          <span class="incubation-number">3.000</span><b>abates válidos nas hunts</b>
-          <p>Depois da criação, o ovo ocupa um slot da incubadora. O contador avança enquanto você derrota Pokémon nas hunts e, ao chegar a 3.000, fica pronto para eclodir.</p>
-          <small>O VPLab apresenta a regra do sistema, mas não lê o progresso da sua conta.</small>
+          <span class="incubation-number">Não estimado</span><b>tempo ou abates de incubação</b>
+          <p>O VPLab calcula Quality, IV e custo do breed. O progresso de incubação deve ser conferido diretamente no jogo.</p>
+          <small>Assim a previsão não mistura uma hipótese de incubação com as regras confirmadas do breeding.</small>
         </article>
       </div>
       <div class="breeding-costs">
         <article><b>Os dois pais</b><span>São consumidos ao criar o ovo.</span></article>
         <article><b>Stones do elemento</b><span>Dois tipos exigem pedras dos dois elementos.</span></article>
         <article><b>Strange Pheromone</b><span>Opcional; aumenta o salto de Quality.</span></article>
-        <article><b>Chance de Shiny</b><span>Todo ovo possui uma chance rara de nascer Shiny.</span></article>
+        <article><b>Normal e Shiny</b><span>As duas formas não podem ser combinadas no mesmo breed.</span></article>
       </div>
       <div class="breeding-system-facts">
         <img src="assets/breeding/official/dna.webp" alt="DNA oficial do sistema de Breeding" width="32" height="32">
-        <p><b>Estrutura confirmada na API:</b> 2 slots iniciais, limite de 6, próximo slot por 30 diamonds e eclosão instantânea por 2 diamonds. Custos de gold, Stones e feromônios variam conforme o par; confira sempre a análise antes de confirmar.</p>
+        <p><b>Custo confirmado usado na projeção:</b> $ 2.000.000 e 20 Stones por ovo; ao dobrar Stones, são 40 e há 5% de chance de +1 IV em um status elegível. Confira sempre a análise do jogo antes de confirmar.</p>
       </div>
     </section>
 
