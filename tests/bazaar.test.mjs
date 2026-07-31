@@ -276,8 +276,8 @@ test("as páginas do bazaar carregam o design system da loja", () => {
 test("o marketplace tem os filtros e não abre mais em modal", () => {
   const html = read("index.html");
   for (const marcador of [
-    "data-grid", "data-f-q", "data-f-iv-min", "data-f-quality-min", "data-f-categoria",
-    "data-f-jogo", "data-f-sort", "data-seg=\"intencao\"", "data-seg=\"moeda\"",
+    "data-grid", "data-f-q", "data-f-iv-min", "data-f-quality-min", "data-f-nivel-min",
+    "data-f-sort", "data-seg=\"tipo\"", "data-seg=\"intencao\"", "data-seg=\"moeda\"",
     "data-pager"
   ]) {
     assert.ok(html.includes(marcador), `faltou ${marcador} no marketplace`);
