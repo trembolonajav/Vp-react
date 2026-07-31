@@ -45,6 +45,9 @@
 }
 .community-social-grid .contact-card:last-child{display:none}
 .community-social-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.community-social-grid .contact-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.community-social-grid .contact-card{min-height:82px;padding:16px 18px}
+.community-social-grid .contact-card .icon{width:42px;height:42px}
 .community-store-support{
   max-width:1020px;
   padding-top:48px;
@@ -52,9 +55,10 @@
 }
 .store-support-actions{
   display:block;
-  max-width:360px;
+  max-width:330px;
   margin:0 auto;
 }
+.store-support-actions .contact-card{min-height:72px;padding:15px 17px}
 .store-support-actions .whatsapp-card .icon{
   color:#38d878;
   background:rgba(31,190,93,.1);

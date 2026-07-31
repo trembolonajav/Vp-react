@@ -19,7 +19,7 @@ export function HubHomePage() {
                 <Icon name="twitch" />
                 <span>Assistir à live</span>
               </a>
-              <Link className="hub-community-btn" to="/bazaar">Ir ao marketplace</Link>
+              <Link className="hub-community-btn" to="/comunidade">Grupos e canais</Link>
             </div>
           </div>
           <div className="hub-feature">
@@ -35,10 +35,10 @@ export function HubHomePage() {
               <img src="/assets/tool-store.webp" alt="VP Store" />
               <span>Compra e venda com atendimento direto.</span>
             </Link>
-            <Link className="asset-service-card" to="/bazaar" aria-label="Acessar VP Bazaar">
+            <a className="asset-service-card" href="/bazaar/" aria-label="Acessar VP Bazaar">
               <img src="/assets/tool-bazaar.webp" alt="VP Bazaar" />
               <span>Veja anúncios e negocie com outros jogadores.</span>
-            </Link>
+            </a>
             <a className="asset-service-card" href="/vplab/" aria-label="Acessar VPLab">
               <img src="/assets/tool-vplab.webp" alt="VPLab" />
               <span>Pokédex, IV, PokeFipe, hunts e outras utilidades.</span>

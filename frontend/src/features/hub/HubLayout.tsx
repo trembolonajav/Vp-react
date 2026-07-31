@@ -24,7 +24,8 @@ export function HubLayout() {
           <div className="nav-links">
             <a className="nav-link" href="/vplab/">Ferramentas</a>
             <Link className="nav-link" to="/store">VP Store</Link>
-            <Link className="nav-link" to="/bazaar">VP Bazaar</Link>
+            <a className="nav-link" href="/bazaar/">VP Bazaar</a>
+            <Link className="nav-link" to="/comunidade">Comunidade</Link>
           </div>
           <div className="header-actions">
             <a
@@ -57,7 +58,8 @@ export function HubLayout() {
               <div className="footer-links">
                 <a href="/vplab/">Ferramentas</a>
                 <Link to="/store">VP Store</Link>
-                <Link to="/bazaar">VP Bazaar</Link>
+                <a href="/bazaar/">VP Bazaar</a>
+                <Link to="/comunidade">Comunidade</Link>
               </div>
             </div>
             <div className="footer-social-column">

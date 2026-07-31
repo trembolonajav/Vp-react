@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HubLayout } from "./features/hub/HubLayout";
 import { HubHomePage } from "./features/hub/HubHomePage";
+import { ComunidadePage } from "./features/hub/ComunidadePage";
 import { StoreLayout } from "./features/store/StoreLayout";
 import { StoreHomePage } from "./features/store/pages/StoreHomePage";
 import { NegociarPage } from "./features/store/pages/NegociarPage";
@@ -49,6 +50,7 @@ export function App() {
       {/* Hub (landing) na raiz */}
       <Route element={<HubLayout />}>
         <Route index element={<HubHomePage />} />
+        <Route path="comunidade" element={<ComunidadePage />} />
       </Route>
 
       {/* Loja */}
