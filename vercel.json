@@ -41,6 +41,13 @@
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }
       ]
+    },
+    {
+      "source": "/vplab/(pokedex-v2|pokefipe-v2|breeding-v2|avaliar-iv-v4).html",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://unpkg.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' data: blob:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'" },
+        { "key": "Cache-Control", "value": "no-cache, max-age=0, must-revalidate" }
+      ]
     }
   ]
 }
