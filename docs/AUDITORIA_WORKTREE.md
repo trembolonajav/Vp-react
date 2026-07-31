@@ -166,3 +166,58 @@ aposentado ou passar a apontar para o Spring — **fora desta etapa** (não remo
 Não alterado. Verificação de disponibilidade das imagens: as 20 imagens fornecidas no
 chat **não** estão presentes como arquivos no repositório. Diretório-alvo futuro:
 `tests/ocr/fixtures/` (a criar). A homologação PaddleOCR permanece como etapa separada.
+
+---
+
+## 11. Relatório final
+
+```
+ETAPA: Consolidação do worktree
+STATUS: CONCLUÍDA (exceto validação Docker — daemon indisponível)
+HEAD INICIAL: 3a2508fbab036b1f7fac4550fd9906599e3682e9
+HEAD FINAL:   bd015f9450995b4ca7945026471876704f326c2c
+BACKUP CRIADO: branch backup/pre-consolidacao -> 3a2508f
+               patch  ../vpertz-worktree-backup.patch (168 KB)
+               patch  ../vpertz-staged-backup.patch (0 B)
+               inventário ../vpertz-untracked-inventory.txt (280 arquivos)
+ENTRADAS SUJAS INICIAIS: 70 (45 modificadas + 25 grupos não rastreados / 280 arquivos brutos)
+ENTRADAS SUJAS FINAIS:   0
+COMMITS CRIADOS: 12
+  706744e docs: registra auditoria e consolidacao do worktree
+  931d9ad feat(hub): adiciona pagina Comunidade em React e rota /comunidade
+  bdc9e09 refactor(frontend): extrai helper utils/assets e adota nas paginas React
+  39bc84e feat(nav): navegacao family-nav entre os apps estaticos
+  beca278 fix(bazaar-legacy): ajustes em chat, conta e perfil
+  72d5e4b feat(store-legacy): atualiza pagina de contato
+  d292a8e feat(vplab-legacy): ferramentas prototipo v2/v4 e ajustes da ponte legada
+  3405bea chore(vplab): adiciona icones de alerta e tipos-v2 da rota
+  179e1a1 test: cobertura de prototipos, rota e sincronia estatica do Docker
+  c478c72 chore(deploy): CSP dedicada para prototipos vplab v2/v4 no Vercel
+  a9de068 chore(tooling): atualiza dev-server
+  bd015f9 docs: atualiza README
+ARQUIVOS PRESERVADOS: todas as 45 modificações + novos arquivos válidos (React, prototipos, assets, testes)
+ARQUIVOS ARQUIVADOS (QUARENTENA, ../vpertz-consolidacao-quarantine/, 17 MB, reversível):
+  - apps/vpertz-lab/public/apps/ (cópia aninhada acidental, 210 arq)
+  - frontend/public/{bazaar,store,config.js,dados.js,styles.css} (cópias concorrentes divergentes)
+  - bazaar-25-check.png (screenshot temporário)
+  - scripts/read-cdp-output.mjs (helper CDP não referenciado)
+ARQUIVOS REMOVIDOS: nenhum (não-destrutivo; tudo em quarentena, restaurável)
+ARQUIVOS AINDA UNKNOWN: nenhum
+TESTES EXECUTADOS:
+  - Root JS (node --test): 174 pass / 0 fail
+  - Frontend React (tsc --noEmit && vite build): OK
+  - Root estático (scripts/build.mjs): OK
+  - Backend Java (mvn test): 52 pass / 0 fail / 0 erro
+RESULTADOS: todos verdes na árvore limpa e 100% committada
+BUILD SEM CACHE (Docker): PENDENTE — daemon do Docker Desktop indisponível
+BASELINE REPRODUZÍVEL: PARCIAL
+  - Cadeia npm + Vite + Maven: SIM (build não consome nenhum arquivo não rastreado;
+    provado com git status limpo + builds verdes após a quarentena)
+  - Contêiner Docker: a confirmar quando o daemon subir
+APIS NODE MAPEADAS: 11 endpoints, todos com par Spring (SPRING_EXISTS_NODE_STILL_ACTIVE);
+  Docker usa Spring, Vercel usa Node. Nenhum removido.
+PRÓXIMA ETAPA: (1) rodar `docker compose build --no-cache && up -d` para fechar a
+  reprodutibilidade do contêiner; (2) só então migrar /bazaar/como-funciona,
+  /bazaar/conta e páginas restantes da Store; (3) desativar APIs Node substituídas;
+  (4) remover a ponte legada do Docker.
+```
