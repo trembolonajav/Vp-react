@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { loadPokemonCatalog, normalizeSpecies, type PokemonDexEntry } from "../services/ivCalculator";
 import "./vplab.css";
+import "./reference-fidelity.css";
 
 const LABELS: Record<string, string> = {
   normal:"Normal", fire:"Fogo", water:"Água", electric:"Elétrico", grass:"Planta",
@@ -29,6 +30,7 @@ const CHART: Record<string, Record<string, number>> = {
 const STATS = ["HP","Ataque","Defesa","Atq. Esp.","Def. Esp.","Velocidade"];
 const sprite = (n: number) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
 const fmt = (n: number) => n.toLocaleString("pt-BR");
+const lootColor=(chance:number)=>!chance?"#e5b34f":chance>=40000?"#b5a196":chance>=5000?"#4fc47a":"#e5b34f";
 const Type = ({ name }: { name: string }) => <span className={`dex-type type-${name}`}><img src={`/assets/vplab/route/types-v2/${name}.png`} alt="" />{LABELS[name] ?? name}</span>;
 
 function evolutionChain(pokemon: PokemonDexEntry, catalog: PokemonDexEntry[]) {
@@ -104,6 +106,6 @@ function PokemonDetail({pokemon,catalog,choose,back,effectiveness}:{pokemon:Poke
     <h2>Fraquezas e resistências</h2><div className="dex-effect">{groups.map((group)=><div key={group.title}><small>{group.title}</small><p>{effectiveness.filter((x)=>group.test(x.multiplier)).map((x)=><span key={x.attack}><Type name={x.attack}/><b>×{x.multiplier}</b></span>)}</p></div>)}</div>
     <h2>Golpes ({pokemon.g.length})</h2><div className="dex-moves">{pokemon.g.map((move)=><span key={`${move[0]}-${move[4]}`}><b>{move[0]}</b><Type name={move[1]}/><small>{move[2]==="fisico"?"Físico":"Especial"} · Poder {move[3]} · Nv {move[4]}</small></span>)}</div>
     <h2>Linha evolutiva</h2><div className="dex-evolution">{evolutionChain(pokemon,catalog).map((p)=><button className={p.n===pokemon.n?"is-current":""} key={p.n} onClick={()=>choose(p)}><img src={sprite(p.n)} alt=""/><span>{p.m}</span>{p.evl&&<small>Nv {p.evl}</small>}</button>)}</div>
-    <h2>Drops ({pokemon.loot.length})</h2><div className="dex-drops">{pokemon.loot.map((drop)=><span key={drop[0]}><b>{drop[0]}</b><small>×{drop[2]}{drop[2]!==drop[3]?`–${drop[3]}`:""} · {(drop[1]/1000).toLocaleString("pt-BR",{maximumFractionDigits:2})}% · ${fmt(drop[4])}</small></span>)}</div>
+    {/* Drops: nome histórico; a referência visual V2 usa Loot. */}<h2>Loot <small>· média ${fmt(pokemon.la)} por abate</small></h2><div className="dex-drops">{pokemon.loot.map((drop,index)=><span key={drop[0]} style={{background:index%2?"rgba(255,255,255,.015)":"transparent"}}><b style={{color:lootColor(drop[1])}}>{drop[0]}</b><small><em>×{drop[2]}{drop[2]!==drop[3]?`–${drop[3]}`:""}</em><strong style={{color:lootColor(drop[1])}}>{drop[1]?(drop[1]/1000).toLocaleString("pt-BR",{maximumFractionDigits:2})+"%":"raríssimo"}</strong><i>${fmt(drop[4])}</i></small></span>)}</div>
   </section>;
 }
