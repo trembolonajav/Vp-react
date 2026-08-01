@@ -23,8 +23,8 @@ test("scanner usa PaddleOCR local nos três fluxos de entrada", () => {
   assert.doesNotMatch(scanner, /Tesseract/);
 });
 
-test("shell legado permanece apenas como ponte de compatibilidade", () => {
-  assert.match(dockerfile, /dist\/vplab\/legacy/);
+test("Docker não contém shell legado nem Tesseract", () => {
+  assert.doesNotMatch(dockerfile, /dist\/vplab\/legacy|tesseract|static-build/);
   assert.match(scanner, /to="\/vplab\/pokedex"/);
-  assert.doesNotMatch(scanner, /\/vplab\/legacy\/\?tab=/);
+  assert.doesNotMatch(scanner, /\/vplab\/legacy/);
 });

@@ -79,10 +79,8 @@ services:
 
   frontend:
     build:
-      # O contexto raiz permite compor o SPA React com os módulos estáticos
-      # oficiais de apps/ (VPLab e Bazaar), sem cópias divergentes.
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: vpertz-frontend
     restart: unless-stopped
     depends_on:
