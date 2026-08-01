@@ -2,43 +2,40 @@
 
 ## Decisão
 
-A plataforma usa um monorepositório e um único deployment. As aplicações ficam
-separadas no código, mas são reunidas em `dist/` durante o build:
+A plataforma usa um monorepositório e um único deployment Docker Compose. O
+frontend é uma SPA React/TypeScript construída pelo Vite; o backend oficial é
+Java 21 com Spring Boot. Não há runtime estático legado nem funções Vercel.
 
 ```text
-apps/vpertz-store/public/ ───┐
-apps/vpertz-lab/public/ ─────┼── scripts/build.mjs ──> dist/
-apps/vpertz-bazaar/public/ ──┘                         ├── vplab/
-                                                       └── bazaar/
-
-api/ ───────────────────────────────────────────────> Vercel Functions
+Navegador
+   |
+   v
+Nginx + SPA React (frontend/) -- /api e /media --> Spring Boot (backend/)
+                                                       |          |
+                                                       v          v
+                                                   PostgreSQL   MinIO/S3
 ```
 
 ## Responsabilidades
 
-- **Store:** páginas comerciais, contato, negociação e painel.
-- **VPLab:** ferramentas de perfil, IV, PokeFipe, rotas de caça e clãs.
-- **Bazaar:** marketplace entre jogadores. Não tem código de dados próprio:
-  lê `cfg.bazaar` de `/api/config` e reaproveita `/styles.css` e `/config.js`
-  da Store, de modo que a identidade visual é sempre a mesma.
-- **API:** autenticação, configuração pública, administração e uploads.
-- **Blob:** persistência de configurações e imagens do painel.
-- **Build:** apenas copia fontes públicas para a saída; não transforma dados.
+- `frontend/`: Hub, Store, Bazaar, VPLab, autenticação e administração.
+- `backend/`: API REST `/api/v1`, JWT, regras de negócio, OCR PaddleOCR e persistência.
+- PostgreSQL: dados relacionais e migrations Flyway.
+- MinIO/S3: mídia enviada pelos usuários.
+- Nginx: bundle Vite, fallback da SPA, redirects históricos e proxy.
 
 ## Regras
 
-1. Nunca editar `dist/`; ela é recriada em todo build.
-2. Código da Store fica somente em `apps/vpertz-store/public/`.
-3. Código do VPLab fica somente em `apps/vpertz-lab/public/`, e o do Bazaar
-   somente em `apps/vpertz-bazaar/public/`.
-4. Funções HTTP ficam somente em `api/`, pois a Vercel as descobre na raiz.
-5. Dados de geração do VPLab não devem ser colocados na pasta `public/`.
-6. Segredos nunca entram no Git; usar variáveis da Vercel.
+1. `frontend/dist/` é saída gerada e não deve ser editada.
+2. Páginas e componentes ficam em `frontend/src`; assets públicos necessários ficam em `frontend/public`.
+3. Endpoints ficam em `backend/src`; não existe API Node paralela.
+4. Mudanças de banco recebem nova migration Flyway.
+5. Segredos nunca entram no Git.
+6. A execução oficial é `docker compose up --build`.
 
 ## Rotas
 
-- `/` e páginas `.html`: Store.
-- `/api/*`: funções serverless.
-- `/vplab/*`: arquivos isolados do VPLab.
-- `/bazaar/*`: arquivos isolados do VP Bazaar.
-- `/uploads/*`: arquivos locais em desenvolvimento; Blob em produção.
+- `/`, `/store`, `/bazaar/*`, `/vplab/*`, `/admin` e `/login`: SPA React.
+- `/api/v1/*`: API Spring Boot.
+- `/media/*`: objetos servidos pelo backend/storage.
+- URLs históricas com `.html`: redirects no Nginx.

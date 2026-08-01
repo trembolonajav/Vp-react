@@ -4,23 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node dev-server.mjs",
-    "build": "node scripts/build.mjs",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
     "build:clan-ranking": "node scripts/generate-clan-ranking.mjs",
-    "check": "node --check dev-server.mjs && node --check scripts/build.mjs && node --check scripts/generate-clan-ranking.mjs && node --check apps/vpertz-hub/public/hub.js && node --check apps/vpertz-store/public/app.js && node --check apps/vpertz-store/public/admin.js && node --check apps/vpertz-bazaar/public/bazaar.js && node --check apps/vpertz-bazaar/public/conta.js && node --check apps/vpertz-bazaar/public/chat.js && node --check apps/vpertz-bazaar/public/perfil.js && node --check apps/vpertz-bazaar/public/anunciar.js && node --check apps/vpertz-bazaar/public/meus-anuncios.js && node --check apps/vpertz-bazaar/public/cards-data.js && node --check apps/vpertz-lab/public/app.js && node --check apps/vpertz-lab/public/iv-scan.js && node --check apps/vpertz-lab/public/pokefipe-core.js && node --check apps/vpertz-lab/public/data.js",
+    "check": "node --check scripts/generate-clan-ranking.mjs && node --check scripts/audit-auth-runtime.mjs && node --check scripts/audit-listing-management-runtime.mjs && node --check scripts/audit-marketplace-runtime.mjs && node --check scripts/audit-profile-runtime.mjs && node --check scripts/audit-react-ocr.mjs",
     "test": "node --test --test-concurrency=1",
-    "test:e2e": "node tests/e2e-local.mjs",
-    "verify": "npm run check && npm test && npm run build && npm run test:e2e"
+    "verify": "npm run check && npm test && npm run build"
   },
-  "dependencies": {
-    "@tesseract.js-data/eng": "1.0.0",
-    "@tesseract.js-data/por": "1.0.0",
-    "@vercel/blob": "^2.6.1",
-    "tesseract.js": "5.1.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "linkedom": "^0.18.13",
-    "sharp": "^0.35.3",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

@@ -26,3 +26,12 @@ test("runtime Docker não possui mecanismos de publicação legados", () => {
   assert.doesNotMatch(dockerfile, /apps|scripts|static-build|tesseract|vplab\/legacy/);
   assert.match(dockerfile, /COPY --from=react-build \/app\/dist \/usr\/share\/nginx\/html/);
 });
+
+test("fontes e dependências do runtime legado foram removidas", () => {
+  for (const legacyPath of ["apps", "api", "dev-server.mjs", "vercel.json", "scripts/build.mjs"]) {
+    assert.equal(fs.existsSync(legacyPath), false, `${legacyPath} ainda existe`);
+  }
+
+  const packageJson = fs.readFileSync("package.json", "utf8");
+  assert.doesNotMatch(packageJson, /tesseract|@vercel\/blob|linkedom|sharp/);
+});

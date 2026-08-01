@@ -4,16 +4,9 @@ Aplicação da comunidade Vpertz (streamer de PokeIdle World): hub, loja de
 diamonds (VP Store), marketplace entre jogadores (VP Bazaar), ferramentas
 (VPLab) e painel administrativo.
 
-Arquitetura atual (**modular monolith híbrido**): portal, Store e áreas
-autenticadas em **React + TypeScript + Vite**; VPLab e Bazaar em
-**HTML/CSS/JavaScript**; backend em **Java 21 + Spring Boot**; banco
-**PostgreSQL**. Todos são orquestrados por **Docker Compose**.
-
-Durante a migração, a imagem Docker ainda incorpora VPLab e Bazaar de `apps/`
-como ponte de compatibilidade para não perder funcionalidades. Essa composição
-não é a arquitetura final: cada rota deve ser substituída por uma página em
-`frontend/src` e pelo backend Spring quando houver persistência. A matriz e os
-critérios de remoção estão em `docs/AUDITORIA_MIGRACAO_REACT.md`.
+Arquitetura atual: toda a interface (Hub, Store, Bazaar, VPLab e Admin) usa
+**React + TypeScript + Vite**; o backend oficial usa **Java 21 + Spring Boot**,
+com **PostgreSQL** e **MinIO/S3**. Tudo é orquestrado por **Docker Compose**.
 
 ## 1. Arquitetura
 
@@ -21,7 +14,7 @@ critérios de remoção estão em `docs/AUDITORIA_MIGRACAO_REACT.md`.
                  ┌───────────────────────────┐
                  │  Frontend (React/TS/Vite)  │   nginx serve o SPA e faz
                  │  hub / store / bazaar /    │   proxy de /api e /media
-                 │  vplab (estático) / admin  │
+                 │  vplab / admin             │
                  └───────────────┬────────────┘
                                  │ REST /api/v1
                  ┌───────────────▼────────────┐
@@ -38,7 +31,7 @@ critérios de remoção estão em `docs/AUDITORIA_MIGRACAO_REACT.md`.
 ```
 
 Áreas (rotas do frontend): hub em `/`, loja em `/store`, marketplace em
-`/bazaar`, ferramentas em `/vplab/` (app estático preservado), painel em
+`/bazaar`, ferramentas em `/vplab/`, painel em
 `/admin`, login em `/login`.
 
 API REST versionada em `/api/v1`: `config`, `listings`, `auth`,
@@ -81,9 +74,8 @@ docker compose up --build
 - PostgreSQL: `localhost:5432`
 
 O Postgres sobe primeiro; o backend aplica as migrations (Flyway) e, em `dev`,
-semeia os dados iniciais. A build do frontend combina o SPA React com as fontes
-atuais de VPLab e Bazaar em `apps/`; o nginx serve o resultado e faz proxy de
-`/api` e `/media` para o backend.
+semeia os dados iniciais. O nginx serve exclusivamente o bundle Vite e faz
+proxy de `/api` e `/media` para o backend.
 
 Admin de desenvolvimento (perfil `dev`): **`vpadmin` / `vpadmin123`**
 (troque em produção via `ADMIN_USER`/`ADMIN_PASS`).
@@ -134,12 +126,9 @@ Vpertz/
 │   │        listings,users,auth,chat,reports,media,admin,common}
 │   ├── src/main/resources/{application.yml, db/migration, seed}
 │   ├── pom.xml  Dockerfile
-├── frontend/                # React + TS + Vite (portal/Store/autenticação)
+├── frontend/                # React + TS + Vite (toda a interface)
 │   ├── src/{features,components,contexts,hooks,services,types,utils,styles}
 │   ├── vite.config.ts  Dockerfile  nginx.conf
-├── apps/
-│   ├── vpertz-lab/public/   # legado temporário para paridade
-│   └── vpertz-bazaar/public/# legado temporário para paridade
 ├── docker-compose.yml  .env.example
-└── dev-server.mjs           # servidor local da composição estática
+└── docs/                    # arquitetura, migração e auditorias
 ```
