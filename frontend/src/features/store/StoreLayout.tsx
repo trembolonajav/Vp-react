@@ -1,15 +1,17 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useConfig } from "../../hooks/useConfig";
 import { Socials } from "../shared/Contatos";
 import { PlatformHeader } from "../shared/PlatformHeader";
 
 export function StoreLayout() {
   const { config } = useConfig();
+  const location = useLocation();
+  const active = (path:string) => location.pathname === path || (path !== "/store" && location.pathname.startsWith(path));
 
   return (
     <>
       <PlatformHeader activeArea="store" subnavLabel="Seções da VP Store">
-        <Link to="/store">Jogos</Link><Link to="/store/negociar">Comprar &amp; Vender</Link><Link to="/store/intermedio">Intermédio</Link><Link to="/store/contato">Contato</Link>
+        <Link className={active("/store") ? "active" : ""} to="/store">Jogos</Link><Link className={active("/store/negociar") ? "active" : ""} to="/store/negociar">Comprar &amp; Vender</Link><Link className={active("/store/intermedio") ? "active" : ""} to="/store/intermedio">Intermédio</Link><Link className={active("/store/contato") ? "active" : ""} to="/store/contato">Contato</Link>
       </PlatformHeader>
 
       <Outlet />

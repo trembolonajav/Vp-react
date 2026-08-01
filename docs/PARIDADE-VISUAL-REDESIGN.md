@@ -44,3 +44,6 @@ Hub, VP Store, VP Bazaar e VPLab agora consomem o mesmo componente `PlatformHead
 - [Header compartilhado — Store](screenshots/shared-header-store.png)
 - [Header compartilhado — Bazaar](screenshots/shared-header-bazaar.png)
 - [Header compartilhado — VPLab](screenshots/shared-header-vplab.png)
+- [Logo Bazaar normalizada](screenshots/header-normalized-bazaar.png)
+
+As marcas horizontais foram normalizadas pelo limite visual do conteúdo — e não apenas pelo tamanho do canvas transparente. A barra principal rola com a página; somente a subnavegação contextual permanece fixa durante o scroll.

@@ -26,4 +26,11 @@ test("header usa marca horizontal à esquerda, ícones quadrados nas abas e hove
   assert.match(css, /\.platform-header__areas a:hover/);
   assert.match(css, /transform:translateY\(-2px\)/);
   assert.match(css, /filter:drop-shadow/);
+  assert.match(css, /platform-header__brand--bazaar img\{transform:scale\(2\)\}/);
+});
+
+test("somente a subnavegação contextual permanece fixa durante o scroll", () => {
+  assert.match(css, /\.platform-header\{position:relative;top:auto\}/);
+  assert.match(css, /\.platform-subnav\{position:sticky;top:0;z-index:48\}/);
+  assert.match(component, /<\/header>\s*\{children && <nav className="platform-subnav"/);
 });

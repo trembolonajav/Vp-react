@@ -25,8 +25,8 @@ export function PlatformHeader({ activeArea, children, subnavLabel = "Navegaçã
     <header className="platform-header">
       <nav className="container platform-header__main" aria-label="Navegação principal">
         {brand.href.endsWith("/") && activeArea !== "hub"
-          ? <a className="platform-header__brand" href={brand.href}><img src={brand.asset} alt={brand.alt} /></a>
-          : <Link className="platform-header__brand" to={brand.href}><img src={brand.asset} alt={brand.alt} /></Link>}
+          ? <a className={`platform-header__brand platform-header__brand--${activeArea}`} href={brand.href}><img src={brand.asset} alt={brand.alt} /></a>
+          : <Link className={`platform-header__brand platform-header__brand--${activeArea}`} to={brand.href}><img src={brand.asset} alt={brand.alt} /></Link>}
         <div className="platform-header__areas">
           {areas.map(area => area.href.endsWith("/") && area.id !== "hub"
             ? <a className={activeArea===area.id?"active":""} href={area.href} key={area.id}><img src={area.asset} alt=""/><span>{area.label}</span></a>
@@ -34,7 +34,7 @@ export function PlatformHeader({ activeArea, children, subnavLabel = "Navegaçã
         </div>
         <a className="platform-header__live" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" aria-label="Assistir à live do VPertsz"><img src="/assets/platform/header/botao-assistir-live.png" alt="Assistir live" /></a>
       </nav>
-      {children && <nav className="platform-subnav" aria-label={subnavLabel}><div className="container">{children}</div></nav>}
     </header>
+    {children && <nav className="platform-subnav" aria-label={subnavLabel}><div className="container">{children}</div></nav>}
   </>;
 }

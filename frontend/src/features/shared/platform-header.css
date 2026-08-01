@@ -3,3 +3,15 @@
 @media(max-width:650px){.platform-topbar{flex-wrap:wrap;padding-inline:8px;text-align:center;font-size:9px}.platform-header__main{grid-template-columns:105px minmax(0,1fr) 112px;min-height:64px;gap:5px}.platform-header__brand{height:54px}.platform-header__brand img{width:102px}.platform-header__areas{justify-content:flex-start;overflow-x:auto;scrollbar-width:none}.platform-header__areas::-webkit-scrollbar{display:none}.platform-header__areas a{flex:0 0 auto;width:39px;height:42px;padding:2px}.platform-header__areas img{width:37px;height:30px}.platform-header__live{width:110px}.platform-subnav>.container{justify-content:flex-start}}
 .platform-header__areas img{width:40px;height:40px}
 @media(max-width:650px){.platform-header__areas img{width:34px;height:34px}}
+
+/* A barra de produto rola; somente a subnavegação contextual acompanha a página. */
+.platform-header{position:relative;top:auto}
+.platform-subnav{position:sticky;top:0;z-index:48}
+
+/* Normalização óptica: os PNGs têm caixas transparentes internas diferentes. */
+.platform-header__brand img{transform-origin:left center}
+.platform-header__brand--hub img{transform:scale(.95)}
+.platform-header__brand--vplab img,.platform-header__brand--store img{transform:scale(1.25)}
+.platform-header__brand--bazaar img{transform:scale(2)}
+@media(max-width:1050px){.platform-header__brand--vplab img,.platform-header__brand--store img{transform:scale(1.18)}.platform-header__brand--bazaar img{transform:scale(1.8)}}
+@media(max-width:650px){.platform-header__brand--hub img{transform:scale(.92)}.platform-header__brand--vplab img,.platform-header__brand--store img{transform:scale(1.12)}.platform-header__brand--bazaar img{transform:scale(1.65)}}
