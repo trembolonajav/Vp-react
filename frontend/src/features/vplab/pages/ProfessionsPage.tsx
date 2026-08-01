@@ -1,7 +1,7 @@
 import {Link} from "react-router-dom";
 import "./vplab.css";
 
-const ASSET="/vplab/legacy/assets/professions/official/";
+const ASSET="/assets/vplab/professions/official/";
 const ranks=[
  {rank:"E",title:"Aprendiz",bonus:"+3%",multiplier:"×1,03",next:"D",species:50,photos:20,defeats:"—"},
  {rank:"D",title:"Aventureiro",bonus:"+6%",multiplier:"×1,06",next:"C",species:100,photos:50,defeats:"200"},

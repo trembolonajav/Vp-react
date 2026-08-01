@@ -10,7 +10,7 @@ type ClanData={meta:{model:string;consolidatedAt:string;speciesAudited:number;us
 const CLAN_ORDER=["volcanic","raibolt","orebound","naturia","gardestrike","ironhard","wingeon","psycraft","seavell","malefic"];
 const COLORS:Record<string,string>={volcanic:"#ff6938",raibolt:"#f0c531",orebound:"#bc9b78",naturia:"#55c96d",gardestrike:"#d0623d",ironhard:"#91a6b3",wingeon:"#7fc9f6",psycraft:"#f15b96",seavell:"#58a9ff",malefic:"#9665dc"};
 const sprite=(n:number)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
-const emblem=(id:string)=>`/vplab/legacy/assets/clans/${id}-symbol.png`;
+const emblem=(id:string)=>`/assets/vplab/clans/${id}-symbol.png`;
 
 export function ClanPage(){
  const [data,setData]=useState<ClanData|null>(null),[error,setError]=useState(""),[query,setQuery]=useState(""),[type,setType]=useState(""),[expanded,setExpanded]=useState(false);

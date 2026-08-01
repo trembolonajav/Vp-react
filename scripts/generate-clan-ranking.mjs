@@ -10,7 +10,7 @@ import * as XLSX from "xlsx";
 
 const ROOT = process.cwd();
 const SOURCE = path.join(ROOT, "data", "clan-ranking", "ranking_pokeidle_por_cla.xlsx");
-const OUTPUT = path.join(ROOT, "apps", "vpertz-lab", "public", "data", "clan-ranking.json");
+const OUTPUT = path.join(ROOT, "frontend", "public", "vplab-data", "clan-ranking.json");
 
 /* Ordem de exibição dos clãs no seletor — a mesma já usada pela interface. */
 const CLAN_ORDER = [

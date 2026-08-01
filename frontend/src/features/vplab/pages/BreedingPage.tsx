@@ -2,7 +2,7 @@ import {useEffect,useMemo,useState} from "react";import {Link} from "react-route
 import {loadPokemonCatalog,type PokemonDexEntry} from "../services/ivCalculator";
 import {BREEDING_GAINS,BREEDING_RULES,calculateBreeding} from "../services/breeding";import "./vplab.css";
 const sprite=(n:number,shiny:boolean)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${shiny?"shiny/":""}${n}.png`;
-const asset=(name:string)=>`/vplab/legacy/assets/breeding/${name}`;const q=(n:number)=>n.toFixed(3).replace(".",",");const num=(n:number)=>Math.round(n).toLocaleString("pt-BR");
+const asset=(name:string)=>`/assets/vplab/breeding/${name}`;const q=(n:number)=>n.toFixed(3).replace(".",",");const num=(n:number)=>Math.round(n).toLocaleString("pt-BR");
 export function BreedingPage(){
  const [catalog,setCatalog]=useState<PokemonDexEntry[]>([]),[slug,setSlug]=useState("charizard");
  const [qa,setQa]=useState(1.12),[qb,setQb]=useState(1.2),[iva,setIva]=useState(118),[ivb,setIvb]=useState(132);

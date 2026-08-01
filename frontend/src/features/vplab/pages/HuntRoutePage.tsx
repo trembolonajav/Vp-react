@@ -4,7 +4,7 @@ import { loadPokemonCatalog,type PokemonDexEntry } from "../services/ivCalculato
 import { analyzeHunts,createHuntTargets,fmtMultiplier,ROUTE_DEX_NUMBERS,TYPE_LABELS,type HuntAnalysis } from "../services/huntRoute";
 import "./vplab.css";
 const sprite=(n:number)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
-const asset=(path:string)=>`/vplab/legacy/assets/route/${path}`;
+const asset=(path:string)=>`/assets/vplab/route/${path}`;
 const Type=({name}:{name:string})=><span className="route-react-type"><img src={asset(`types-v2/${name}.png`)} alt=""/>{TYPE_LABELS[name]}</span>;
 
 export function HuntRoutePage(){
