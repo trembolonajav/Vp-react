@@ -9,6 +9,7 @@ import { StoreHomePage } from "./features/store/pages/StoreHomePage";
 import { NegociarPage } from "./features/store/pages/NegociarPage";
 import { ContatoPage } from "./features/store/pages/ContatoPage";
 import { IntermedioPage } from "./features/store/pages/IntermedioPage";
+import { OfflinePage } from "./features/store/pages/OfflinePage";
 import { BazaarLayout } from "./layouts/BazaarLayout";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { AdminPage } from "./features/admin/pages/AdminPage";
@@ -59,9 +60,16 @@ export function App() {
       {/* Loja */}
       <Route path="store" element={<StoreLayout />}>
         <Route index element={<StoreHomePage />} />
+        <Route path="jogos" element={<StoreHomePage />} />
         <Route path="negociar" element={<NegociarPage />} />
         <Route path="contato" element={<ContatoPage />} />
         <Route path="intermedio" element={<IntermedioPage />} />
+        <Route path="offline" element={<OfflinePage />} />
+        <Route path="admin" element={<Navigate to="/admin" replace />} />
+        <Route path="jogos.html" element={<Navigate to="/store/jogos" replace />} />
+        <Route path="offline.html" element={<Navigate to="/store/offline" replace />} />
+        <Route path="intermedio.html" element={<Navigate to="/store/intermedio" replace />} />
+        <Route path="admin.html" element={<Navigate to="/admin" replace />} />
       </Route>
 
       {/* Primeira rota do Bazaar ativada isoladamente. As demais continuam no

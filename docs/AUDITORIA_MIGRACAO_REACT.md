@@ -88,11 +88,12 @@ rota React separada.
 | Store | `/store/` | React forçado no Nginx | `StoreHomePage` | config Spring | PostgreSQL | React | NEW_ACTIVE | manter |
 | Store | `/store/negociar` | React | `NegociarPage` | config Spring | PostgreSQL | React | NEW_ACTIVE | manter |
 | Store | `/store/contato` | React | `ContatoPage` | config Spring | PostgreSQL | React | NEW_ACTIVE | manter |
-| Store | `/store/jogos.html` | HTML/JS | inexistente | Node/config legado | JSON/Blob ou arquivo | legado | LEGACY_ACTIVE | migrar |
-| Store | `/store/intermedio.html` | HTML/JS | inexistente | client-side | estático | legado | LEGACY_ACTIVE | migrar |
-| Store | `/store/offline.html` | HTML | inexistente | nenhum | nenhum | legado | LEGACY_ACTIVE | reavaliar PWA |
+| Store | `/store/jogos` | catálogo incorporado à home React | `StoreHomePage` | config Spring | PostgreSQL | React | REACT_ACTIVE | manter alias oficial |
+| Store | `/store/intermedio` | React | `IntermedioPage` | config Spring | PostgreSQL | React | REACT_ACTIVE | manter |
+| Store | `/store/offline` | React | `OfflinePage` | nenhum | nenhum | React | REACT_ACTIVE | manter fallback visual |
+| Store antiga | `/store/jogos.html`, `/store/intermedio.html`, `/store/offline.html` | HTML físico preservado | redirecionamento 308 | nenhum | nenhum | Nginx redireciona | LEGACY_REFERENCE | retirar em etapa própria |
 | Admin | `/admin` | React protegido | `AdminPage` + `AdminModerationPanel` | Spring ADMIN | PostgreSQL | React | NEW_ACTIVE | manter |
-| Admin antigo | `/store/admin.html` | HTML/JS em `apps/` | `AdminPage` | APIs Node | JSON/Blob | não copiado no runtime atual | LEGACY_REFERENCE | remover após paridade |
+| Admin compatível | `/store/admin` e `/store/admin.html` | painel antigo não publicado nesta URL | redireciona para `/admin` (`AdminPage`) | Spring ADMIN | PostgreSQL | Nginx redireciona | REACT_ACTIVE | manter compatibilidade |
 
 ### Bazaar
 

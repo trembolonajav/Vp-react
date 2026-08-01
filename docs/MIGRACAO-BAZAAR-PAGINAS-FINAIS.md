@@ -25,3 +25,13 @@ já vivem em fluxos React/Spring/PostgreSQL próprios.
 O Bazaar legado permanece no build como referência e ponte temporária. Nenhum
 arquivo em `apps/` ou `api/` foi removido nesta etapa. A migração geral continua
 em andamento e a próxima frente permanece a Store.
+
+## Fechamento operacional
+
+Em 01/08/2026, a imagem Docker foi reconstruída e as duas páginas foram
+validadas pelo Nginx. Os redirecionamentos `.html` responderam 308, a conta
+anônima convergiu para o login, o perfil autenticado persistiu após recriação do
+backend e `/api/v1/config` continuou em HTTP 200 após dois reinícios isolados.
+Desktop e mobile 390 × 844 foram inspecionados; a medição móvel confirmou
+ausência de overflow horizontal. O Bazaar está funcionalmente 100% React, mas o
+legado físico ainda não deve ser removido.

@@ -756,8 +756,8 @@
 @media (max-width:500px){
   .brand .logo{width:124px;height:46px}
   .bz-vpertsz-link{display:none}
-  .header-actions .btn-twitch{width:88px;height:38px}
-  .bz-conta-entrar{width:108px;height:38px}
+  .header-actions .btn-twitch{width:54px;height:38px;background-size:auto 100%}
+  .bz-conta-entrar{width:54px;height:38px;padding:0;font-size:0;background-position:center;background-size:auto 100%}
   .bz-hero{padding:26px 18px}
   .bz-hero-actions{display:grid;grid-template-columns:1fr;gap:9px}
   .bz-hero-actions a{text-align:center}
@@ -770,6 +770,8 @@
   .bz-sort{min-width:0;justify-self:stretch}
   .bz-sort .bz-select{width:100%;min-width:0}
   .bz-grid{grid-template-columns:1fr}
+  .section-head h1,.section-head h2{overflow-wrap:anywhere}
+  .bz-step,.bz-prose{min-width:0;overflow-wrap:anywhere}
 }
 
 @media (prefers-reduced-motion:reduce){

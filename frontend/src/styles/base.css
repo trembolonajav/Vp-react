@@ -623,12 +623,14 @@ footer .footer-social-column{order:2}
   .intermediary-hero{padding:38px;gap:28px}
 }
 @media(max-width:700px){
+  html,body,#root{max-width:100%;overflow-x:clip}
   .container{width:min(100% - 28px,1200px)}
   header{position:static}
   .nav-shell{
     height:auto;min-height:66px;padding:10px 0 0;
-    grid-template-columns:1fr auto;row-gap:2px;
+    grid-template-columns:minmax(0,1fr) auto;row-gap:2px;
   }
+  .nav-shell>*{min-width:0}
   .logo{width:148px;height:50px}
   .nav-links{
     grid-column:1/-1;order:3;
@@ -646,6 +648,7 @@ footer .footer-social-column{order:2}
   .carousel-btn{display:none}
   .dots{bottom:10px}
   .games-grid{grid-template-columns:repeat(auto-fit,minmax(210px,290px))}
+  .game-card{width:100%;max-width:290px}
   .trade-panel{padding:22px 16px}
   .trade-side img.diamond{width:160px}
   .footer-grid{grid-template-columns:1fr;gap:30px}
@@ -657,6 +660,14 @@ footer .footer-social-column{order:2}
   .intermediary-seal{order:-1}
   .intermediary-seal img{width:180px}
   .intermediary-trust{padding:26px 20px}
+}
+
+@media(max-width:500px){
+  .logo{width:112px;height:44px}
+  .header-actions{gap:4px;max-width:158px;overflow:hidden}
+  .store-hub-link{display:none}
+  .header-actions .btn-twitch,.header-actions .btn-whats{width:54px;height:38px;background-size:auto 100%}
+  .store-offline-card{padding:28px 18px}
 }
 
 @media(prefers-reduced-motion:reduce){

@@ -616,3 +616,34 @@ textarea.bz-input {
   color: var(--gold-soft);
   font-size: 12px;
 }
+
+/* ---------- Store: estados de configuração e fallback offline ---------- */
+.store-config-state {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+.store-config-state.error { color: #ff9b88; }
+.store-offline-page {
+  min-height: 62vh;
+  display: grid;
+  place-items: center;
+  padding-inline: 20px;
+}
+.store-offline-card {
+  width: min(100%, 440px);
+  padding: 36px;
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+  background: var(--panel);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.store-offline-card img { width: 96px; height: 96px; object-fit: contain; }
+.store-offline-card h1 { margin: 18px 0 10px; }
+.store-offline-card p { margin: 0 0 24px; color: var(--muted); line-height: 1.55; }
+.store-offline-card .btn { display: inline-flex; text-decoration: none; }
