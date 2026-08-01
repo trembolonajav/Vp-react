@@ -9,12 +9,6 @@ const LABELS: Record<string, string> = {
   psychic:"Psíquico", bug:"Inseto", rock:"Pedra", ghost:"Fantasma", dragon:"Dragão",
   dark:"Sombrio", steel:"Aço", fairy:"Fada",
 };
-const COLORS: Record<string, string> = {
-  normal:"#9a9a7c", fire:"#e0742f", water:"#5680d8", electric:"#d8b220", grass:"#6da33e",
-  ice:"#7fc4c4", fighting:"#a5342a", poison:"#8f3f8f", ground:"#c9a952", flying:"#8d7fd8",
-  psychic:"#dd4f7f", bug:"#93a021", rock:"#a89232", ghost:"#5f5390", dragon:"#5f3cc9",
-  dark:"#584538", steel:"#8a8aa0", fairy:"#c96f9e",
-};
 const CHART: Record<string, Record<string, number>> = {
   normal:{rock:.5,ghost:0,steel:.5},fire:{fire:.5,water:.5,grass:2,ice:2,bug:2,rock:.5,dragon:.5,steel:2},
   water:{fire:2,water:.5,grass:.5,ground:2,rock:2,dragon:.5},electric:{water:2,electric:.5,grass:.5,ground:0,flying:2,dragon:.5},
@@ -35,7 +29,7 @@ const CHART: Record<string, Record<string, number>> = {
 const STATS = ["HP","Ataque","Defesa","Atq. Esp.","Def. Esp.","Velocidade"];
 const sprite = (n: number) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
 const fmt = (n: number) => n.toLocaleString("pt-BR");
-const Type = ({ name }: { name: string }) => <span className="dex-type" style={{background:COLORS[name]}}>{LABELS[name] ?? name}</span>;
+const Type = ({ name }: { name: string }) => <span className={`dex-type type-${name}`}><img src={`/assets/vplab/route/types-v2/${name}.png`} alt="" />{LABELS[name] ?? name}</span>;
 
 function evolutionChain(pokemon: PokemonDexEntry, catalog: PokemonDexEntry[]) {
   let root = pokemon;
@@ -71,19 +65,20 @@ export function PokedexPage() {
   const choose = (pokemon: PokemonDexEntry) => { setSelected(pokemon); setQuery(pokemon.m); window.scrollTo({top:0,behavior:"smooth"}); };
 
   return <main className="vplab-react dex-v2"><div className="container">
-    <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Catálogo oficial · 251 espécies</span>
-      <h1>Pokédex VPLab</h1><p>Stats, hunts, efetividade, golpes, evoluções e drops em um só lugar.</p></div>
-      <span className="vplab-react__privacy">{catalog.length || "…"} espécies</span>
-    </header>
-    <div className="dex-v2__master"><section className="vplab-panel dex-catalog">
+    <section className="vplab-panel dex-v2__filters"><header><div><span className="vplab-react__eyebrow">Pokédex</span>
+      <h1>Tudo sobre a espécie, em uma tela</h1><p>Onde caçar, o que ele derruba, quanto vale, quais golpes aprende e contra quem ele é forte, fraco e imune.</p></div>
+      <div className="dex-v2__count"><small>No catálogo</small><b>{catalog.length || "…"}</b></div></header>
       <div className="dex-controls">
         <label>Buscar espécie<input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou número da Pokédex" /></label>
         <label>Tipo<select value={type} onChange={(e) => setType(e.target.value)}><option value="">Todos</option>{Object.keys(LABELS).map((x) => <option key={x} value={x}>{LABELS[x]}</option>)}</select></label>
         <label>Raridade<select value={rarity} onChange={(e) => setRarity(e.target.value)}><option value="">Todas</option>{rarities.map((x) => <option key={x}>{x}</option>)}</select></label>
       </div>
+      <div className="dex-v2__types">{Object.keys(LABELS).map(x=><button className={type===x?"active":""} key={x} onClick={()=>setType(type===x?"":x)}><Type name={x}/></button>)}</div>
+      <div className="dex-v2__rarities"><button className={!rarity?"active":""} onClick={()=>setRarity("")}>Todas <b>{catalog.length}</b></button>{rarities.map(x=><button className={rarity===x?"active":""} key={x} onClick={()=>setRarity(rarity===x?"":x)}>{x} <b>{catalog.filter(p=>p.r===x).length}</b></button>)}<span>{filtered.length} de {catalog.length} espécies</span></div>
+    </section>
+    <div className="dex-v2__master"><section className="vplab-panel dex-catalog">
       {error ? <p className="vplab-warning">{error}</p> : !catalog.length ? <p className="vplab-status">Carregando catálogo…</p> :
-        <><p className="vplab-status">{filtered.length} espécie{filtered.length === 1 ? "" : "s"} encontrada{filtered.length === 1 ? "" : "s"}</p>
-        {filtered.length ? <div className="dex-grid">{filtered.map((p) => <button className={`dex-card ${selected?.n===p.n?"is-current":""}`} key={p.n} onClick={() => choose(p)}>
+        <>{filtered.length ? <div className="dex-grid">{filtered.map((p) => <button className={`dex-card ${selected?.n===p.n?"is-current":""}`} key={p.n} onClick={() => choose(p)}>
           <span>#{String(p.n).padStart(3,"0")}</span><img src={sprite(p.n)} alt="" width="88" height="88" loading="lazy" />
           <strong>{p.m}</strong><div>{p.t.map((x) => <Type key={x} name={x}/>)}</div><small>{p.r}</small>
         </button>)}</div> : <p className="dex-empty">Nenhuma espécie corresponde aos filtros.</p>}</>}
