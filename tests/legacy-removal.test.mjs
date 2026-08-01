@@ -22,6 +22,10 @@ test("URLs HTML históricas convergem para rotas React pelo Nginx", () => {
   }
 });
 
+test("rota explícita do Avaliar IV serve o SPA sem cair no redirect da raiz", () => {
+  assert.match(nginx, /location = \/vplab\/avaliar-iv\s*\{\s*try_files \/index\.html =404;/);
+});
+
 test("runtime Docker não possui mecanismos de publicação legados", () => {
   assert.doesNotMatch(dockerfile, /apps|scripts|static-build|tesseract|vplab\/legacy/);
   assert.match(dockerfile, /COPY --from=react-build \/app\/dist \/usr\/share\/nginx\/html/);
