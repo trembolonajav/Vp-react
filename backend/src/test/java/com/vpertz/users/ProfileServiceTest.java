@@ -33,6 +33,17 @@ class ProfileServiceTest {
     }
 
     @Test
+    void meuPerfilUsaSomenteAIdentidadeAutenticada() {
+        User user = user();
+        when(repository.findById("user-1")).thenReturn(Optional.of(user));
+
+        ProfileResponse result = service.getMe("user-1");
+
+        assertThat(result.username()).isEqualTo("moonlight");
+        verify(repository).findById("user-1");
+    }
+
+    @Test
     void atualizacaoLimpaCamposELimitaContatoPreferido() {
         User user = user();
         when(repository.findById("user-1")).thenReturn(Optional.of(user));

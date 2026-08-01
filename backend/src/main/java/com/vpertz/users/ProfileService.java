@@ -25,6 +25,13 @@ public class ProfileService {
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil não encontrado."));
     }
 
+    @Transactional(readOnly = true)
+    public ProfileResponse getMe(String userId) {
+        return userRepository.findById(userId)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
     @Transactional
     public ProfileResponse updateMe(String userId, ProfileUpdateRequest req) {
         User user = userRepository.findById(userId)

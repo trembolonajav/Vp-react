@@ -50,6 +50,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // "meus anúncios" exige login (antes da regra pública abaixo)
                         .requestMatchers(HttpMethod.GET, "/api/v1/listings/mine").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/profiles/me").authenticated()
                         // leitura pública
                         .requestMatchers(HttpMethod.GET, "/api/v1/config", "/api/v1/listings", "/api/v1/listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/profiles/*").permitAll()

@@ -28,6 +28,12 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getPublic(username));
     }
 
+    /** Perfil pertencente ao token atual; o cliente não fornece identidade. */
+    @GetMapping("/me")
+    public ResponseEntity<ProfileResponse> meuPerfil(@AuthenticationPrincipal AuthPrincipal principal) {
+        return ResponseEntity.ok(profileService.getMe(principal.userId()));
+    }
+
     /** Atualiza o próprio perfil (autenticado). */
     @PutMapping("/me")
     public ResponseEntity<ProfileResponse> atualizar(
