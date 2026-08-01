@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useConfig } from "../../hooks/useConfig";
 import { Socials } from "../shared/Contatos";
+import { PlatformHeader } from "../shared/PlatformHeader";
 
 export function HubLayout() {
   const { config } = useConfig();
@@ -9,41 +10,9 @@ export function HubLayout() {
 
   return (
     <>
-      <div className="topbar">
-        <span className="live-dot" aria-hidden="true"></span>
-        <span>
-          Live todos os dias, das 18h às 22h, na&nbsp;
-          <a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">twitch.tv/vpertsz</a>
-        </span>
-      </div>
-
-      <header className="hub-header">
-        <nav className="container hub-nav-shell" aria-label="Navegação principal">
-          <Link className="hub-brand" to="/" aria-label="VPertsz — Início">
-            <img src="/assets/hub/header/vpertsz.png" alt="VPertsz" />
-          </Link>
-          <div className="hub-family-links">
-            <a href="/vplab/"><img src="/assets/hub/header/vplab.png" alt="" /><span>Ferramentas</span></a>
-            <Link to="/store"><img src="/assets/hub/header/vp-store.png" alt="" /><span>VP Store</span></Link>
-            <a href="/bazaar/"><img src="/assets/hub/header/vp-bazaar.png" alt="" /><span>VP Bazaar</span></a>
-            <Link className={!communityActive ? "active" : ""} to="/"><img src="/assets/hub/header/vpertsz.png" alt="" /><span>VPertsz</span></Link>
-          </div>
-          <div className="hub-header-actions">
-            <a
-              className="header-live-asset"
-              href="https://www.twitch.tv/vpertsz"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Assistir à live do VPertsz na Twitch"
-            >
-              <img src="/assets/hub/header/assistir-live.png" alt="Assistir live" />
-            </a>
-          </div>
-        </nav>
-        <nav className="hub-subnav" aria-label="Seções do VPertsz">
-          <div className="container"><Link className={communityActive ? "active" : ""} to="/comunidade">Comunidade</Link></div>
-        </nav>
-      </header>
+      <PlatformHeader activeArea="hub" subnavLabel="Seções do VPertsz">
+        <Link className={communityActive ? "active" : ""} to="/comunidade">Comunidade</Link>
+      </PlatformHeader>
 
       <Outlet />
 

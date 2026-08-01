@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
-import { Icon } from "../../shared/Icon";
+import { PlatformHeader } from "../../shared/PlatformHeader";
 import { listConversations, markRead } from "../../../services/chatService";
 import type { ConversationSummary } from "../../../types/conversation";
 
@@ -46,27 +46,7 @@ export function Header() {
   };
 
   return (
-    <>
-      <div className="topbar">
-        <span className="live-dot" aria-hidden="true"></span>
-        <span>
-          Negociação com intermédio da VP — fale sempre pelos&nbsp;
-          <a href="#seguranca">canais oficiais</a>
-        </span>
-      </div>
-
-      <header>
-        <nav className="container nav-shell" aria-label="Navegação principal">
-          <Link className="brand" to="/bazaar" aria-label="VP Bazaar — Início">
-            <img
-              className="logo"
-              src="/assets/logo-vp-bazaar-horizontal-oficial.webp"
-              alt="VP Bazaar"
-            />
-            <span className="logo-wordmark" aria-hidden="true">
-              <b>VP</b> BAZAAR
-            </span>
-          </Link>
+    <PlatformHeader activeArea="bazaar" subnavLabel="Seções do VP Bazaar">
           <div className="nav-links">
             <Link className={`nav-link ${active("/bazaar") ? "active" : ""}`} to="/bazaar">Marketplace</Link>
             <Link className={`nav-link ${active("/bazaar/anunciar") ? "active" : ""}`} to="/bazaar/anunciar">Anunciar</Link>
@@ -81,11 +61,6 @@ export function Header() {
             )}
           </div>
           <div className="header-actions">
-            <Link className="bz-vpertsz-link" to="/">VPERTSZ</Link>
-            <a className="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">
-              <Icon name="twitch" />
-              <span>Live</span>
-            </a>
             {user ? (
               <div className="bz-userbar" ref={userbar}>
                 <button
@@ -149,8 +124,6 @@ export function Header() {
               <Link className="bz-conta-entrar" to="/bazaar/login" aria-label="Login ou cadastro">Entrar</Link>
             )}
           </div>
-        </nav>
-      </header>
-    </>
+    </PlatformHeader>
   );
 }

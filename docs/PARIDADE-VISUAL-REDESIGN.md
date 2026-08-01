@@ -35,3 +35,12 @@ O cabeçalho e a Rota de Caça formam o primeiro baseline do redesign. Ainda dev
 ## Cabeçalho VPertsz
 
 O hub principal utiliza as marcas VPertsz, VPLab, VP Store e VP Bazaar fornecidas para o redesign. O CTA usa a arte larga “Assistir live” e a Comunidade passou para uma subnavegação centralizada, mantendo a hierarquia visual adotada no VPLab.
+
+## Cabeçalho padrão compartilhado
+
+Hub, VP Store, VP Bazaar e VPLab agora consomem o mesmo componente `PlatformHeader`. A barra principal usa exclusivamente marcas horizontais, o mesmo CTA “Assistir live” e um hover comum com elevação, brilho, ampliação da marca e sublinhado animado. Cada produto injeta somente sua subnavegação contextual.
+
+- [Header compartilhado — Hub](screenshots/shared-header-hub.png)
+- [Header compartilhado — Store](screenshots/shared-header-store.png)
+- [Header compartilhado — Bazaar](screenshots/shared-header-bazaar.png)
+- [Header compartilhado — VPLab](screenshots/shared-header-vplab.png)
