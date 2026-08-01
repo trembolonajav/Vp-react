@@ -58,7 +58,10 @@ export function PokedexPage() {
   const filtered = useMemo(() => catalog.filter((p) =>
     (!query || normalizeSpecies(p.m).includes(normalizeSpecies(query)) || String(p.n).includes(query.trim())) &&
     (!type || p.t.includes(type)) && (!rarity || p.r === rarity)), [catalog, query, type, rarity]);
-  const rarities = useMemo(() => [...new Set(catalog.map((p) => p.r))].sort(), [catalog]);
+  const rarities = useMemo(() => {
+    const order=["Comum","Incomum","Raro","Épico","Lendário","Mítico"];
+    return [...new Set(catalog.map((p) => p.r))].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+  }, [catalog]);
   const effectiveness = selected ? Object.keys(LABELS).map((attack) => ({
     attack, multiplier:selected.t.reduce((value, defense) => value * (CHART[attack]?.[defense] ?? 1), 1),
   })) : [];
@@ -74,7 +77,7 @@ export function PokedexPage() {
         <label>Raridade<select value={rarity} onChange={(e) => setRarity(e.target.value)}><option value="">Todas</option>{rarities.map((x) => <option key={x}>{x}</option>)}</select></label>
       </div>
       <div className="dex-v2__types">{Object.keys(LABELS).map(x=><button className={type===x?"active":""} key={x} onClick={()=>setType(type===x?"":x)}><Type name={x}/></button>)}</div>
-      <div className="dex-v2__rarities"><button className={!rarity?"active":""} onClick={()=>setRarity("")}>Todas <b>{catalog.length}</b></button>{rarities.map(x=><button className={rarity===x?"active":""} key={x} onClick={()=>setRarity(rarity===x?"":x)}>{x} <b>{catalog.filter(p=>p.r===x).length}</b></button>)}<span>{filtered.length} de {catalog.length} espécies</span></div>
+      <div className="dex-v2__rarities"><button className={!rarity?"active rarity-all":"rarity-all"} onClick={()=>setRarity("")}>Todas <b>{catalog.length}</b></button>{rarities.map(x=><button className={`${rarity===x?"active ":""}rarity-${normalizeSpecies(x)}`} key={x} onClick={()=>setRarity(rarity===x?"":x)}>{x} <b>{catalog.filter(p=>p.r===x).length}</b></button>)}<span>{filtered.length} de {catalog.length} espécies</span></div>
     </section>
     <div className="dex-v2__master"><section className="vplab-panel dex-catalog">
       {error ? <p className="vplab-warning">{error}</p> : !catalog.length ? <p className="vplab-status">Carregando catálogo…</p> :
