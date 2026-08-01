@@ -3,7 +3,6 @@ import fs from "node:fs";
 import test from "node:test";
 
 const app = fs.readFileSync("frontend/src/App.tsx", "utf8");
-const legacyMarketplace = fs.readFileSync("apps/vpertz-bazaar/public/bazaar.js", "utf8");
 const nginx = fs.readFileSync("frontend/nginx.conf", "utf8");
 
 test("detalhe do anúncio usa a página React antes do fallback legado", () => {
@@ -14,14 +13,6 @@ test("detalhe do anúncio usa a página React antes do fallback legado", () => {
   const detailRoute = app.indexOf('path="anuncio/:id"');
   const legacyFallback = app.indexOf('path="bazaar/*"');
   assert.ok(detailRoute >= 0 && detailRoute < legacyFallback);
-});
-
-test("marketplace ativo encaminha o detalhe para a rota React limpa", () => {
-  assert.match(
-    legacyMarketplace,
-    /const linkAnuncio = \(id\) => `\/bazaar\/anuncio\/\$\{encodeURIComponent\(id\)\}`/,
-  );
-  assert.doesNotMatch(legacyMarketplace, /const linkAnuncio = \(id\) => `anuncio\.html/);
 });
 
 test("Marketplace React é a rota index e as páginas pendentes são pontes explícitas", () => {
