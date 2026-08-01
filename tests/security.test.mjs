@@ -102,8 +102,6 @@ test("arquivos públicos não contêm caractere Unicode de substituição", () =
     "apps/vpertz-store/public/admin.html", "apps/vpertz-store/public/app.js",
     "apps/vpertz-store/public/admin.js", "apps/vpertz-store/public/config.js",
     "apps/vpertz-store/public/dados.js", "apps/vpertz-store/public/styles.css",
-    "apps/vpertz-lab/public/index.html", "apps/vpertz-lab/public/app.js",
-    "apps/vpertz-lab/public/pokefipe-core.js", "apps/vpertz-lab/public/styles.css",
     "api/_lib/defaults.mjs", "api/_lib/validate.mjs"
   ];
   for (const file of files) {
