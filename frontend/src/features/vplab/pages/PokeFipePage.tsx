@@ -1,61 +1,9 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
-import { loadPokemonCatalog, type PokemonDexEntry } from "../services/ivCalculator";
-import { calculateFipe, DIAMOND_BRL, LEVEL_BRL, UPDATED_AT } from "../services/pokeFipe";
-import "./vplab.css";
-
-const money = (value = 0) => value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const sprite = (n?: number) => n ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png` : "";
-
-export function PokeFipePage() {
-  const [params] = useSearchParams();
-  const [catalog,setCatalog] = useState<PokemonDexEntry[]>([]);
-  const [pokemon,setPokemon] = useState(params.get("p") ?? "");
-  const [iv,setIv] = useState(params.get("iv") ?? "120");
-  const [multiplier,setMultiplier] = useState(params.get("multiplier") ?? "1.80");
-  const [level,setLevel] = useState(params.get("level") ?? "300");
-  const [submitted,setSubmitted] = useState(true);
-  const [error,setError] = useState("");
-  useEffect(() => { loadPokemonCatalog().then((entries)=>{setCatalog(entries);if(!params.get("p"))setPokemon("charizard")}).catch(() => setError("Não foi possível carregar o catálogo.")); },[]);
-  const selected = useMemo(() => catalog.find((entry) => entry.s === pokemon),[catalog,pokemon]);
-  const result = useMemo(() => submitted ? calculateFipe({species:selected,iv,multiplier,level}) : null,
-    [submitted,selected,iv,multiplier,level]);
-  const submit = (event:FormEvent) => { event.preventDefault(); setSubmitted(true); };
-  const clear = () => { setPokemon("");setIv("120");setMultiplier("1.80");setLevel("300");setSubmitted(false); };
-
-  return <main className="vplab-react"><div className="container">
-    <header className="vplab-react__hero fipe-react-hero"><div><span className="vplab-react__eyebrow">PokeFipe · modelo 2.0</span>
-      <h1>Quanto vale esse Pokémon hoje?</h1><p>Venda rápida, valor justo e preço para anunciar com base de mercado atualizada em {UPDATED_AT}.</p></div>
-      <span className="vplab-react__privacy">Referência da comunidade</span>
-    </header>
-    <div className="fipe-react-layout">
-      <form className="vplab-panel fipe-react-form" onSubmit={submit}>
-        <div className="fipe-react-title"><span>01</span><div><h2>Dados do Pokémon</h2><small>Resultado = IV × multiplicador, somado à espécie e aos níveis.</small></div></div>
-        <div className="fipe-react-species">{selected && <img src={sprite(selected.n)} alt="" width="104" height="104"/>}<label>Pokémon meta
-          <select value={pokemon} onChange={(e)=>{setPokemon(e.target.value);setSubmitted(false)}}><option value="">Selecione uma espécie (opcional)</option>{catalog.map((entry)=><option key={entry.n} value={entry.s}>{entry.m}</option>)}</select>
-          <small>Espécies sem amostra de mercado usam base provisória.</small></label></div>
-        <div className="fipe-react-fields">
-          <label>IV<input type="number" min="1" step=".01" value={iv} onChange={(e)=>{setIv(e.target.value);setSubmitted(false)}}/></label>
-          <label>Multiplicador<input type="number" min=".01" step=".01" value={multiplier} onChange={(e)=>{setMultiplier(e.target.value);setSubmitted(false)}}/></label>
-          <label>Nível<input type="number" min="1" step="1" value={level} onChange={(e)=>{setLevel(e.target.value);setSubmitted(false)}}/><small>Cada nível até 400 adiciona {money(LEVEL_BRL)}.</small></label>
-        </div>
-        {error && <p className="vplab-warning">{error}</p>}
-        <div className="fipe-react-actions"><button type="submit">Calcular referência</button><button type="button" onClick={clear}>Limpar</button></div>
-      </form>
-      <section className="vplab-panel fipe-react-output" aria-live="polite">
-        <div className="fipe-react-title"><span>02</span><div><h2>Estimativa PokeFipe</h2><small>Faixa informativa baseada no modelo atual.</small></div></div>
-        {!result ? <div className="fipe-react-empty"><strong>Sua referência aparecerá aqui</strong><span>Preencha os dados e clique em calcular.</span></div> :
-        !result.valid ? <p className="vplab-warning">{result.reason}</p> : <>
-          <div className="fipe-react-result-head"><strong>{selected?.m ?? "Pokémon"}</strong><span>Pontuação {result.score} · base {result.confidence}</span></div>
-          <div className="fipe-react-total"><small>Venda rápida até preço de anúncio</small><strong>{money(result.quick)} a {money(result.list)}</strong><span>Valor justo: {money(result.fair)}</span></div>
-          <div className="fipe-react-breakdown"><article><small>Equivalente em diamonds</small><strong>{result.diamondsMin} a {result.diamondsMax}</strong></article>
-            <article><small>Valor dos níveis</small><strong>{money(result.levelValue)}</strong></article>
-            <article><small>Faixa do resultado</small><strong>{result.band?.label}</strong></article></div>
-        </>}
-      </section>
-    </div>
-    <div className="fipe-react-info"><article><small>Base do cálculo</small><strong>Espécie + resultado + níveis</strong></article>
-      <article><small>Cotação da tabela</small><strong>{money(DIAMOND_BRL)} / diamante</strong></article>
-      <article><small>Importante</small><strong>Referência, não oferta</strong></article></div>
-  </div></main>;
-}
+import {useEffect,useMemo,useState} from "react";import {useSearchParams} from "react-router-dom";
+import {loadPokemonCatalog,type PokemonDexEntry} from "../services/ivCalculator";import {calculateFipe,DIAMOND_BRL,LEVEL_BRL,UPDATED_AT} from "../services/pokeFipe";import "./vplab.css";
+const money=(v=0)=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});const sprite=(n?:number)=>n?`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`:"";
+export function PokeFipePage(){const [params]=useSearchParams(),[catalog,setCatalog]=useState<PokemonDexEntry[]>([]),[pokemon,setPokemon]=useState(params.get("p")??"charizard"),[iv,setIv]=useState(params.get("iv")??"120"),[multiplier,setMultiplier]=useState(params.get("multiplier")??"1.80"),[level,setLevel]=useState(params.get("level")??"300"),[segment,setSegment]=useState<"general"|"breed">("general");
+useEffect(()=>{loadPokemonCatalog().then(setCatalog)},[]);const selected=useMemo(()=>catalog.find(x=>x.s===pokemon),[catalog,pokemon]);const result=calculateFipe({species:selected,iv,multiplier,level});
+return <main className="vplab-react fipe-v2"><div className="container"><section className="vplab-panel fipe-v2__main"><header className="fipe-v2__head"><div><span className="vplab-react__eyebrow">PokeFipe · modelo 2.0</span><h1>Quanto vale esse Pokémon hoje?</h1><p>Base por espécie calibrada com o mercado + bônus pelo resultado <b>IV × multiplicador</b> + valor dos levels. Você recebe as três referências importantes: <b>venda rápida, valor justo e preço para anunciar.</b></p></div><aside><small>Precisão do modelo</small><b>± R$ 0,29</b><s>R$ 10,47</s><p>Erro médio nas 6 vendas confirmadas — a tabela 2.0 erra 2,0%.</p></aside></header>
+<div className="fipe-v2__grid"><section className="fipe-v2__inputs"><b className="section-label">Entradas</b><div className="fipe-v2__species"><img src={sprite(selected?.n)} alt=""/><div><label>Espécie<select value={pokemon} onChange={e=>setPokemon(e.target.value)}>{catalog.map(x=><option key={x.n} value={x.s}>{x.m}</option>)}</select></label><p><span>Quality lendária</span><span>Confiança alta</span></p><small>Calibrada por mercado dentro da faixa de captura selvagem.</small></div></div><div className="fipe-v2__fields"><label>Level<input value={level} onChange={e=>setLevel(e.target.value)}/><small>{money(LEVEL_BRL)}/level até 400</small></label><label>IV total<input value={iv} onChange={e=>setIv(e.target.value)}/><small>como aparece no card</small></label><label>Multiplicador<input value={multiplier} onChange={e=>setMultiplier(e.target.value)}/><small>Quality do card</small></label></div><label>Segmento<div className="fipe-v2__segments"><button className={segment==="general"?"active":""} onClick={()=>setSegment("general")}>Geral</button><button className={segment==="breed"?"active":""} onClick={()=>setSegment("breed")}>Breed</button></div><small>Breed aplica piso de R$ 5,00 em Pokémon até level 20 com IV a partir de 150.</small></label><div className="fipe-v2__note"><b>Nota da base desta espécie</b><p>5 referências, incluindo venda confirmada.</p></div></section>
+<section className="fipe-v2__evaluation"><div className="fipe-v2__eval-head"><b>Avaliação</b><span>{selected?.m} · resultado {result.score}</span></div>{result.valid?<><div className="fipe-v2__prices"><Price label="Venda rápida" value={money(result.quick)} note="85% — liquidez imediata" kind="quick"/><Price label="Valor justo" value={money(result.fair)} note="referência central da negociação" kind="fair"/><Price label="Anunciar" value={money(result.list)} note="110% — margem de negociação" kind="list"/></div><div className="fipe-v2__diamonds"><img src="/assets/vplab/diamante-pokeidle.webp" alt=""/><span><small>Equivalente em diamonds</small><b>{result.diamondsMin} a {result.diamondsMax} DD</b></span></div><div className="fipe-v2__breakdown"><b>De onde vem o valor justo</b><span>Base da espécie <strong>{money(result.base)}</strong></span><span>Resultado IV × Quality <strong>{result.band?.label}</strong></span><span>Valor dos níveis <strong>{money(result.levelValue)}</strong></span><span>Cotação <strong>{money(DIAMOND_BRL)}/DD</strong></span></div></>:<p className="vplab-warning">{result.reason}</p>}</section></div></section><p className="fipe-v2__foot">Base de mercado atualizada em {UPDATED_AT}. Referência, não oferta.</p></div></main>}
+function Price({label,value,note,kind}:{label:string;value:string;note:string;kind:string}){return <article className={kind}><small>{label}</small><b>{value}</b><span>{note}</span></article>}
