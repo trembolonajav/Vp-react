@@ -320,7 +320,7 @@ export function AnuncioPage() {
               {strip.length > 0 && <div className={`bz-strip bz-strip-${strip.length}`}>{strip.map(([icon, label, value, detail]) => <div className="bz-strip-item" key={label}><img className="bz-fico" src={fieldIcon(icon)} alt="" /><div><span>{label}</span><strong>{value}{detail && <small> {detail}</small>}</strong></div></div>)}</div>}
             </div>
             <div className="bz-subpanel bz-price-panel">
-              {listing.preco ? <>{listing.moeda === "diamonds" && <img src="/assets/bazaar/anuncio-diamond.png" alt="Diamonds" />}<b>{listing.moeda === "diamonds" ? numeroBR(listing.preco) : brl(listing.preco)}</b>{listing.moeda === "diamonds" && <span>Diamonds</span>}</> : <b className="combinar">Preço a combinar</b>}
+              {listing.preco ? <>{listing.moeda === "diamonds" && <img src={DIAMANTE} alt="Diamonds" />}<b>{listing.moeda === "diamonds" ? numeroBR(listing.preco) : brl(listing.preco)}</b>{listing.moeda === "diamonds" && <span>Diamonds</span>}</> : <b className="combinar">Preço a combinar</b>}
               {listing.negociavel && !sold && <span className="bz-price-tag"><b>Aceita propostas</b><small>Venda e troca</small></span>}
             </div>
             {listing.descricao && <div className="bz-subpanel"><h2 className="bz-subpanel-title">Descrição do anúncio</h2><p className="bz-desc">{listing.descricao}</p></div>}
