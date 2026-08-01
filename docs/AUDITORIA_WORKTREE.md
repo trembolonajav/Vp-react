@@ -276,3 +276,64 @@ PRÓXIMA ETAPA: migrar as 5 páginas restantes começando por /bazaar/como-funci
 
 > **Recomendação do usuário registrada:** compactar `../vpertz-consolidacao-quarantine/`
 > (17 MB) e preservá-la até o fim da migração geral, sem devolver ao Git.
+
+---
+
+## 13. Estabilização pós-baseline (2026-08-01)
+
+Duas correções técnicas encontradas na validação Docker, feitas ANTES de migrar páginas.
+Sem remover legado, sem alterar OCR, sem migrar páginas.
+
+### 13.1 `fix(infra)` — resolução dinâmica do backend no Nginx
+
+**Problema comprovado:** `frontend/nginx.conf` usava `proxy_pass http://backend:8080;` com
+hostname literal → o Nginx resolvia o IP do `backend` só no boot. Um `restart` isolado do
+backend troca o IP do container e o proxy passava a responder **502** até o Nginx reiniciar.
+
+**Correção:** adicionado `resolver 127.0.0.11 valid=10s ipv6=off;` (DNS interno do Docker) e
+`proxy_pass` via variável (`set $backend_api http://backend:8080; proxy_pass $backend_api$request_uri;`
+em `/api/` e o equivalente em `/media/`). A variável força a re-resolução por requisição;
+`$request_uri` preserva caminho+query (inclui OG/share). Headers, `client_max_body_size 5m`,
+uploads e o fallback SPA foram preservados.
+
+**Teste (2 iterações):**
+```
+baseline via nginx /api/v1/config = 200
+restart SOMENTE backend → healthy → /api/v1/config=200  /api/v1/listings=200  (frontend NÃO reiniciado)
+restart SOMENTE backend → healthy → /api/v1/config=200  /api/v1/listings=200  (frontend NÃO reiniciado)
+```
+Aprovado: sem 502 e SEM reiniciar o frontend.
+
+### 13.2 `fix(media)` — referência de mídia legada órfã
+
+**Auditoria DB × MinIO** (todas as colunas de URL do Postgres vs objetos do bucket):
+- Colunas varridas: `listings.img_url`, `listings.vendedor_avatar`, `users.avatar`
+  (a tabela `messages` NÃO possui coluna de imagem).
+- **Única referência `/media/` quebrada:** anúncio `com-imagem-enviada-d8edd`,
+  `img_url = /media/img-1785247696079-b4cb7a4babcefac8.png`.
+  - Formato `img-{timestamp}-{hex}` = upload legado da API Node (Vercel), não o esquema
+    atual `img-{uuid}` do `MediaService` Spring.
+  - Sem linha em `media_assets` → o `MediaController` nunca conseguiria servir (404 comprovado).
+  - Bytes ausentes no MinIO; não recuperáveis (upload legado perdido); NÃO está no seed
+    (`config.json`) → é dado de runtime, não reproduzível.
+- `media_assets` tinha só 1 objeto (upload de teste do e2e), não referenciado por anúncios.
+
+**Correção (dupla, opção “remover referência inválida + placeholder oficial”):**
+1. **Código (committado, reproduzível):** fallback `onError` → placeholder oficial "VP"
+   em `ProductCard` (`Arte`) e no herói do `AnuncioPage`. Qualquer mídia ausente passa a
+   degradar para o placeholder em vez de card quebrado — protege inclusive uploads futuros.
+2. **Dado (volume atual):** `UPDATE listings SET img_url='' WHERE public_id='com-imagem-enviada-d8edd'`
+   (`UPDATE 1`), alinhando o anúncio aos irmãos `com-imagem-enviada`/`-841c8` (img vazia).
+
+**Pós-correção:** 0 anúncios com `/media/` órfão; upload e2e novo OK
+(`POST /api/v1/media` 200 → GET 200). Nenhuma outra mídia quebrada.
+
+### 13.3 Testes desta etapa
+```
+Node (node --test): 174 pass / 0 fail   (inclui asserts de nginx.conf)
+Maven (mvn test):   52 pass / 0 fail
+Frontend (tsc --noEmit && vite build): OK
+Docker (compose build frontend): SUCESSO  (backend inalterado)
+Nginx/Spring/Postgres/MinIO: saudáveis; /api/v1/config e /api/v1/listings 200
+Git status: limpo após os commits
+```
