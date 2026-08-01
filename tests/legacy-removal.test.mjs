@@ -26,6 +26,11 @@ test("rota explícita do Avaliar IV serve o SPA sem cair no redirect da raiz", (
   assert.match(nginx, /location = \/vplab\/avaliar-iv\s*\{\s*try_files \/index\.html =404;/);
 });
 
+test("fallback da SPA pode servir index.html sem ciclo de redirecionamento", () => {
+  assert.doesNotMatch(nginx, /location = \/index\.html\s*\{\s*return 308/);
+  assert.match(nginx, /location \/\s*\{\s*try_files \$uri \$uri\/ \/index\.html;/);
+});
+
 test("runtime Docker não possui mecanismos de publicação legados", () => {
   assert.doesNotMatch(dockerfile, /apps|scripts|static-build|tesseract|vplab\/legacy/);
   assert.match(dockerfile, /COPY --from=react-build \/app\/dist \/usr\/share\/nginx\/html/);
