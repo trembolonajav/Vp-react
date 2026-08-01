@@ -65,7 +65,7 @@ export function PokedexPage() {
   const effectiveness = selected ? Object.keys(LABELS).map((attack) => ({
     attack, multiplier:selected.t.reduce((value, defense) => value * (CHART[attack]?.[defense] ?? 1), 1),
   })) : [];
-  const choose = (pokemon: PokemonDexEntry) => { setSelected(pokemon); setQuery(pokemon.m); window.scrollTo({top:0,behavior:"smooth"}); };
+  const choose = (pokemon: PokemonDexEntry) => setSelected(pokemon);
 
   return <main className="vplab-react dex-v2"><div className="container">
     <section className="vplab-panel dex-v2__filters"><header><div><span className="vplab-react__eyebrow">Pokédex</span>
