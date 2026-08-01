@@ -642,3 +642,18 @@ Para cada migração:
 
 Até todos os itens serem verdadeiros, esta arquitetura permanece **em
 migração**.
+
+## 25. Páginas finais do Bazaar
+
+As rotas `/bazaar/como-funciona` e `/bazaar/conta` são páginas React oficiais.
+Os endereços históricos terminados em `.html` redirecionam permanentemente para
+as rotas limpas e não servem mais os documentos físicos.
+
+A conta é protegida pelo `ProtectedRoute`, reidrata a autenticação pelo JWT e
+carrega o perfil por `GET /api/v1/profiles/me`. Esse endpoint extrai o `userId`
+exclusivamente do principal autenticado. Atualizações continuam em
+`PUT /api/v1/profiles/me`, persistidas no PostgreSQL.
+
+Redefinição de senha e exclusão de conta não foram simuladas, pois não possuem
+endpoint Spring. O Bazaar legado permanece no build até a revisão conjunta da
+Store e do deploy Vercel. A migração geral continua em andamento.

@@ -48,8 +48,13 @@ test("como-funciona e conta são rotas React oficiais do Bazaar", () => {
   assert.match(app, /<Route path="conta" element=\{<Protegida><ContaPage \/><\/Protegida>\} \/>/);
   assert.match(nginx, /location = \/bazaar\/como-funciona\s*\{\s*try_files \/index\.html =404;/);
   assert.match(nginx, /location = \/bazaar\/conta\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(app, /path="como-funciona\.html" element=\{<Navigate to="\/bazaar\/como-funciona" replace \/>\}/);
+  assert.match(app, /path="conta\.html" element=\{<Navigate to="\/bazaar\/conta" replace \/>\}/);
+  assert.match(nginx, /location = \/bazaar\/como-funciona\.html\s*\{\s*return 308 \/bazaar\/como-funciona;/);
+  assert.match(nginx, /location = \/bazaar\/conta\.html\s*\{\s*return 308 \/bazaar\/conta;/);
   assert.match(como, /Como funciona o VP Bazaar/);
   assert.match(conta, /updateMyProfile/);
+  assert.match(conta, /getMyProfile/);
   assert.match(conta, /useAuth/);
   assert.match(header, /to="\/bazaar\/conta"/);
 });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { getProfile, updateMyProfile } from "../../../services/profileService";
+import { getMyProfile, updateMyProfile } from "../../../services/profileService";
 import { useAuth } from "../../../contexts/AuthContext";
 import { ApiError } from "../../../services/api";
 
@@ -36,7 +36,7 @@ export function ContaPage() {
     const controller = new AbortController();
     setCarregando(true);
     setError(null);
-    getProfile(user.username, controller.signal)
+    getMyProfile(controller.signal)
       .then((result) => {
         setBio(result.bio);
         setContact(result.contact);

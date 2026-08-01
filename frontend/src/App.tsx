@@ -79,6 +79,8 @@ export function App() {
         <Route path="chat" element={<Protegida><ChatPage /></Protegida>} />
         <Route path="como-funciona" element={<ComoFuncionaPage />} />
         <Route path="conta" element={<Protegida><ContaPage /></Protegida>} />
+        <Route path="como-funciona.html" element={<Navigate to="/bazaar/como-funciona" replace />} />
+        <Route path="conta.html" element={<Navigate to="/bazaar/conta" replace />} />
       </Route>
 
       {/* Fallback temporário somente para as rotas Bazaar ainda não migradas. */}

@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import fs from "node:fs";
+const security=fs.readFileSync("backend/src/main/java/com/vpertz/common/security/SecurityConfig.java","utf8"),controller=fs.readFileSync("backend/src/main/java/com/vpertz/users/ProfileController.java","utf8"),page=fs.readFileSync("frontend/src/features/bazaar/pages/ContaPage.tsx","utf8");
+test("leitura de minha conta exige JWT antes do matcher público",()=>{const own=security.indexOf('GET, "/api/v1/profiles/me").authenticated()'),publicProfiles=security.indexOf('GET, "/api/v1/profiles/*").permitAll()');assert.ok(own>=0&&own<publicProfiles);assert.match(controller,/@GetMapping\("\/me"\)[\s\S]*principal\.userId\(\)/)});
+test("Conta React nunca fornece identidade ao endpoint autenticado",()=>{assert.match(page,/getMyProfile\(controller\.signal\)/);assert.doesNotMatch(page,/getProfile\(user\.username/);assert.doesNotMatch(page,/localStorage/)});
