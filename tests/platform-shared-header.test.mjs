@@ -18,8 +18,10 @@ test("todas as áreas usam o mesmo PlatformHeader", () => {
   }
 });
 
-test("header padrão usa somente marcas horizontais e compartilha o hover", () => {
+test("header usa marca horizontal à esquerda, ícones quadrados nas abas e hover compartilhado", () => {
   for (const asset of ["logo-vpertsz-horizontal.webp", "logo-vp-store-horizontal.webp", "logo-vp-bazaar-horizontal-oficial.webp", "tool-vplab.webp"])
+    assert.ok(component.includes(asset), asset);
+  for (const asset of ["header/vpertsz.png", "header/vp-store.png", "header/vp-bazaar.png", "header/vplab.png"])
     assert.ok(component.includes(asset), asset);
   assert.match(css, /\.platform-header__areas a:hover/);
   assert.match(css, /transform:translateY\(-2px\)/);
