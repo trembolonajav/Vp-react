@@ -20,6 +20,7 @@ export function StoreLayout() {
           <div className="nav-links">
             <Link className="nav-link" to="/store">Jogos</Link>
             <Link className="nav-link" to="/store/negociar">Comprar &amp; Vender</Link>
+            <Link className="nav-link" to="/store/intermedio">Intermédio</Link>
             <Link className="nav-link" to="/store/contato">Contato</Link>
           </div>
           <div className="header-actions">
@@ -50,6 +51,7 @@ export function StoreLayout() {
               <div className="footer-links">
                 <Link to="/store">Início</Link>
                 <Link to="/store/negociar">Comprar &amp; Vender</Link>
+                <Link to="/store/intermedio">Intermédio</Link>
                 <Link to="/store/contato">Contato</Link>
                 <Link to="/">VPertsz</Link>
               </div>

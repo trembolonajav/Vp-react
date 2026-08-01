@@ -8,6 +8,7 @@ import { StoreLayout } from "./features/store/StoreLayout";
 import { StoreHomePage } from "./features/store/pages/StoreHomePage";
 import { NegociarPage } from "./features/store/pages/NegociarPage";
 import { ContatoPage } from "./features/store/pages/ContatoPage";
+import { IntermedioPage } from "./features/store/pages/IntermedioPage";
 import { BazaarLayout } from "./layouts/BazaarLayout";
 import { LoginPage } from "./features/auth/pages/LoginPage";
 import { AdminPage } from "./features/admin/pages/AdminPage";
@@ -60,6 +61,7 @@ export function App() {
         <Route index element={<StoreHomePage />} />
         <Route path="negociar" element={<NegociarPage />} />
         <Route path="contato" element={<ContatoPage />} />
+        <Route path="intermedio" element={<IntermedioPage />} />
       </Route>
 
       {/* Primeira rota do Bazaar ativada isoladamente. As demais continuam no
