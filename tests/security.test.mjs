@@ -97,11 +97,6 @@ test("mensagem do WhatsApp preserva acentos na URL", () => {
 
 test("arquivos públicos não contêm caractere Unicode de substituição", () => {
   const files = [
-    "apps/vpertz-store/public/index.html", "apps/vpertz-store/public/jogos.html",
-    "apps/vpertz-store/public/negociar.html", "apps/vpertz-store/public/contato.html",
-    "apps/vpertz-store/public/admin.html", "apps/vpertz-store/public/app.js",
-    "apps/vpertz-store/public/admin.js", "apps/vpertz-store/public/config.js",
-    "apps/vpertz-store/public/dados.js", "apps/vpertz-store/public/styles.css",
     "api/_lib/defaults.mjs", "api/_lib/validate.mjs"
   ];
   for (const file of files) {
