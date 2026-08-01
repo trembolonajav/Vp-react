@@ -1,5 +1,4 @@
 .vplab-react{min-height:100vh;padding:28px 0 72px}
-.vplab-react__tools{display:flex;gap:7px;margin-bottom:18px;overflow:auto;padding-bottom:4px}.vplab-react__tools a{padding:9px 12px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;font-weight:800;white-space:nowrap}.vplab-react__tools a:hover,.vplab-react__tools .is-active{border-color:var(--gold);background:rgba(229,179,79,.1);color:var(--cream)}
 .vplab-react__hero{position:static;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding:24px;border:1px solid var(--line);border-radius:var(--radius-lg);background:linear-gradient(145deg,rgba(30,18,16,.96),rgba(13,8,7,.94));box-shadow:var(--shadow-soft)}
 .vplab-react__hero h1{font-family:Cinzel,serif;font-size:clamp(27px,4vw,42px);line-height:1.1;margin:6px 0}
 .vplab-react__hero p{color:var(--muted);margin:0}

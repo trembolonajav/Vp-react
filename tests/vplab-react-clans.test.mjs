@@ -1,7 +1,7 @@
 import test from "node:test";import assert from "node:assert/strict";import fs from "node:fs";
 const app=fs.readFileSync("frontend/src/App.tsx","utf8"),page=fs.readFileSync("frontend/src/features/vplab/pages/ClanPage.tsx","utf8"),nginx=fs.readFileSync("frontend/nginx.conf","utf8");
 const published=JSON.parse(fs.readFileSync("frontend/public/vplab-data/clan-ranking.json","utf8"));
-test("Clãs React é a rota oficial",()=>{assert.match(app,/path="vplab\/clas"/);assert.match(nginx,/location = \/vplab\/clas/);assert.match(page,/\/vplab-data\/clan-ranking\.json/)});
+test("Clãs React é a rota oficial",()=>{assert.match(app,/path="vplab" element=\{<VplabLayout/);assert.match(app,/path="clas"/);assert.match(nginx,/location = \/vplab\/clas/);assert.match(page,/\/vplab-data\/clan-ranking\.json/)});
 test("snapshot publicado preserva a base canônica",()=>{assert.equal(Object.keys(published.clans).length,10);assert.equal(published.meta.speciesAudited,251);assert.equal(published.meta.usableSpecies,240);assert.equal(published.meta.excludedSpecies,11);assert.equal(published.meta.clanParticipations,349)});
 test("Top 6 respeita marcação e ordem oficial",()=>{for(const clan of Object.values(published.clans)){assert.deepEqual(clan.ranking.slice(0,6).map(p=>p.name),clan.recommendedTeam);assert.ok(clan.ranking.slice(0,6).every(p=>p.inRecommendedTeam));assert.deepEqual(clan.ranking.map(p=>p.position),clan.ranking.map((_,i)=>i+1))}assert.doesNotMatch(page,/ranking\.sort/);assert.match(page,/ranking\.slice\(0,6\)/)});
 test("shell legado saiu e emblemas pertencem ao frontend",()=>{assert.doesNotMatch(page,/\/vplab\/legacy/);assert.match(page,/\/assets\/vplab\/clans/)});

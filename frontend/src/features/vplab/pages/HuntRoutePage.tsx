@@ -1,5 +1,5 @@
 import { useEffect,useMemo,useState } from "react";
-import { Link,useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { loadPokemonCatalog,type PokemonDexEntry } from "../services/ivCalculator";
 import { analyzeHunts,createHuntTargets,fmtMultiplier,ROUTE_DEX_NUMBERS,TYPE_LABELS,type HuntAnalysis } from "../services/huntRoute";
 import "./vplab.css";
@@ -23,12 +23,11 @@ export function HuntRoutePage(){
   const path=groups.map(g=>({lv:g.lv,item:g.items.find(a=>a.featured)})).filter(x=>x.item);
   const toggleCoverage=(type:string)=>setCoverage(v=>v.includes(type)?v.filter(x=>x!==type):[...v,type]);
   return <main className="vplab-react"><div className="container">
-    <nav className="vplab-react__tools"><Link to="/vplab/">Avaliar IV</Link><Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link><Link className="is-active" to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link><Link to="/vplab/clas">Clãs</Link><Link to="/vplab/profissoes">Profissões</Link></nav>
     <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Rota de caça · motor v3</span><h1>Onde caçar com seu Pokémon</h1><p>Escolha seu Pokémon, nível e golpes de cobertura. A rota destaca vantagem ofensiva e hunts seguras.</p></div><span className="vplab-react__privacy">Mapa conferido em 17/07/2026</span></header>
     {me&&<section className="vplab-panel route-react-dashboard"><div className="route-react-picker"><div className="route-react-me"><img src={sprite(me.n)} alt={me.m}/><label>Seu Pokémon<select value={me.s} onChange={e=>{setSlug(e.target.value);setCoverage([])}}>{selectable.map(p=><option key={p.n} value={p.s}>#{p.n} · {p.m}</option>)}</select><div>{me.t.map(t=><Type key={t} name={t}/>)}</div></label></div><label>Nível atual<input type="number" min="1" max="999" value={level} onChange={e=>setLevel(Math.max(1,Number(e.target.value)))}/></label><div><small>Golpes de cobertura</small><div className="route-react-coverage">{Object.keys(TYPE_LABELS).filter(t=>!me.t.includes(t)).map(t=><button key={t} aria-pressed={coverage.includes(t)} onClick={()=>toggleCoverage(t)}><img src={asset(`types-v2/${t}.png`)} alt=""/><span>{TYPE_LABELS[t]}</span></button>)}</div></div></div>
       <div><p className="route-react-note">{targets.length} hunts · {new Set(targets.map(t=>t.n)).size} espécies · faixa {current}</p><div className="route-react-stats"><article><small>Valem a pena</small><b>{good}</b></article><article><small>Hunts seguras</small><b>{safe}</b></article><article><small>Vantagem forte</small><b>{ideal}</b></article><article><small>Descartados</small><b>{analysed.length-good}</b></article></div><h3>Caminho recomendado</h3><div className="route-react-path">{path.map(x=><span key={x.lv}><img src={sprite(x.item!.target.n)} alt=""/><b>{x.item!.target.displayName}</b><small>Nv {x.lv} · {fmtMultiplier(x.item!.best.m)}</small></span>)}</div></div></section>}
     <div className="route-react-bands">{groups.map(group=><RouteBand key={group.lv} level={group.lv} current={group.lv===current} items={group.items} opened={open.has(group.lv)} toggle={()=>setOpen(v=>{const next=new Set(v);next.has(group.lv)?next.delete(group.lv):next.add(group.lv);return next})}/>)}</div>
-    <p className="route-react-source">A vantagem da hunt é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistências são divididas por 1,5. Os ícones permanecem temporariamente na ponte de assets do legado.</p>
+    <p className="route-react-source">A vantagem da hunt é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistências são divididas por 1,5. Interface e assets sob propriedade do frontend React.</p>
   </div></main>;
 }
 function RouteBand({level,current,items,opened,toggle}:{level:number;current:boolean;items:HuntAnalysis[];opened:boolean;toggle:()=>void}){

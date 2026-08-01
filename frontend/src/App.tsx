@@ -21,6 +21,7 @@ import { MeusAnunciosPage } from "./features/bazaar/pages/MeusAnunciosPage";
 import { ChatPage } from "./features/bazaar/pages/ChatPage";
 import { ComoFuncionaPage } from "./features/bazaar/pages/ComoFuncionaPage";
 import { ContaPage } from "./features/bazaar/pages/ContaPage";
+import { VplabLayout } from "./features/vplab/VplabLayout";
 
 const IvScannerPage = lazy(() =>
   import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
@@ -100,36 +101,38 @@ export function App() {
       {/* Painel */}
       <Route path="admin" element={<Protegida admin><AdminPage /></Protegida>} />
 
-      {/* Primeira migração vertical do VPLab. O shell legado permanece em
-          /vplab/ apenas até as demais ferramentas alcançarem paridade. */}
-      <Route path="vplab" element={
-        <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
-          <IvScannerPage />
-        </Suspense>
-      } />
-      <Route path="vplab/avaliar-iv" element={
-        <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
-          <IvScannerPage />
-        </Suspense>
-      } />
-      <Route path="vplab/pokedex" element={
-        <Suspense fallback={<main className="page"><div className="container">Carregando Pokédex…</div></main>}>
-          <PokedexPage />
-        </Suspense>
-      } />
-      <Route path="vplab/pokefipe" element={
-        <Suspense fallback={<main className="page"><div className="container">Carregando PokeFipe…</div></main>}>
-          <PokeFipePage />
-        </Suspense>
-      } />
-      <Route path="vplab/rota" element={
-        <Suspense fallback={<main className="page"><div className="container">Calculando rota…</div></main>}>
-          <HuntRoutePage />
-        </Suspense>
-      } />
-      <Route path="vplab/breeding" element={<Suspense fallback={<main className="page"><div className="container">Calculando Breeding…</div></main>}><BreedingPage /></Suspense>} />
-      <Route path="vplab/clas" element={<Suspense fallback={<main className="page"><div className="container">Carregando clãs…</div></main>}><ClanPage /></Suspense>} />
-      <Route path="vplab/profissoes" element={<Suspense fallback={<main className="page"><div className="container">Carregando profissões…</div></main>}><ProfessionsPage /></Suspense>} />
+      {/* O layout compartilhado mantém o cabeçalho e a navegação consistentes
+          em todas as ferramentas oficiais do VPLab. */}
+      <Route path="vplab" element={<VplabLayout />}>
+        <Route index element={
+          <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
+            <IvScannerPage />
+          </Suspense>
+        } />
+        <Route path="avaliar-iv" element={
+          <Suspense fallback={<main className="page"><div className="container">Carregando Avaliar IV…</div></main>}>
+            <IvScannerPage />
+          </Suspense>
+        } />
+        <Route path="pokedex" element={
+          <Suspense fallback={<main className="page"><div className="container">Carregando Pokédex…</div></main>}>
+            <PokedexPage />
+          </Suspense>
+        } />
+        <Route path="pokefipe" element={
+          <Suspense fallback={<main className="page"><div className="container">Carregando PokeFipe…</div></main>}>
+            <PokeFipePage />
+          </Suspense>
+        } />
+        <Route path="rota" element={
+          <Suspense fallback={<main className="page"><div className="container">Calculando rota…</div></main>}>
+            <HuntRoutePage />
+          </Suspense>
+        } />
+        <Route path="breeding" element={<Suspense fallback={<main className="page"><div className="container">Calculando Breeding…</div></main>}><BreedingPage /></Suspense>} />
+        <Route path="clas" element={<Suspense fallback={<main className="page"><div className="container">Carregando clãs…</div></main>}><ClanPage /></Suspense>} />
+        <Route path="profissoes" element={<Suspense fallback={<main className="page"><div className="container">Carregando profissões…</div></main>}><ProfessionsPage /></Suspense>} />
+      </Route>
     </Routes>
   );
 }

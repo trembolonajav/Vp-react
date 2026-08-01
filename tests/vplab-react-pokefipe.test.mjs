@@ -7,11 +7,13 @@ const page=fs.readFileSync("frontend/src/features/vplab/pages/PokeFipePage.tsx",
 const engine=fs.readFileSync("frontend/src/features/vplab/services/pokeFipe.ts","utf8");
 const scanner=fs.readFileSync("frontend/src/features/vplab/pages/IvScannerPage.tsx","utf8");
 const nginx=fs.readFileSync("frontend/nginx.conf","utf8");
+const header=fs.readFileSync("frontend/src/features/vplab/components/VplabHeader.tsx","utf8");
 
 test("PokeFipe React é a rota oficial",()=>{
-  assert.match(app,/path="vplab\/pokefipe"/);
+  assert.match(app,/path="vplab" element=\{<VplabLayout/);
+  assert.match(app,/path="pokefipe"/);
   assert.match(nginx,/location = \/vplab\/pokefipe/);
-  assert.match(scanner,/to="\/vplab\/pokefipe"/);
+  assert.match(header,/path: "\/vplab\/pokefipe"/);
   assert.doesNotMatch(scanner,/legacy\/\?tab=fipe/);
 });
 test("motor React preserva o modelo PokeFipe 2.0",()=>{

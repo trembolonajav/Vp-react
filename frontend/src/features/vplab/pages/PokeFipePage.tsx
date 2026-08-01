@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { loadPokemonCatalog, type PokemonDexEntry } from "../services/ivCalculator";
 import { calculateFipe, DIAMOND_BRL, LEVEL_BRL, UPDATED_AT } from "../services/pokeFipe";
 import "./vplab.css";
@@ -24,12 +24,6 @@ export function PokeFipePage() {
   const clear = () => { setPokemon("");setIv("110");setMultiplier("1.80");setLevel("1");setSubmitted(false); };
 
   return <main className="vplab-react"><div className="container">
-    <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
-      <Link to="/vplab/">Avaliar IV</Link><Link to="/vplab/pokedex">Pokédex</Link>
-      <Link className="is-active" to="/vplab/pokefipe">PokeFipe</Link>
-      <Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link>
-      <Link to="/vplab/clas">Clãs</Link><Link to="/vplab/profissoes">Profissões</Link>
-    </nav>
     <header className="vplab-react__hero fipe-react-hero"><div><span className="vplab-react__eyebrow">PokeFipe · modelo 2.0</span>
       <h1>Quanto vale esse Pokémon hoje?</h1><p>Venda rápida, valor justo e preço para anunciar com base de mercado atualizada em {UPDATED_AT}.</p></div>
       <span className="vplab-react__privacy">Referência da comunidade</span>

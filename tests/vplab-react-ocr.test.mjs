@@ -7,6 +7,7 @@ const scanner = fs.readFileSync("frontend/src/features/vplab/pages/IvScannerPage
 const ocr = fs.readFileSync("frontend/src/features/vplab/services/paddleIvScanner.ts", "utf8");
 const dockerfile = fs.readFileSync("frontend/Dockerfile", "utf8");
 const nginx = fs.readFileSync("frontend/nginx.conf", "utf8");
+const header = fs.readFileSync("frontend/src/features/vplab/components/VplabHeader.tsx", "utf8");
 
 test("Avaliar IV React é a rota oficial do VPLab", () => {
   assert.match(app, /path="vplab"/);
@@ -25,6 +26,6 @@ test("scanner usa PaddleOCR local nos três fluxos de entrada", () => {
 
 test("Docker não contém shell legado nem Tesseract", () => {
   assert.doesNotMatch(dockerfile, /dist\/vplab\/legacy|tesseract|static-build/);
-  assert.match(scanner, /to="\/vplab\/pokedex"/);
+  assert.match(header, /path: "\/vplab\/pokedex"/);
   assert.doesNotMatch(scanner, /\/vplab\/legacy/);
 });

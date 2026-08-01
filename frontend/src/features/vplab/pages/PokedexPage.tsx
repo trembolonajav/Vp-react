@@ -71,12 +71,6 @@ export function PokedexPage() {
   const choose = (pokemon: PokemonDexEntry) => { setSelected(pokemon); setQuery(pokemon.m); window.scrollTo({top:0,behavior:"smooth"}); };
 
   return <main className="vplab-react"><div className="container">
-    <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
-      <Link to="/vplab/">Avaliar IV</Link><Link className="is-active" to="/vplab/pokedex">Pokédex</Link>
-      <Link to="/vplab/pokefipe">PokeFipe</Link><Link to="/vplab/rota">Rota de caça</Link>
-      <Link to="/vplab/breeding">Breeding</Link><Link to="/vplab/clas">Clãs</Link>
-      <Link to="/vplab/profissoes">Profissões</Link>
-    </nav>
     <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Catálogo oficial · 251 espécies</span>
       <h1>Pokédex VPLab</h1><p>Stats, hunts, efetividade, golpes, evoluções e drops em um só lugar.</p></div>
       <span className="vplab-react__privacy">{catalog.length || "…"} espécies</span>

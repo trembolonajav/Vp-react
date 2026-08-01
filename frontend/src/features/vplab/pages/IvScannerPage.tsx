@@ -97,12 +97,6 @@ export function IvScannerPage() {
   return (
     <main className="vplab-react">
       <div className="container">
-        <nav className="vplab-react__tools" aria-label="Ferramentas do VPLab">
-          <Link to="/vplab/" className="is-active">Avaliar IV</Link>
-          <Link to="/vplab/pokedex">Pokédex</Link><Link to="/vplab/pokefipe">PokeFipe</Link>
-          <Link to="/vplab/rota">Rota de caça</Link><Link to="/vplab/breeding">Breeding</Link>
-          <Link to="/vplab/clas">Clãs</Link><Link to="/vplab/profissoes">Profissões</Link>
-        </nav>
         <header className="vplab-react__hero">
           <div><span className="vplab-react__eyebrow">React · leitor neural local</span>
             <h1>Avaliar IV por imagem</h1><p>PaddleOCR PP-OCRv6 para card completo e tooltip do inventário.</p></div>
