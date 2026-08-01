@@ -222,6 +222,7 @@ export function AnuncioPage() {
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [heroFailed, setHeroFailed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -244,6 +245,8 @@ export function AnuncioPage() {
   }, [id]);
 
   const art = useMemo(() => listing ? listingArt(listing) : "", [listing]);
+  // Cai no placeholder oficial se a arte (ex.: mídia enviada) falhar ao carregar.
+  const showArt = art !== "" && !heroFailed;
   if (error || !listing) {
     return <main className="page"><div className="container"><div className="bz-empty"><strong>{error || "Carregando anúncio…"}</strong>{error && <p><Link to="/bazaar">Voltar ao marketplace</Link></p>}</div></div></main>;
   }
@@ -302,10 +305,10 @@ export function AnuncioPage() {
               <div className="bz-hero-plates">{listing.destaque && <span className="bz-plate destaque">Destaque</span>}{listing.shiny && <span className="bz-plate shiny">Shiny</span>}</div>
               <button className="bz-art-share" type="button" onClick={share} aria-label="Compartilhar anúncio">↗</button>
               {!pokemon && <span className="bz-kind-badge">{kind === "shinycard" ? "Colecionável" : listing.intencao === "compra" ? "Procura-se" : "À venda"}</span>}
-              {art ? <img src={art} alt={listing.titulo} className="bz-hero-sprite" /> : <span className="bz-noart">VP</span>}
+              {showArt ? <img src={art} alt={listing.titulo} className="bz-hero-sprite" onError={() => setHeroFailed(true)} /> : <span className="bz-noart">VP</span>}
               {pokemon && <span className="bz-art-quality">{listing.forma || (listing.shiny ? "Shiny" : "Normal")}{listing.nivel > 0 && <b>Nv. {listing.nivel}</b>}</span>}
             </div>
-            {pokemon ? <div className="bz-thumbnails"><button type="button" disabled>‹</button><div>{[0, 1, 2, 3].map((item) => <span className={item === 0 ? "active" : ""} key={item}>{art ? <img src={art} alt="" /> : "VP"}</span>)}</div><button type="button" disabled>›</button></div>
+            {pokemon ? <div className="bz-thumbnails"><button type="button" disabled>‹</button><div>{[0, 1, 2, 3].map((item) => <span className={item === 0 ? "active" : ""} key={item}>{showArt ? <img src={art} alt="" /> : "VP"}</span>)}</div><button type="button" disabled>›</button></div>
               : <div className="bz-gallery-stats"><div><b>{listing.quantidade || 1}</b><span>Unidades</span></div><div><b>{listing.preco ? numeroBR(listing.preco) : "—"}</b><span>Valor</span></div><div><b>{listing.categoria || "Item"}</b><span>Categoria</span></div></div>}
           </div>
 

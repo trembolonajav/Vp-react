@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Listing } from "../../../types/listing";
 import { brl, numeroBR, spriteUrl, DIAMANTE } from "../../../utils/format";
@@ -9,11 +10,16 @@ const HEART =
   "M12 20.7 4.2 13a4.9 4.9 0 0 1 0-7 4.9 4.9 0 0 1 7 0l.8.8.8-.8a4.9 4.9 0 0 1 7 0 4.9 4.9 0 0 1 0 7Z";
 
 function Arte({ listing }: { listing: Listing }) {
+  // Mídia enviada pode não existir mais no storage (ex.: upload legado perdido).
+  // Ao falhar o carregamento, cai no placeholder oficial em vez de card quebrado.
+  const [imgFailed, setImgFailed] = useState(false);
   if (listing.dex > 0) {
     return <img src={spriteUrl(listing.dex, listing.shiny)} alt="" loading="lazy" />;
   }
-  if (listing.img) {
-    return <img src={assetUrl(listing.img)} alt="" loading="lazy" />;
+  if (listing.img && !imgFailed) {
+    return (
+      <img src={assetUrl(listing.img)} alt="" loading="lazy" onError={() => setImgFailed(true)} />
+    );
   }
   return (
     <span className="bz-noart" aria-hidden="true">
