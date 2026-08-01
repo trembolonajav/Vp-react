@@ -140,6 +140,7 @@ export function Header() {
                     <Link to="/bazaar/perfil" onClick={() => setMenuOpen(false)}><span>♙</span>Meu perfil</Link>
                     <Link to="/bazaar/meus-anuncios" onClick={() => setMenuOpen(false)}><span>◇</span>Meus anúncios</Link>
                     <Link to="/bazaar/chat" onClick={() => setMenuOpen(false)}><span>✉</span>Conversas</Link>
+                    <Link to="/bazaar/conta" onClick={() => setMenuOpen(false)}><span>⚙</span>Minha conta</Link>
                     <button type="button" onClick={() => { setMenuOpen(false); logout(); }}><span>⏻</span>Sair da conta</button>
                   </div>
                 )}

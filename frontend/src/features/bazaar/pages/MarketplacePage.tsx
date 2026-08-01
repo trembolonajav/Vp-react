@@ -41,7 +41,7 @@ export function MarketplacePage() {
             </p>
             <div className="bz-hero-actions">
               <Link className="bz-hero-primary" to="/bazaar/anunciar">Criar anúncio</Link>
-              <a className="bz-hero-secondary" href="/bazaar/como-funciona.html">Como funciona</a>
+              <Link className="bz-hero-secondary" to="/bazaar/como-funciona">Como funciona</Link>
             </div>
           </div>
           <div className="bz-stats">

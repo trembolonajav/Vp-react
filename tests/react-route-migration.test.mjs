@@ -32,10 +32,26 @@ test("Marketplace React é a rota index e as páginas pendentes são pontes expl
   const header = fs.readFileSync("frontend/src/features/bazaar/components/Header.tsx", "utf8");
 
   assert.match(page, /to="\/bazaar\/anunciar"/);
-  assert.match(page, /href="\/bazaar\/como-funciona\.html"/);
+  assert.match(page, /to="\/bazaar\/como-funciona"/);
   assert.match(header, /to="\/bazaar\/anunciar"/);
   assert.doesNotMatch(page, /anunciar\.html/);
+  assert.doesNotMatch(page, /como-funciona\.html/);
   assert.doesNotMatch(header, /anunciar\.html/);
+});
+
+test("como-funciona e conta são rotas React oficiais do Bazaar", () => {
+  const como = fs.readFileSync("frontend/src/features/bazaar/pages/ComoFuncionaPage.tsx", "utf8");
+  const conta = fs.readFileSync("frontend/src/features/bazaar/pages/ContaPage.tsx", "utf8");
+  const header = fs.readFileSync("frontend/src/features/bazaar/components/Header.tsx", "utf8");
+
+  assert.match(app, /<Route path="como-funciona" element=\{<ComoFuncionaPage \/>\} \/>/);
+  assert.match(app, /<Route path="conta" element=\{<Protegida><ContaPage \/><\/Protegida>\} \/>/);
+  assert.match(nginx, /location = \/bazaar\/como-funciona\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(nginx, /location = \/bazaar\/conta\s*\{\s*try_files \/index\.html =404;/);
+  assert.match(como, /Como funciona o VP Bazaar/);
+  assert.match(conta, /updateMyProfile/);
+  assert.match(conta, /useAuth/);
+  assert.match(header, /to="\/bazaar\/conta"/);
 });
 
 test("contadores e grade do Marketplace usam a API Spring, não config.bazaar.anuncios", () => {

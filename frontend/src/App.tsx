@@ -17,6 +17,8 @@ import { PerfilPage } from "./features/bazaar/pages/PerfilPage";
 import { AnunciarPage } from "./features/bazaar/pages/AnunciarPage";
 import { MeusAnunciosPage } from "./features/bazaar/pages/MeusAnunciosPage";
 import { ChatPage } from "./features/bazaar/pages/ChatPage";
+import { ComoFuncionaPage } from "./features/bazaar/pages/ComoFuncionaPage";
+import { ContaPage } from "./features/bazaar/pages/ContaPage";
 
 const IvScannerPage = lazy(() =>
   import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
@@ -73,6 +75,8 @@ export function App() {
         <Route path="anunciar/:id" element={<Protegida><AnunciarPage /></Protegida>} />
         <Route path="meus-anuncios" element={<Protegida><MeusAnunciosPage /></Protegida>} />
         <Route path="chat" element={<Protegida><ChatPage /></Protegida>} />
+        <Route path="como-funciona" element={<ComoFuncionaPage />} />
+        <Route path="conta" element={<Protegida><ContaPage /></Protegida>} />
       </Route>
 
       {/* Fallback temporário somente para as rotas Bazaar ainda não migradas. */}
