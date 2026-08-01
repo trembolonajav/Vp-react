@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import * as authService from "../services/authService";
-import { tokenStore } from "../services/api";
+import { AUTH_EXPIRED_EVENT, tokenStore } from "../services/api";
 import type { User } from "../types/user";
 
 interface AuthContextValue {
@@ -37,6 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
     return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const expireSession = () => setUser(null);
+    window.addEventListener(AUTH_EXPIRED_EVENT, expireSession);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, expireSession);
   }, []);
 
   const login = async (loginId: string, password: string) => {

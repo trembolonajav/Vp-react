@@ -1,6 +1,7 @@
 // Base da API: vazio em dev (proxy /api do Vite) e configurável por ambiente.
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const TOKEN_KEY = "vp-bazaar-token";
+export const AUTH_EXPIRED_EVENT = "vp-auth-expired";
 
 /** Guarda o JWT no localStorage (uso apropriado ao navegador). */
 export const tokenStore = {
@@ -50,6 +51,11 @@ async function request<T>(method: string, path: string, options: RequestOptions 
     body,
     signal: options.signal,
   });
+
+  if (response.status === 401 && token) {
+    tokenStore.clear();
+    window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+  }
 
   if (response.status === 204) return undefined as T;
   if (!response.ok) throw await toError(response);

@@ -51,6 +51,9 @@ public class SecurityConfig {
                         // "meus anúncios" exige login (antes da regra pública abaixo)
                         .requestMatchers(HttpMethod.GET, "/api/v1/listings/mine").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/profiles/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/profiles/me").authenticated()
+                        // A identidade editável vem exclusivamente do JWT. Não existe escrita por username.
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/profiles/**").denyAll()
                         // leitura pública
                         .requestMatchers(HttpMethod.GET, "/api/v1/config", "/api/v1/listings", "/api/v1/listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/profiles/*").permitAll()
