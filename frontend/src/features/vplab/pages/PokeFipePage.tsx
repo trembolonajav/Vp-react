@@ -11,17 +11,17 @@ export function PokeFipePage() {
   const [params] = useSearchParams();
   const [catalog,setCatalog] = useState<PokemonDexEntry[]>([]);
   const [pokemon,setPokemon] = useState(params.get("p") ?? "");
-  const [iv,setIv] = useState(params.get("iv") ?? "110");
+  const [iv,setIv] = useState(params.get("iv") ?? "120");
   const [multiplier,setMultiplier] = useState(params.get("multiplier") ?? "1.80");
-  const [level,setLevel] = useState(params.get("level") ?? "1");
-  const [submitted,setSubmitted] = useState(false);
+  const [level,setLevel] = useState(params.get("level") ?? "300");
+  const [submitted,setSubmitted] = useState(true);
   const [error,setError] = useState("");
-  useEffect(() => { loadPokemonCatalog().then(setCatalog).catch(() => setError("Não foi possível carregar o catálogo.")); },[]);
+  useEffect(() => { loadPokemonCatalog().then((entries)=>{setCatalog(entries);if(!params.get("p"))setPokemon("charizard")}).catch(() => setError("Não foi possível carregar o catálogo.")); },[]);
   const selected = useMemo(() => catalog.find((entry) => entry.s === pokemon),[catalog,pokemon]);
   const result = useMemo(() => submitted ? calculateFipe({species:selected,iv,multiplier,level}) : null,
     [submitted,selected,iv,multiplier,level]);
   const submit = (event:FormEvent) => { event.preventDefault(); setSubmitted(true); };
-  const clear = () => { setPokemon("");setIv("110");setMultiplier("1.80");setLevel("1");setSubmitted(false); };
+  const clear = () => { setPokemon("");setIv("120");setMultiplier("1.80");setLevel("300");setSubmitted(false); };
 
   return <main className="vplab-react"><div className="container">
     <header className="vplab-react__hero fipe-react-hero"><div><span className="vplab-react__eyebrow">PokeFipe · modelo 2.0</span>

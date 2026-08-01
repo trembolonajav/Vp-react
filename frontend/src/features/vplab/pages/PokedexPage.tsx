@@ -60,7 +60,7 @@ export function PokedexPage() {
   const [type, setType] = useState("");
   const [rarity, setRarity] = useState("");
   const [selected, setSelected] = useState<PokemonDexEntry | null>(null);
-  useEffect(() => { loadPokemonCatalog().then(setCatalog).catch(() => setError("Não foi possível carregar a Pokédex.")); }, []);
+  useEffect(() => { loadPokemonCatalog().then((entries)=>{setCatalog(entries);setSelected(entries.find(p=>p.s==="charizard")??entries[0]??null)}).catch(() => setError("Não foi possível carregar a Pokédex.")); }, []);
   const filtered = useMemo(() => catalog.filter((p) =>
     (!query || normalizeSpecies(p.m).includes(normalizeSpecies(query)) || String(p.n).includes(query.trim())) &&
     (!type || p.t.includes(type)) && (!rarity || p.r === rarity)), [catalog, query, type, rarity]);
@@ -70,12 +70,12 @@ export function PokedexPage() {
   })) : [];
   const choose = (pokemon: PokemonDexEntry) => { setSelected(pokemon); setQuery(pokemon.m); window.scrollTo({top:0,behavior:"smooth"}); };
 
-  return <main className="vplab-react"><div className="container">
+  return <main className="vplab-react dex-v2"><div className="container">
     <header className="vplab-react__hero"><div><span className="vplab-react__eyebrow">Catálogo oficial · 251 espécies</span>
       <h1>Pokédex VPLab</h1><p>Stats, hunts, efetividade, golpes, evoluções e drops em um só lugar.</p></div>
       <span className="vplab-react__privacy">{catalog.length || "…"} espécies</span>
     </header>
-    {!selected ? <section className="vplab-panel dex-catalog">
+    <div className="dex-v2__master"><section className="vplab-panel dex-catalog">
       <div className="dex-controls">
         <label>Buscar espécie<input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou número da Pokédex" /></label>
         <label>Tipo<select value={type} onChange={(e) => setType(e.target.value)}><option value="">Todos</option>{Object.keys(LABELS).map((x) => <option key={x} value={x}>{LABELS[x]}</option>)}</select></label>
@@ -83,11 +83,12 @@ export function PokedexPage() {
       </div>
       {error ? <p className="vplab-warning">{error}</p> : !catalog.length ? <p className="vplab-status">Carregando catálogo…</p> :
         <><p className="vplab-status">{filtered.length} espécie{filtered.length === 1 ? "" : "s"} encontrada{filtered.length === 1 ? "" : "s"}</p>
-        {filtered.length ? <div className="dex-grid">{filtered.map((p) => <button className="dex-card" key={p.n} onClick={() => choose(p)}>
+        {filtered.length ? <div className="dex-grid">{filtered.map((p) => <button className={`dex-card ${selected?.n===p.n?"is-current":""}`} key={p.n} onClick={() => choose(p)}>
           <span>#{String(p.n).padStart(3,"0")}</span><img src={sprite(p.n)} alt="" width="88" height="88" loading="lazy" />
           <strong>{p.m}</strong><div>{p.t.map((x) => <Type key={x} name={x}/>)}</div><small>{p.r}</small>
         </button>)}</div> : <p className="dex-empty">Nenhuma espécie corresponde aos filtros.</p>}</>}
-    </section> : <PokemonDetail pokemon={selected} catalog={catalog} choose={choose} back={() => {setSelected(null);setQuery("");}} effectiveness={effectiveness}/>}
+    </section>
+    {selected && <PokemonDetail pokemon={selected} catalog={catalog} choose={choose} back={() => void 0} effectiveness={effectiveness}/>}</div>
   </div></main>;
 }
 

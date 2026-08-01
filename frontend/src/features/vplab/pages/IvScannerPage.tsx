@@ -1,155 +1,39 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, DragEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type DragEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { analyzeIv, findSpecies, loadPokemonCatalog } from "../services/ivCalculator";
-import type { PokemonDexEntry } from "../services/ivCalculator";
+import { analyzeIv, findSpecies, loadPokemonCatalog, type PokemonDexEntry } from "../services/ivCalculator";
 import { scanPokeIdleImage } from "../services/paddleIvScanner";
-import { EMPTY_IV_SCAN, STAT_LABELS } from "../types/ivScanner";
-import type { IvScanFields } from "../types/ivScanner";
+import { EMPTY_IV_SCAN, STAT_LABELS, type IvScanFields } from "../types/ivScanner";
 import "./vplab.css";
 
-function imageFromClipboard(event: ClipboardEvent): File | null {
-  const item = [...(event.clipboardData?.items ?? [])].find((candidate) => candidate.type.startsWith("image/"));
-  return item?.getAsFile() ?? null;
+const sprite=(n?:number)=>n?`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`:"";
+const example:IvScanFields={species:"Scizor",level:"302",quality:"1.78",ivTotal:"",ivMaximum:"192",power:"",stats:["","","","","",""]};
+
+export function IvScannerPage(){
+ const [searchParams]=useSearchParams(),[catalog,setCatalog]=useState<PokemonDexEntry[]>([]);
+ const [cards,setCards]=useState<[IvScanFields,IvScanFields]>([EMPTY_IV_SCAN,EMPTY_IV_SCAN]);
+ const [modes,setModes]=useState<["manual"|"image","manual"|"image"]>(["manual","manual"]);
+ const [busy,setBusy]=useState<[boolean,boolean]>([false,false]),[status,setStatus]=useState(["",""]);
+ useEffect(()=>{void loadPokemonCatalog().then(entries=>{setCatalog(entries);const requested=searchParams.get("p");const p=entries.find(x=>x.s===requested);if(p)setCards(c=>[{...c[0],species:p.m},c[1]])})},[searchParams]);
+ useEffect(()=>{const paste=(e:ClipboardEvent)=>{const file=[...(e.clipboardData?.files??[])].find(x=>x.type.startsWith("image/"));if(file)void read(0,file)};addEventListener("paste",paste);return()=>removeEventListener("paste",paste)},[catalog]);
+ const analyses=cards.map((fields)=>{const p=findSpecies(catalog,fields.species);return p?analyzeIv(fields,p):null});
+ const update=(side:number,next:IvScanFields)=>setCards(c=>side===0?[next,c[1]]:[c[0],next]);
+ const read=async(side:number,file:File)=>{setBusy(x=>side===0?[true,x[1]]:[x[0],true]);setStatus(x=>side===0?["Lendo imagem com PP-OCRv6…",x[1]]:[x[0],"Lendo imagem com PP-OCRv6…"]);try{const r=await scanPokeIdleImage(file);update(side,r.fields);setStatus(x=>side===0?[`${Math.round(r.confidence*100)}% de confiança · confira os campos`,x[1]]:[x[0],`${Math.round(r.confidence*100)}% de confiança · confira os campos`])}catch(e){const message=e instanceof Error?e.message:"Não foi possível ler a imagem.";setStatus(x=>side===0?[message,x[1]]:[x[0],message])}finally{setBusy(x=>side===0?[false,x[1]]:[x[0],false])}};
+ return <main className="vplab-react iv-v4"><div className="container">
+  <header className="iv-v4__intro"><span className="vplab-react__eyebrow">Avaliar IV</span><div className="iv-v4__title"><div><h1>Esse Pokémon é bom — e é melhor que o outro?</h1><p>Preencha manualmente ou solte o print do card. O VPLab estima <b>cada IV individual</b>, calcula a faixa provável e <b>compara dois Pokémon stat por stat</b>.</p></div><div className="iv-v4__actions"><button onClick={()=>setCards([example,{...example}])}>↻ Preencher exemplo</button><button onClick={()=>setCards([EMPTY_IV_SCAN,EMPTY_IV_SCAN])}>× Resetar dados</button></div></div></header>
+  <div className="iv-v4__compare">{cards.map((fields,side)=><IvCard key={side} side={side} fields={fields} catalog={catalog} mode={modes[side]} busy={busy[side]} status={status[side]} analysis={analyses[side]} setMode={mode=>setModes(x=>side===0?[mode,x[1]]:[x[0],mode])} update={next=>update(side,next)} read={file=>void read(side,file)}/>)}</div>
+  <p className="iv-v4__note">Fórmula oficial: stat = arredondar((base + 2×IV) × nível/100 × Qualidade^exp). Em níveis baixos a faixa pode ser mais larga.</p>
+ </div></main>;
 }
 
-export function IvScannerPage() {
-  const [searchParams] = useSearchParams();
-  const [fields, setFields] = useState<IvScanFields>(EMPTY_IV_SCAN);
-  const [catalog, setCatalog] = useState<PokemonDexEntry[]>([]);
-  const [preview, setPreview] = useState("");
-  const [status, setStatus] = useState("Selecione, arraste ou cole um print com Ctrl + V.");
-  const [busy, setBusy] = useState(false);
-  const [rawText, setRawText] = useState("");
-  const previewRef = useRef("");
-  const requestRef = useRef(0);
-
-  useEffect(() => {
-    void loadPokemonCatalog().then((entries) => {
-      setCatalog(entries);
-      const requested = searchParams.get("p");
-      const species = requested ? entries.find((entry) => entry.s === requested) : undefined;
-      if (species) setFields((current) => ({ ...current, species: species.m }));
-    }).catch((error) =>
-      setStatus(error instanceof Error ? error.message : "Não foi possível carregar a Pokédex."));
-  }, [searchParams]);
-
-  const read = async (file: File) => {
-    const request = ++requestRef.current;
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-    const url = URL.createObjectURL(file);
-    previewRef.current = url;
-    setPreview(url);
-    setBusy(true);
-    setStatus("Inicializando PP-OCRv6 e analisando a imagem…");
-    setRawText("");
-    try {
-      const result = await scanPokeIdleImage(file);
-      if (request !== requestRef.current) return;
-      setFields(result.fields);
-      setRawText(result.rawText);
-      const count = [result.fields.level, result.fields.quality, result.fields.ivTotal,
-        result.fields.power, ...result.fields.stats].filter(Boolean).length;
-      setStatus(`${result.engine}: ${count} campos reconhecidos em ${Math.round(result.elapsedMs)} ms ` +
-        `(confiança média ${Math.round(result.confidence * 100)}%). Confira os dados abaixo.`);
-    } catch (error) {
-      if (request === requestRef.current) {
-        setStatus(error instanceof Error ? error.message : "Não foi possível ler a imagem.");
-      }
-    } finally {
-      if (request === requestRef.current) setBusy(false);
-    }
-  };
-
-  useEffect(() => {
-    const paste = (event: ClipboardEvent) => {
-      const file = imageFromClipboard(event);
-      if (file) void read(file);
-    };
-    window.addEventListener("paste", paste);
-    return () => {
-      window.removeEventListener("paste", paste);
-      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-    };
-  }, []);
-
-  const setField = (key: keyof Omit<IvScanFields, "stats">, value: string) =>
-    setFields((current) => ({ ...current, [key]: value }));
-  const setStat = (index: number, value: string) => setFields((current) => {
-    const stats = [...current.stats] as IvScanFields["stats"];
-    stats[index] = value;
-    return { ...current, stats };
-  });
-  const onFile = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) void read(file);
-    event.target.value = "";
-  };
-  const onDrop = (event: DragEvent<HTMLLabelElement>) => {
-    event.preventDefault();
-    const file = [...event.dataTransfer.files].find((candidate) => candidate.type.startsWith("image/"));
-    if (file) void read(file);
-  };
-  const selectedSpecies = useMemo(() => findSpecies(catalog, fields.species), [catalog, fields.species]);
-  const analysis = useMemo(() => selectedSpecies ? analyzeIv(fields, selectedSpecies) : null,
-    [fields, selectedSpecies]);
-
-  return (
-    <main className="vplab-react">
-      <div className="container">
-        <header className="vplab-react__hero">
-          <div><span className="vplab-react__eyebrow">React · leitor neural local</span>
-            <h1>Avaliar IV por imagem</h1><p>PaddleOCR PP-OCRv6 para card completo e tooltip do inventário.</p></div>
-          <span className="vplab-react__privacy">A imagem não sai do seu navegador</span>
-        </header>
-
-        <div className="vplab-react__grid">
-          <section className="vplab-panel">
-            <label className={`vplab-drop ${busy ? "is-busy" : ""}`}
-              onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
-              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onFile} disabled={busy} />
-              {preview ? <img src={preview} alt="Print selecionado" /> : <span className="vplab-drop__icon">◇</span>}
-              <strong>{busy ? "Lendo imagem…" : "Selecionar ou arrastar print"}</strong>
-              <small>PNG, JPG ou WebP · também funciona com Ctrl + V</small>
-            </label>
-            <p className="vplab-status" role="status">{status}</p>
-            {rawText && <details className="vplab-raw"><summary>Texto reconhecido para diagnóstico</summary><pre>{rawText}</pre></details>}
-          </section>
-          <section className="vplab-panel">
-            <h2>Dados reconhecidos</h2>
-            <div className="vplab-fields">
-              <label>Espécie<input list="vplab-species" value={fields.species} onChange={(e) => setField("species", e.target.value)} /></label>
-              <datalist id="vplab-species">{catalog.map((entry) => <option key={entry.n} value={entry.m} />)}</datalist>
-              <label>Nível<input inputMode="numeric" value={fields.level} onChange={(e) => setField("level", e.target.value)} /></label>
-              <label>Qualidade<input inputMode="decimal" value={fields.quality} onChange={(e) => setField("quality", e.target.value)} /></label>
-              <label>IV total<input inputMode="numeric" value={fields.ivTotal} onChange={(e) => setField("ivTotal", e.target.value)} /></label>
-              <label>Poder<input inputMode="numeric" value={fields.power} onChange={(e) => setField("power", e.target.value)} /></label>
-            </div>
-            <h3>Atributos</h3>
-            <div className="vplab-stats">{STAT_LABELS.map((label, index) => (
-              <label key={label}>{label}<input inputMode="numeric" value={fields.stats[index]} onChange={(e) => setStat(index, e.target.value)} /></label>
-            ))}</div>
-            {!selectedSpecies && fields.species && <p className="vplab-warning">Espécie não encontrada na Pokédex. Corrija o nome para calcular.</p>}
-          </section>
-        </div>
-
-        <section className="vplab-panel vplab-result" aria-live="polite">
-          <div className="vplab-result__title"><div><span className="vplab-react__eyebrow">Resultado calculado</span>
-            <h2>Análise de IV</h2></div></div>
-          {analysis ? <>
-            <div className="vplab-summary">
-              <article><small>IV provável</small><strong>{analysis.total.likely}<span>/192</span></strong><em>{analysis.total.low}–{analysis.total.high}</em></article>
-              <article><small>Confiança do cálculo</small><strong>{analysis.confidence}%</strong><em>arredondamento dos atributos</em></article>
-              <article><small>Potencial ponderado</small><strong>{analysis.potential}%</strong><em>espécie e qualidade</em></article>
-              <article><small>Poder recalculado</small><strong>{analysis.calculatedPower.toLocaleString("pt-BR")}</strong><em>{analysis.powerDifference === null ? "sem poder informado" : `diferença ${analysis.powerDifference >= 0 ? "+" : ""}${analysis.powerDifference}`}</em></article>
-            </div>
-            <div className="vplab-iv-list">{STAT_LABELS.map((label, index) => <div key={label}><span>{label}</span>
-              <strong>{analysis.ivs[index]}</strong><small>{analysis.ranges[index].low}–{analysis.ranges[index].high}</small></div>)}</div>
-            <Link className="fipe-from-iv" to={`/vplab/pokefipe?p=${analysis.species.s}&iv=${analysis.total.likely}&multiplier=${fields.quality}&level=${fields.level}`}>Ver estimativa na PokeFipe →</Link>
-            {analysis.warnings.map((warning) => <p className="vplab-warning" key={warning}>{warning}</p>)}
-          </> : <p className="vplab-result__empty">Informe espécie, nível, qualidade e os seis atributos para gerar a análise.</p>}
-        </section>
-      </div>
-    </main>
-  );
+function IvCard({side,fields,catalog,mode,busy,status,analysis,setMode,update,read}:{side:number;fields:IvScanFields;catalog:PokemonDexEntry[];mode:"manual"|"image";busy:boolean;status:string;analysis:ReturnType<typeof analyzeIv>|null;setMode:(m:"manual"|"image")=>void;update:(f:IvScanFields)=>void;read:(f:File)=>void}){
+ const selected=findSpecies(catalog,fields.species);const set=(key:keyof Omit<IvScanFields,"stats">,value:string)=>update({...fields,[key]:value});const stat=(i:number,value:string)=>{const stats=[...fields.stats] as IvScanFields["stats"];stats[i]=value;update({...fields,stats})};
+ const file=(e:ChangeEvent<HTMLInputElement>)=>{const f=e.target.files?.[0];if(f)read(f)};
+ const onDrop=(e:DragEvent<HTMLLabelElement>)=>{e.preventDefault();const f=[...e.dataTransfer.files].find(x=>x.type.startsWith("image/"));if(f)read(f)};
+ return <section className={`iv-v4__card side-${side}`}><div className="iv-v4__cardhead"><strong><i/> Pokémon {side===0?"A":"B"}</strong><div><button className={mode==="manual"?"active":""} onClick={()=>setMode("manual")}>Manual</button><button className={mode==="image"?"active":""} onClick={()=>setMode("image")}>Usar imagem</button></div></div>
+  {mode==="image"&&<label className="iv-v4__upload" onDragOver={e=>e.preventDefault()} onDrop={onDrop}><input type="file" accept="image/*" onChange={file}/><b>{busy?"Lendo imagem…":"Selecionar, arrastar ou colar print"}</b><span>PNG, JPG ou WebP · Ctrl + V</span></label>}
+  <div className="iv-v4__identity"><div className="iv-v4__sprite">{selected&&<img src={sprite(selected.n)} alt=""/>}</div><label>Pokémon<input list={`species-${side}`} value={fields.species} onChange={e=>set("species",e.target.value)}/><datalist id={`species-${side}`}>{catalog.map(p=><option key={p.n} value={p.m}/>)}</datalist></label></div>
+  <div className="iv-v4__fields"><label>Nível<input value={fields.level} onChange={e=>set("level",e.target.value)} placeholder="302"/></label><label>Qualidade<input value={fields.quality} onChange={e=>set("quality",e.target.value)} placeholder="1.78"/></label><label>IV total<input value={fields.ivTotal} onChange={e=>set("ivTotal",e.target.value)} placeholder="opcional"/></label><label>Power<input value={fields.power} onChange={e=>set("power",e.target.value)} placeholder="opcional"/></label></div>
+  <div className="iv-v4__stats">{STAT_LABELS.map((x,i)=><label key={x}>{x}<input value={fields.stats[i]} onChange={e=>stat(i,e.target.value)} placeholder="—"/></label>)}</div>
+  <div className="iv-v4__result">{analysis?<><span>IV provável <b>{analysis.total.likely}/192</b> · confiança {analysis.confidence}%</span><div>{STAT_LABELS.map((x,i)=><small key={x}>{x} <b>{analysis.ivs[i]}</b></small>)}</div><Link to={`/vplab/pokefipe?p=${analysis.species.s}&iv=${analysis.total.likely}&multiplier=${fields.quality}&level=${fields.level}`}>Ver estimativa na PokeFipe →</Link></>:<span>{status||"Preencha nível, qualidade e os 6 stats deste card."}</span>}</div>
+ </section>;
 }
