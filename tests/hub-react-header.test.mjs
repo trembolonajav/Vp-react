@@ -8,10 +8,10 @@ const shared = fs.readFileSync("frontend/src/features/shared/PlatformHeader.tsx"
 const sharedCss = fs.readFileSync("frontend/src/features/shared/platform-header.css", "utf8");
 
 test("header VPertsz usa as marcas oficiais e o CTA largo da live", () => {
-  for (const asset of ["vpertsz.png", "vplab.png", "vp-store.png", "vp-bazaar.png", "assistir-live.png"])
-    assert.ok(fs.existsSync(`frontend/public/assets/hub/header/${asset}`), asset);
+  for (const asset of ["vpertsz-logo_quadrada.png", "vp-lab-logo_quadrada.png", "vp-store-logo_quadrada.png", "vp-bazaar-logo_quadrada.png", "botao-assistir-live.png"])
+    assert.ok(fs.existsSync(`frontend/public/assets/platform/header/${asset}`), asset);
   assert.match(layout, /<PlatformHeader activeArea="hub"/);
-  assert.match(shared, /header\/assistir-live\.png/);
+  assert.match(shared, /header\/botao-assistir-live\.png/);
   assert.match(sharedCss, /\.platform-header__live\{display:block;width:216px/);
 });
 

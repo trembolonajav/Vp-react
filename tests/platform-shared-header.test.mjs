@@ -19,9 +19,9 @@ test("todas as áreas usam o mesmo PlatformHeader", () => {
 });
 
 test("header usa marca horizontal à esquerda, ícones quadrados nas abas e hover compartilhado", () => {
-  for (const asset of ["logo-vpertsz-horizontal.webp", "logo-vp-store-horizontal.webp", "logo-vp-bazaar-horizontal-oficial.webp", "tool-vplab.webp"])
+  for (const asset of ["vpertsz-logo_horizontal.png", "vp-store-logo_horizontal.png", "vp-bazaar-logo_horizontal.png", "vp-lab-logo_horizontal.png"])
     assert.ok(component.includes(asset), asset);
-  for (const asset of ["header/vpertsz.png", "header/vp-store.png", "header/vp-bazaar.png", "header/vplab.png"])
+  for (const asset of ["vpertsz-logo_quadrada.png", "vp-store-logo_quadrada.png", "vp-bazaar-logo_quadrada.png", "vp-lab-logo_quadrada.png"])
     assert.ok(component.includes(asset), asset);
   assert.match(css, /\.platform-header__areas a:hover/);
   assert.match(css, /transform:translateY\(-2px\)/);
