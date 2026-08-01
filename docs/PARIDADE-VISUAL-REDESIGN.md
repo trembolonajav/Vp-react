@@ -13,6 +13,7 @@ Data da validação: 01/08/2026.
 
 ## Evidências
 
+- [Cabeçalho VPertsz — desktop](screenshots/hub-header-desktop.png)
 - [Rota de Caça — desktop](screenshots/vplab-rota-desktop.png)
 - [Rota de Caça — recorte estreito](screenshots/vplab-rota-mobile.png)
 
@@ -30,3 +31,7 @@ A captura desktop foi produzida em 1366 × 900 no runtime Docker. A captura estr
 ## Próximas páginas
 
 O cabeçalho e a Rota de Caça formam o primeiro baseline do redesign. Ainda devem receber comparação visual equivalente: Avaliar IV, Pokédex, PokeFipe, Breeding, Clãs e Profissões. A arquitetura continua concluída; este trabalho restante é exclusivamente paridade visual e funcional.
+
+## Cabeçalho VPertsz
+
+O hub principal utiliza as marcas VPertsz, VPLab, VP Store e VP Bazaar fornecidas para o redesign. O CTA usa a arte larga “Assistir live” e a Comunidade passou para uma subnavegação centralizada, mantendo a hierarquia visual adotada no VPLab.

@@ -1,9 +1,11 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useConfig } from "../../hooks/useConfig";
 import { Socials } from "../shared/Contatos";
 
 export function HubLayout() {
   const { config } = useConfig();
+  const location = useLocation();
+  const communityActive = location.pathname === "/comunidade";
 
   return (
     <>
@@ -15,19 +17,18 @@ export function HubLayout() {
         </span>
       </div>
 
-      <header>
-        <nav className="container nav-shell" aria-label="Navegação principal">
-          <Link className="brand" to="/" aria-label="VPertsz — Início">
-            <img className="logo" src="/assets/logo-vpertsz-horizontal.webp" alt="VPertsz" />
-            <span className="logo-wordmark" aria-hidden="true">VPERTSZ</span>
+      <header className="hub-header">
+        <nav className="container hub-nav-shell" aria-label="Navegação principal">
+          <Link className="hub-brand" to="/" aria-label="VPertsz — Início">
+            <img src="/assets/hub/header/vpertsz.png" alt="VPertsz" />
           </Link>
-          <div className="nav-links">
-            <a className="nav-link" href="/vplab/">Ferramentas</a>
-            <Link className="nav-link" to="/store">VP Store</Link>
-            <a className="nav-link" href="/bazaar/">VP Bazaar</a>
-            <Link className="nav-link" to="/comunidade">Comunidade</Link>
+          <div className="hub-family-links">
+            <a href="/vplab/"><img src="/assets/hub/header/vplab.png" alt="" /><span>Ferramentas</span></a>
+            <Link to="/store"><img src="/assets/hub/header/vp-store.png" alt="" /><span>VP Store</span></Link>
+            <a href="/bazaar/"><img src="/assets/hub/header/vp-bazaar.png" alt="" /><span>VP Bazaar</span></a>
+            <Link className={!communityActive ? "active" : ""} to="/"><img src="/assets/hub/header/vpertsz.png" alt="" /><span>VPertsz</span></Link>
           </div>
-          <div className="header-actions">
+          <div className="hub-header-actions">
             <a
               className="header-live-asset"
               href="https://www.twitch.tv/vpertsz"
@@ -35,9 +36,12 @@ export function HubLayout() {
               rel="noreferrer"
               aria-label="Assistir à live do VPertsz na Twitch"
             >
-              <img src="/assets/btn-assistir-live.webp" alt="Assistir live" />
+              <img src="/assets/hub/header/assistir-live.png" alt="Assistir live" />
             </a>
           </div>
+        </nav>
+        <nav className="hub-subnav" aria-label="Seções do VPertsz">
+          <div className="container"><Link className={communityActive ? "active" : ""} to="/comunidade">Comunidade</Link></div>
         </nav>
       </header>
 
