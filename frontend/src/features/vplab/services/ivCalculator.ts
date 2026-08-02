@@ -60,25 +60,27 @@ export function analyzeIv(fields: IvScanFields, species: PokemonDexEntry): IvAna
   const stats = fields.stats.map(Number);
   if (!level || !quality || stats.some((stat) => !Number.isFinite(stat) || stat <= 0)) return null;
 
+  const projectedStat = (iv: number, index: number) =>
+    Math.round((species.bs[index] + 2 * iv) * (level / 100) * quality ** EXPONENTS[index]);
+  const candidates = stats.map((shown, index) =>
+    Array.from({ length: 32 }, (_, offset) => offset + 1).filter((iv) => projectedStat(iv, index) === shown));
   const raw = (shown: number, index: number) =>
     (shown / ((level / 100) * quality ** EXPONENTS[index]) - species.bs[index]) / 2;
   const rawMid = stats.map(raw);
-  const rawLow = stats.map((stat, index) => raw(stat - 0.5, index));
-  const rawHigh = stats.map((stat, index) => raw(stat + 0.5, index));
-  const ivs = rawMid.map((value) => Math.round(clamp(value, 0, 32)));
-  const ranges = rawMid.map((_, index) => ({
-    low: Math.floor(clamp(rawLow[index], 0, 32)),
-    high: Math.ceil(clamp(rawHigh[index], 0, 32)),
+  const ivs = candidates.map((values, index) => values.length ? values[Math.floor((values.length - 1) / 2)] : Math.round(clamp(rawMid[index], 1, 32)));
+  const ranges = candidates.map((values, index) => ({
+    low: values[0] ?? Math.round(clamp(rawMid[index], 1, 32)),
+    high: values.length ? values[values.length - 1] : Math.round(clamp(rawMid[index], 1, 32)),
   }));
   const total = {
-    low: Math.floor(rawLow.reduce((sum, value) => sum + clamp(value, 0, 32), 0)),
+    low: ranges.reduce((sum, value) => sum + value.low, 0),
     likely: ivs.reduce((sum, value) => sum + value, 0),
-    high: Math.ceil(rawHigh.reduce((sum, value) => sum + clamp(value, 0, 32), 0)),
+    high: ranges.reduce((sum, value) => sum + value.high, 0),
   };
-  const impossible = rawMid.some((value) => value < -0.35 || value > 32.35);
+  const impossible = candidates.some((values) => values.length === 0);
   const saturated = rawMid.filter((value) => value >= 31.9).length;
-  const spread = rawHigh.reduce((sum, value, index) => sum + value - rawLow[index], 0);
-  let confidence = clamp(100 - spread * 2.2, 35, 99);
+  const spread = ranges.reduce((sum, value) => sum + value.high - value.low, 0);
+  let confidence = clamp(99 - spread * 4, 35, 99);
   if (saturated >= 3) confidence = Math.min(confidence, 62);
   if (impossible) confidence = Math.min(confidence, 40);
 
