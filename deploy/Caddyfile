@@ -1,4 +1,4 @@
-{$DOMAIN} {
+www.{$DOMAIN} {
     encode zstd gzip
     reverse_proxy frontend:80
 
@@ -8,4 +8,8 @@
         Referrer-Policy "strict-origin-when-cross-origin"
         -Server
     }
+}
+
+{$DOMAIN} {
+    redir https://www.{$DOMAIN}{uri} permanent
 }
