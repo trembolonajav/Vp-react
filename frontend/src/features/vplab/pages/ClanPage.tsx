@@ -29,8 +29,8 @@ const formatScore = (n: number) => Number(n || 0).toFixed(2).replace(".", ",");
 
 const CSS = `
 .clanv2{--line:rgba(216,138,74,.18);--line-strong:rgba(229,179,79,.4);--red-2:#e24b35;--gold:#e5b34f;--gold-soft:#d98350;--cream:#f7eee7;--muted:#b5a196;--faint:#7d6d64;--bad:#ff6b55;color:var(--cream)}
-.clanv2 .wrap{width:min(1200px,calc(100% - 44px));margin-inline:auto}
-.clanv2 .tab{padding:28px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#17100e,#0b0908);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.clanv2 .clan-wrap{width:min(1200px,calc(100% - 44px));margin-inline:auto}
+.clanv2 .clan-tab{display:block;padding:28px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#17100e,#0b0908);box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .clanv2 .kicker{display:block;color:var(--gold-soft);text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:800;margin-bottom:8px}
 .clanv2 h2.sec{font-family:"Cinzel",serif;font-size:24px;margin:0 0 4px}
 .clanv2 .sec-sub{color:var(--muted);font-size:13px;margin:0 0 16px;max-width:760px}
@@ -163,7 +163,7 @@ const CSS = `
 .clanv2 .clan-version{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px;padding:14px 24px;border-top:1px solid #2c1c16;font-size:11px;color:var(--faint)}
 .clanv2 .clan-loading{padding:26px;color:var(--muted)}.clanv2 .clan-error{color:var(--bad)}
 @media(max-width:1050px){.clanv2 .clan-emblems-grid{grid-template-columns:repeat(5,minmax(110px,1fr));gap:9px}.clanv2 .clan-pokemon-grid{grid-template-columns:repeat(3,1fr)}.clanv2 .clan-sub-preview,.clanv2 .clan-sub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:780px){.clanv2 .tab{padding:18px}.clanv2 .clan-cards{grid-template-columns:1fr}.clanv2 .clan-emblems-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.clanv2 .clan-pokemon-grid,.clanv2 .clan-pokemon-grid.recommended{grid-template-columns:repeat(2,minmax(0,1fr))}.clanv2 .clan-detail-simple>header{align-items:flex-start;padding:20px;gap:14px}.clanv2 .clan-detail-simple>header>img{width:76px;height:76px}.clanv2 .clan-detail-simple>header h3{font-size:25px}.clanv2 .clan-sub-preview,.clanv2 .clan-sub-grid,.clanv2 .clan-excluded-grid,.clanv2 .clan-sub-filters{grid-template-columns:1fr}}
+@media(max-width:780px){.clanv2 .clan-tab{padding:18px}.clanv2 .clan-cards{grid-template-columns:1fr}.clanv2 .clan-emblems-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.clanv2 .clan-pokemon-grid,.clanv2 .clan-pokemon-grid.recommended{grid-template-columns:repeat(2,minmax(0,1fr))}.clanv2 .clan-detail-simple>header{align-items:flex-start;padding:20px;gap:14px}.clanv2 .clan-detail-simple>header>img{width:76px;height:76px}.clanv2 .clan-detail-simple>header h3{font-size:25px}.clanv2 .clan-sub-preview,.clanv2 .clan-sub-grid,.clanv2 .clan-excluded-grid,.clanv2 .clan-sub-filters{grid-template-columns:1fr}}
 @media(max-width:430px){.clanv2 .clan-emblems-grid{grid-template-columns:1fr 1fr;gap:7px}.clanv2 .clan-pokemon-grid,.clanv2 .clan-pokemon-grid.recommended{grid-template-columns:1fr}.clanv2 .clan-keystats{grid-template-columns:1fr 1fr}.clanv2 .clan-keystats>div:last-child{grid-column:1/-1}}
 `;
 
@@ -398,8 +398,8 @@ export function ClanPage() {
   return (
     <main className="clanv2" style={{ padding: "26px 0 90px" }}>
       <style>{CSS}</style>
-      <div className="wrap">
-        <section className="tab">
+      <div className="clan-wrap">
+        <section className="clan-tab">
           <span className="kicker">Sistema de clãs</span>
           <h2 className="sec">Clãs: o que dão e como subir</h2>
           <p className="sec-sub">Regras oficiais da Pokepedia — 10 clãs, cada um cobrindo elementos. O bônus só vale para Pokémon dos elementos do seu clã.</p>
