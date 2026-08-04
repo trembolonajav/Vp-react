@@ -1484,6 +1484,8 @@ body:has([data-wizard]) main.page{
 /* Subnav do Bazaar: links centralizados; ações (sino/conta) ancoradas à direita. */
 .bz-subnav-row{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:44px}
 .bz-subnav-row>.header-actions{position:absolute;right:0;top:0;bottom:0;margin:auto 0;display:flex;align-items:center;gap:12px}
+/* A ação de login tem 46px; overflow:auto no subnav criava uma barra nativa ao lado. */
+.platform-subnav>.container:has(.bz-subnav-row){min-height:56px;overflow:visible}
 /* Botão de conta — pílula fiel ao material (sem o PNG antigo). */
 .bz-profile-btn{
   display:flex;align-items:center;gap:10px;box-sizing:border-box;cursor:pointer;color:#f7eee7;

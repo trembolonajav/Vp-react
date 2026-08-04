@@ -8,7 +8,6 @@ import { EMPTY_FILTERS, type Listing } from "../../../types/listing";
 
 const A = (p: string) => `/assets/bazaar/${p}`;
 const S = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
-const I = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/";
 
 const ESCALA = { min: 0.8, max: 3.6 };
 const BANDAS: Array<[string, number, number, string]> = [
@@ -23,20 +22,6 @@ const JOGOS: Record<string, { nome: string; sigla: string; logo: string; cor: st
 const NOMES_TIPOS: Array<[string, string]> = [["normal", "Normal"], ["fire", "Fogo"], ["water", "Água"], ["grass", "Planta"], ["electric", "Elétrico"], ["ice", "Gelo"], ["fighting", "Lutador"], ["poison", "Venenoso"], ["ground", "Terrestre"], ["flying", "Voador"], ["psychic", "Psíquico"], ["bug", "Inseto"], ["rock", "Pedra"], ["ghost", "Fantasma"], ["dragon", "Dragão"], ["dark", "Sombrio"], ["steel", "Aço"], ["fairy", "Fada"]];
 
 interface Anuncio { id: string | number; jogo: string; cat: string; intencao: string; titulo: string; detalhe: string; sprite: string; shiny?: boolean; nivel: number; iv: number; qual: number; moeda: string; preco: number; negociavel: boolean; vendedor: string; nota: string; quando: string; brilho: string }
-const DADOS: Anuncio[] = [
-  { id: 1, jogo: "pip", cat: "pokemon", intencao: "venda", titulo: "Gardevoir", detalhe: "Psíquico · Fada · Shiny", sprite: S + "shiny/282.png", shiny: true, nivel: 100, iv: 186, qual: 1.8, moeda: "dia", preco: 350, negociavel: true, vendedor: "MoonLight", nota: "4,9", quando: "há 12 min", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(221,79,127,.22), rgba(10,6,5,.9))" },
-  { id: 2, jogo: "pwg", cat: "item", intencao: "venda", titulo: "Rare Candy ×250", detalhe: "Item consumível · lote", sprite: I + "rare-candy.png", nivel: 0, iv: 0, qual: 0, moeda: "dia", preco: 1250, negociavel: false, vendedor: "Renan", nota: "4,8", quando: "há 1 hora", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(91,155,214,.2), rgba(10,6,5,.9))" },
-  { id: 3, jogo: "pip", cat: "card", intencao: "venda", titulo: "Shiny Card — Gengar", detalhe: "Consumível do Altar · 1 un.", sprite: S + "shiny/94.png", nivel: 0, iv: 0, qual: 0, moeda: "dia", preco: 1200, negociavel: false, vendedor: "VPertsz", nota: "5,0", quando: "há 30 min", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(124,83,143,.28), rgba(10,6,5,.9))" },
-  { id: 4, jogo: "pwg", cat: "pokemon", intencao: "venda", titulo: "Dragonite", detalhe: "Dragão · Voador · Shiny", sprite: S + "shiny/149.png", shiny: true, nivel: 92, iv: 167, qual: 1.82, moeda: "brl", preco: 340, negociavel: true, vendedor: "Kaito", nota: "4,9", quando: "há 2 horas", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(224,116,58,.22), rgba(10,6,5,.9))" },
-  { id: 5, jogo: "pip", cat: "pokemon", intencao: "procura", titulo: "Charizard", detalhe: "Fogo · Voador · Shiny", sprite: S + "shiny/6.png", shiny: true, nivel: 100, iv: 172, qual: 2.05, moeda: "dia", preco: 700, negociavel: true, vendedor: "AshRedux", nota: "4,7", quando: "há 3 horas", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(224,116,58,.24), rgba(10,6,5,.9))" },
-  { id: 6, jogo: "pwg", cat: "item", intencao: "venda", titulo: "Master Ball ×5", detalhe: "Item raro · unidade", sprite: I + "master-ball.png", nivel: 0, iv: 0, qual: 0, moeda: "brl", preco: 180, negociavel: false, vendedor: "BallTrader", nota: "4,6", quando: "há 4 horas", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(154,111,187,.22), rgba(10,6,5,.9))" },
-  { id: 7, jogo: "pip", cat: "pokemon", intencao: "venda", titulo: "Gyarados", detalhe: "Água · Voador · Shiny", sprite: S + "shiny/130.png", shiny: true, nivel: 96, iv: 142, qual: 1.42, moeda: "dia", preco: 620, negociavel: false, vendedor: "TideCaller", nota: "4,8", quando: "há 5 horas", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(91,155,214,.24), rgba(10,6,5,.9))" },
-  { id: 8, jogo: "pwg", cat: "card", intencao: "venda", titulo: "Shiny Card — Snorlax", detalhe: "Consumível do Altar · 2 un.", sprite: S + "shiny/143.png", nivel: 0, iv: 0, qual: 0, moeda: "dia", preco: 900, negociavel: true, vendedor: "GhostLord", nota: "5,0", quando: "ontem", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(126,217,162,.18), rgba(10,6,5,.9))" },
-  { id: 9, jogo: "pip", cat: "pokemon", intencao: "procura", titulo: "Umbreon", detalhe: "Sombrio · Shiny", sprite: S + "shiny/197.png", shiny: true, nivel: 88, iv: 152, qual: 1.41, moeda: "brl", preco: 120, negociavel: true, vendedor: "NightVeil", nota: "4,5", quando: "ontem", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(107,90,82,.3), rgba(10,6,5,.9))" },
-  { id: 10, jogo: "pwg", cat: "pokemon", intencao: "venda", titulo: "Alakazam", detalhe: "Psíquico · Shiny", sprite: S + "shiny/65.png", shiny: true, nivel: 100, iv: 182, qual: 2.44, moeda: "dia", preco: 760, negociavel: false, vendedor: "MindBreak", nota: "4,9", quando: "ontem", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(221,79,127,.2), rgba(10,6,5,.9))" },
-  { id: 11, jogo: "pip", cat: "pokemon", intencao: "venda", titulo: "Blastoise", detalhe: "Água · Shiny", sprite: S + "shiny/9.png", shiny: true, nivel: 100, iv: 168, qual: 1.94, moeda: "dia", preco: 540, negociavel: true, vendedor: "TideCaller", nota: "4,8", quando: "há 2 dias", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(91,155,214,.22), rgba(10,6,5,.9))" },
-  { id: 12, jogo: "pwg", cat: "item", intencao: "procura", titulo: "Potion ×100", detalhe: "Item de cura · lote", sprite: I + "potion.png", nivel: 0, iv: 0, qual: 0, moeda: "dia", preco: 350, negociavel: false, vendedor: "Luna", nota: "4,9", quando: "há 3 dias", brilho: "radial-gradient(58% 58% at 50% 46%, rgba(216,79,158,.2), rgba(10,6,5,.9))" },
-];
 
 const fmt = (n: number) => n.toFixed(2).replace(".", ",");
 const num = (v: string) => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; };
@@ -133,7 +118,7 @@ export function MarketplacePage() {
   const anuncios = useMemo(() => {
     const busca = st.busca.trim().toLowerCase();
     const pMin = num(st.precoMin), pMax = num(st.precoMax), nMin = num(st.nivelMin), iMin = num(st.ivMin);
-    const filtrados = (apiCarregada ? dadosApi : DADOS).filter((a) => {
+    const filtrados = dadosApi.filter((a) => {
       if (st.jogo !== "todos" && a.jogo !== st.jogo) return false;
       if (st.categoria !== "todos" && a.cat !== st.categoria) return false;
       if (st.intencao !== "todas" && a.intencao !== st.intencao) return false;
@@ -225,8 +210,8 @@ export function MarketplacePage() {
   if (st.ivMin) chips.push({ rotulo: "IV ≥ " + st.ivMin, remover: () => set({ ivMin: "" }) });
   st.tipos.forEach((id) => { const n = (NOMES_TIPOS.find((t) => t[0] === id) || ["", ""])[1]; chips.push({ rotulo: n, remover: () => set({ tipos: st.tipos.filter((x) => x !== id) }) }); });
 
-  const totalPip = apiCarregada ? totaisPorJogo.pip : DADOS.filter((a) => a.jogo === "pip").length;
-  const totalPwg = apiCarregada ? totaisPorJogo.pwg : DADOS.filter((a) => a.jogo === "pwg").length;
+  const totalPip = totaisPorJogo.pip;
+  const totalPwg = totaisPorJogo.pwg;
   const limparTudo = () => set({ jogo: "todos", categoria: "todos", intencao: "todas", moeda: "todas", busca: "", precoMin: "", precoMax: "", nivelMin: "", ivMin: "", qMin: ESCALA.min, qMax: ESCALA.max, tipos: [] });
 
   const inputStyle: CSSProperties = { width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 8, border: "1px solid rgba(216,138,74,.2)", background: "rgba(10,6,5,.6)", color: "#f7eee7", fontSize: 12.5 };

@@ -106,7 +106,8 @@ export function AnuncioPage() {
   const qualidadeAnuncio = listing?.qualidade ? listing.qualidade.toFixed(2).replace(".", ",") : "1,80";
   const precoAnuncio = listing ? listing.preco.toLocaleString("pt-BR") : "350";
   const vendedorAnuncio = listing?.vendedor || "MoonLight";
-  const url = `${window.location.origin}/bazaar/anuncio/${encodeURIComponent(id)}`;
+  // A rota de share entrega Open Graph ao crawler e redireciona pessoas para o anúncio.
+  const url = `${window.location.origin}/api/v1/share/${encodeURIComponent(id)}`;
   const unidadeMoeda = listing?.moeda === "brl" ? "R$" : "◆";
   const detalhesCompartilhamento = ehPokemon
     ? `Lv. ${nivelAnuncio} · Qualidade ${qualidadeAnuncio} · IV ${total}/192`
