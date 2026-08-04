@@ -75,13 +75,13 @@ final class ListingSanitizer {
 
     /** Mesma derivação do normalizarAnuncio() do frontend. */
     static String deriveTipo(String categoria, int dex) {
-        if ("Shiny Card".equals(categoria)) {
+        if ("card".equalsIgnoreCase(categoria) || "Shiny Card".equalsIgnoreCase(categoria)) {
             return "shinycard";
         }
-        if ("Item".equals(categoria) || "Itens".equals(categoria)) {
+        if ("item".equalsIgnoreCase(categoria) || "Itens".equalsIgnoreCase(categoria)) {
             return "item";
         }
-        if (dex > 0 || "Pokémon".equals(categoria)) {
+        if (dex > 0 || "pokemon".equalsIgnoreCase(categoria) || "Pokémon".equalsIgnoreCase(categoria)) {
             return "pokemon";
         }
         return null;

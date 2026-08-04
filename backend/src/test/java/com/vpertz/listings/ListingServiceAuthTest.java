@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.vpertz.common.security.AuthPrincipal;
 import com.vpertz.listings.dto.ListingWriteRequest;
+import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +30,8 @@ class ListingServiceAuthTest {
     @InjectMocks private ListingService service;
 
     private static final ListingWriteRequest REQ = new ListingWriteRequest(
-            "Título", null, null, null, null, null, null, false, null, null, null, null,
-            null, null, null, false, null, false, null, null, null, null, null, null,
+            "Título", "pokeidle", null, "item", "venda", "diamonds", BigDecimal.ONE, false, null, "ativo", "assets/item.png", null,
+            null, null, null, false, 1, false, null, null, null, null, null, null,
             null, null, null, null);
 
     @Test

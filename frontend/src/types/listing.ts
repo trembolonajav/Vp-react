@@ -83,6 +83,7 @@ export type SortKey = "recentes" | "preco-asc" | "preco-desc" | "titulo";
 
 export interface ListingFilters {
   q: string;
+  jogo: string;
   tipo: string;
   intencao: string;
   moeda: string;
@@ -104,6 +105,7 @@ export interface ListingFilters {
 
 export const EMPTY_FILTERS: ListingFilters = {
   q: "",
+  jogo: "",
   tipo: "",
   intencao: "",
   moeda: "",

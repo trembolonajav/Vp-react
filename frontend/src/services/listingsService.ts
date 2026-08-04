@@ -10,6 +10,7 @@ function toQuery(filters: ListingFilters): string {
     if (value !== "") params.set(key, value);
   };
   put("q", filters.q.trim());
+  put("jogo", filters.jogo);
   put("tipo", filters.tipo);
   put("intencao", filters.intencao);
   put("moeda", filters.moeda);

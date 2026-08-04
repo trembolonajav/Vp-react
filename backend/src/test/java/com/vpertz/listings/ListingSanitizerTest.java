@@ -63,6 +63,13 @@ class ListingSanitizerTest {
         assertThat(l.getNivel()).isEqualTo(1000);
     }
 
+    @Test
+    void aceitaCategoriasCanonicasDoNovoWizard() {
+        assertThat(ListingSanitizer.deriveTipo("card", 94)).isEqualTo("shinycard");
+        assertThat(ListingSanitizer.deriveTipo("item", 0)).isEqualTo("item");
+        assertThat(ListingSanitizer.deriveTipo("pokemon", 0)).isEqualTo("pokemon");
+    }
+
     private static ListingWriteRequest req(String categoria, Integer dex, String intencao, String moeda,
                                           String status, BigDecimal preco, Integer nivel,
                                           List<String> tipos, List<Integer> ivs, String img) {

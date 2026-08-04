@@ -7,6 +7,7 @@ import com.vpertz.listings.dto.ListingFilter;
 import com.vpertz.listings.dto.ListingResponse;
 import com.vpertz.listings.dto.ListingWriteRequest;
 import com.vpertz.listings.dto.PageResponse;
+import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -82,6 +83,7 @@ public class ListingService {
 
     @Transactional
     public ListingResponse create(ListingWriteRequest request, AuthPrincipal principal) {
+        validateWrite(request);
         Listing listing = new Listing();
         listing.setPublicId(generatePublicId(request.titulo()));
         listing.setSellerId(principal.userId());
@@ -98,11 +100,36 @@ public class ListingService {
         Listing listing = repository.findByPublicId(publicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Anúncio não encontrado: " + publicId));
         authorize(listing, principal);
+        validateWrite(request);
         // Dono, id público, data de criação e reputação são preservados.
         ListingSanitizer.apply(request, listing);
         applyDestaque(listing, request, principal);
         touch(listing);
         return mapper.toResponse(repository.save(listing));
+    }
+
+    private static void validateWrite(ListingWriteRequest request) {
+        if (!StringUtils.hasText(request.jogo()) || !StringUtils.hasText(request.categoria())) {
+            throw new ValidationException("Jogo e categoria são obrigatórios.");
+        }
+        if (request.preco() == null || request.preco().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("O preço deve ser maior que zero.");
+        }
+        if (!StringUtils.hasText(request.img())) {
+            throw new ValidationException("A imagem do anúncio é obrigatória.");
+        }
+        if ("pokemon".equalsIgnoreCase(request.categoria())) {
+            if (request.dex() == null || request.dex() < 1 || request.nivel() == null || request.nivel() < 1
+                    || request.qualidade() == null || request.qualidade().compareTo(new BigDecimal("0.80")) < 0
+                    || request.qualidade().compareTo(new BigDecimal("3.60")) > 0
+                    || request.ivs() == null || request.ivs().size() != 6
+                    || request.ivs().stream().anyMatch(iv -> iv == null || iv < 1 || iv > 32)
+                    || !StringUtils.hasText(request.forma()) || !StringUtils.hasText(request.disponibilidade())) {
+                throw new ValidationException("Preencha nível, forma, qualidade, disponibilidade e os seis IVs (1–32).");
+            }
+        } else if (request.quantidade() == null || request.quantidade() < 1) {
+            throw new ValidationException("A quantidade deve ser maior que zero.");
+        }
     }
 
     @Transactional

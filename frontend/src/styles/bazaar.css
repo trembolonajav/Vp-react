@@ -1481,27 +1481,37 @@ body:has([data-wizard]) main.page{
   min-width:19px;height:19px;padding:0 5px;border:1px solid #0a0605;border-radius:999px;
   background:linear-gradient(180deg,#c33629,#7d1a15);color:#fff;font:800 10px/1 Inter
 }
+/* Subnav do Bazaar: links centralizados; ações (sino/conta) ancoradas à direita. */
+.bz-subnav-row{position:relative;flex:1;display:flex;align-items:center;justify-content:center;min-height:44px}
+.bz-subnav-row>.header-actions{position:absolute;right:0;top:0;bottom:0;margin:auto 0;display:flex;align-items:center;gap:12px}
+/* Botão de conta — pílula fiel ao material (sem o PNG antigo). */
 .bz-profile-btn{
-  position:relative;isolation:isolate;display:flex;align-items:center;box-sizing:border-box;
-  width:196px;height:48px;padding:4px 14px 4px 7px;gap:10px;overflow:hidden;
-  border:0;border-radius:12px;background:transparent;color:#f7eee7
+  display:flex;align-items:center;gap:10px;box-sizing:border-box;cursor:pointer;color:#f7eee7;
+  padding:4px 13px 4px 4px;border-radius:999px;
+  border:1px solid rgba(216,138,74,.26);
+  background:linear-gradient(180deg,#241713,#150d0b);
+  box-shadow:inset 0 1px 0 rgba(255,214,150,.14),0 2px 10px rgba(0,0,0,.45);
+  transition:border-color .16s ease
 }
-.bz-profile-btn::before{
-  content:"";position:absolute;z-index:-1;inset:0;
-  background:url("/assets/btn-perfil-bazaar-crop.png") center/100% 100% no-repeat;
-  pointer-events:none
-}
-.bz-profile-btn:hover{filter:brightness(1.1)}
+.bz-profile-btn:hover,.bz-profile-btn[aria-expanded="true"]{border-color:#e5b34f}
 .bz-profile-btn .bz-profile-avatar{
-  display:grid;place-items:center;flex:none;width:34px;height:34px;overflow:hidden;
-  border:1px solid #e5b34f;border-radius:50%;background:linear-gradient(135deg,#f0d194,#8b551d);
-  color:#100906;font:800 11px Cinzel;font-style:normal
+  display:grid;place-items:center;flex:none;width:32px;height:32px;box-sizing:border-box;
+  border-radius:50%;padding:1.5px;
+  background:conic-gradient(from 210deg,#f6e0a8,#c08a3a 28%,#6d4415 52%,#e5b34f 76%,#f6e0a8)
+}
+.bz-profile-btn .bz-profile-avatar>span{
+  display:grid;place-items:center;width:100%;height:100%;border-radius:50%;
+  background:linear-gradient(160deg,#f6e0a8,#c08a3a 62%,#a86f28);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.55);
+  color:#2a1608;font:800 10.5px/1 Cinzel;font-style:normal;letter-spacing:.04em
 }
 .bz-profile-btn .bz-profile-avatar img,.bz-pop-avatar img{
-  width:100%;height:100%;object-fit:contain;image-rendering:pixelated;background:#140b08
+  width:100%;height:100%;object-fit:contain;image-rendering:pixelated;border-radius:50%;background:#140b08
 }
-.bz-profile-btn>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 13px Inter}
-.bz-profile-btn>b{display:grid;place-items:center;margin-left:auto;color:#f6dfb4}
+.bz-profile-id{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.bz-profile-id>b{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 12px/1 Inter;color:#f7eee7}
+.bz-profile-id>small{font:700 8.5px/1 Inter;letter-spacing:.14em;text-transform:uppercase;color:#b08e52}
+.bz-profile-caret{display:grid;place-items:center;font-size:8px;color:#8a7a70}
 .bz-user-pop{
   position:absolute;z-index:50;top:54px;overflow:hidden;
   border:1px solid rgba(229,179,79,.26);border-radius:12px;
