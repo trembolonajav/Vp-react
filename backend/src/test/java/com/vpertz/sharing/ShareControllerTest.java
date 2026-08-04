@@ -50,6 +50,20 @@ class ShareControllerTest {
     }
 
     @Test
+    void usaSpriteRealComoMiniaturaCompacta() {
+        Listing listing = listing();
+        listing.setImgUrl("https://sprites.example/flareon.png");
+        when(listingRepository.findByPublicId("gyarados")).thenReturn(Optional.of(listing));
+
+        String html = controller.share("gyarados").getBody();
+
+        assertThat(html)
+                .contains("property=\"og:image\" content=\"https://sprites.example/flareon.png\"")
+                .contains("name=\"twitter:card\" content=\"summary\"")
+                .doesNotContain("og:image:width");
+    }
+
+    @Test
     void anuncioInexistenteRetornaErroDeRecurso() {
         when(listingRepository.findByPublicId("fantasma")).thenReturn(Optional.empty());
         assertThatThrownBy(() -> controller.share("fantasma"))

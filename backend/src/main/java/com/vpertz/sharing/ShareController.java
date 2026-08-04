@@ -42,7 +42,7 @@ public class ShareController {
         Listing listing = requireListing(listingId);
         String encodedId = UriUtils.encodePathSegment(listing.getPublicId(), java.nio.charset.StandardCharsets.UTF_8);
         String target = publicBaseUrl + "/bazaar/anuncio/" + encodedId;
-        String image = publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png";
+        String image = socialImage(listing, encodedId);
         String title = listing.getTitulo() + " — VP Bazaar";
         String description = description(listing);
         String html = """
@@ -53,8 +53,7 @@ public class ShareController {
                 <meta property="og:type" content="website"><meta property="og:site_name" content="VP Bazaar">
                 <meta property="og:title" content="%s"><meta property="og:description" content="%s">
                 <meta property="og:url" content="%s"><meta property="og:image" content="%s">
-                <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
-                <meta name="twitter:card" content="summary_large_image">
+                <meta name="twitter:card" content="summary">
                 <meta name="twitter:title" content="%s"><meta name="twitter:description" content="%s">
                 <meta name="twitter:image" content="%s">
                 <meta http-equiv="refresh" content="0;url=%s"></head>
@@ -67,6 +66,18 @@ public class ShareController {
                 .cacheControl(CacheControl.maxAge(java.time.Duration.ofMinutes(5)).cachePublic())
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
+    }
+
+    /** Usa a própria arte do anúncio para os mensageiros exibirem miniatura compacta. */
+    private String socialImage(Listing listing, String encodedId) {
+        String image = listing.getImgUrl();
+        if (image != null && image.startsWith("https://")) {
+            return image;
+        }
+        if (image != null && !image.isBlank()) {
+            return publicBaseUrl + (image.startsWith("/") ? image : "/" + image);
+        }
+        return publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png";
     }
 
     @GetMapping(value = "/{listingId}/image.png", produces = MediaType.IMAGE_PNG_VALUE)
