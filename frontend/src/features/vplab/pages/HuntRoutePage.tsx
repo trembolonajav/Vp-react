@@ -33,16 +33,26 @@ const sprite = (n: number) => `https://raw.githubusercontent.com/PokeAPI/sprites
 interface Tier { icon: string; color: string; tier: string }
 interface Verdict { label: string; icon: string; tone: string; rank: number; keep: boolean; why: string }
 interface Analysis {
-  target: HuntTarget; best: { type: string; m: number }; worst: { type: string; m: number };
-  immune: string[]; dealt: Tier; taken: Tier; verdict: Verdict; score: number;
+  target: HuntTarget; best: { type: string; m: number }; worst: { name: string; type: string; m: number; score: number };
+  dealt: Tier; taken: Tier; verdict: Verdict; score: number;
 }
 
-function analyse(target: HuntTarget, myTypes: string[], cover: string[]): Analysis {
+function analyse(target: HuntTarget, me: PokemonDexEntry, cover: string[]): Analysis {
+  const myTypes = me.t;
   const atkPool = [...new Set([...myTypes, ...cover])];
   const best = atkPool.map((t) => ({ type: t, m: amp(eff(t, target.t)) })).sort((a, b) => b.m - a.m)[0] || { type: myTypes[0], m: 0 };
-  const incoming = target.t.map((t) => ({ type: t, m: amp(eff(t, myTypes)) })).sort((a, b) => b.m - a.m);
-  const worst = incoming[0];
-  const immune = incoming.filter((i) => i.m === 0).map((i) => i.type);
+  const availableMoves = target.g.filter(([, , category, power, learnedAt]) =>
+    (category === "fisico" || category === "especial") && power > 0 && learnedAt <= target.huntLevel);
+  const incoming = availableMoves.map(([name, type, category, power]) => {
+    const m = amp(eff(type, myTypes));
+    const stab = target.t.includes(type) ? 1.5 : 1;
+    const attack = category === "especial" ? target.bs[3] : target.bs[1];
+    const defense = category === "especial" ? me.bs[4] : me.bs[2];
+    // O card exibe a efetividade, mas a escolha acompanha o golpe que o jogo
+    // realmente prefere: poder, STAB e o atributo ofensivo correspondente.
+    return { name, type, m, score: power * stab * m * attack / Math.max(1, defense) };
+  }).sort((a, b) => b.score - a.score || b.m - a.m);
+  const worst = incoming[0] || { name: "Nenhum golpe", type: target.t[0] || "normal", m: 0, score: 0 };
 
   const dealt: Tier = best.m >= 5 ? { icon: AI("dano-super"), color: "#4fc47a", tier: "dano brutal" }
     : best.m >= 2.5 ? { icon: AI("dano-super"), color: "#4fc47a", tier: "super eficaz" }
@@ -68,7 +78,7 @@ function analyse(target: HuntTarget, myTypes: string[], cover: string[]): Analys
   else if (best.m < 1) verdict = { label: "Hunt lenta", icon: AI("hunt-lenta"), tone: "#e8d9a8", rank: worst.m <= 1 ? 10 : -20, keep: worst.m <= 1, why: "custa tempo, ele resiste" };
   else verdict = { label: "Alvo neutro", icon: AI("dano-neutro"), tone: "#b5a196", rank: 35, keep: true, why: "troca sem vantagem" };
 
-  return { target, best, worst, immune, dealt, taken, verdict, score: verdict.rank * 10 + best.m * 4 - worst.m * 2 };
+  return { target, best, worst, dealt, taken, verdict, score: verdict.rank * 10 + best.m * 4 - worst.m * 2 };
 }
 
 const panel: CSSProperties = {
@@ -124,7 +134,7 @@ export function HuntRoutePage() {
 
   const levels = useMemo(() => [...new Set(targets.map((h) => h.huntLevel))].sort((a, b) => a - b), [targets]);
   const currentBand = levels.filter((l) => l <= lvl).pop() ?? levels[0];
-  const analysed = useMemo(() => meSpecies ? targets.map((h) => analyse(h, myTypes, cover)) : [], [targets, meSpecies, myTypes, cover]);
+  const analysed = useMemo(() => meSpecies ? targets.map((h) => analyse(h, meSpecies, cover)) : [], [targets, meSpecies, cover]);
   const byBand = useMemo(() => levels.map((l) => analysed.filter((a) => a.target.huntLevel === l).sort((x, y) => y.score - x.score)), [levels, analysed]);
 
   if (!meSpecies) {
@@ -157,7 +167,7 @@ export function HuntRoutePage() {
   const bad = analysed.filter((a) => !a.verdict.keep);
   const stats = [
     { label: "Valem a pena", value: good.length, note: "alvos que compensam com ele", color: "#4fc47a", edge: "rgba(79,196,122,.28)", bg: "rgba(79,196,122,.07)" },
-    { label: "Hunts seguras", value: safe.length, note: "não conseguem te acertar", color: "#4fd8b0", edge: "rgba(79,216,176,.3)", bg: "rgba(79,216,176,.07)" },
+    { label: "Imunes ao moveset", value: safe.length, note: "nenhum golpe causa dano", color: "#4fd8b0", edge: "rgba(79,216,176,.3)", bg: "rgba(79,216,176,.07)" },
     { label: "Vantagem forte", value: perfect.length, note: "super eficaz sem risco extra", color: "#e5b34f", edge: "rgba(229,179,79,.3)", bg: "rgba(229,179,79,.07)" },
     { label: "Descartados", value: bad.length, note: "perde tempo ou morre", color: "#ff6b55", edge: "rgba(255,107,85,.28)", bg: "rgba(255,107,85,.06)" },
   ];
@@ -326,7 +336,7 @@ export function HuntRoutePage() {
           </section>
         ))}
 
-        <p style={{ margin: 0, color: "#7d6d64", fontSize: 11, lineHeight: 1.6, maxWidth: 880 }}>Hunts, níveis e tipos vêm do catálogo do próprio VPLab (data.js · Poképedia oficial com os spawns conferidos no mapa do jogo em 17/07/2026), então só aparece o que existe de verdade. Lendários ficam fora da rota por não serem hunt repetível, mas continuam selecionáveis como o seu Pokémon. Na hunt a vantagem é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistência divide por 1,5. O dano que você recebe considera o pior tipo que o alvo pode usar contra você.</p>
+        <p style={{ margin: 0, color: "#7d6d64", fontSize: 11, lineHeight: 1.6, maxWidth: 880 }}>Hunts, níveis, tipos e golpes vêm do catálogo do próprio VPLab (data.js · Poképedia oficial com os spawns conferidos no mapa do jogo em 17/07/2026), então só aparece o que existe de verdade. Lendários ficam fora da rota por não serem hunt repetível, mas continuam selecionáveis como o seu Pokémon. Na hunt a vantagem é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistência divide por 1,5. O dano recebido usa o melhor golpe disponível do alvo, considerando nível, poder, STAB e stats.</p>
       </div>
     </main>
   );
@@ -339,15 +349,14 @@ function RouteCard({ a, idx, isPast, cover }: { a: Analysis; idx: number; isPast
   const isTop = idx === 0 && a.verdict.keep && !isPast;
 
   const badges: Array<{ key: string; label: string; icon: string; color: string; edge: string; bg: string }> = [];
-  a.immune.forEach((tp) => badges.push({ key: "i" + tp, label: `Imune a ${T[tp]}`, icon: TI(tp), color: "#83b9ff", edge: "rgba(131,185,255,.35)", bg: "rgba(131,185,255,.09)" }));
-  if (a.worst.m === 0) badges.push({ key: "safe", label: "Farm sem risco", icon: AI("hunt-segura"), color: "#4fd8b0", edge: "rgba(79,216,176,.35)", bg: "rgba(79,216,176,.09)" });
+  if (a.worst.m === 0) badges.push({ key: "safe", label: "Imune ao moveset", icon: AI("imunidade"), color: "#4fd8b0", edge: "rgba(79,216,176,.35)", bg: "rgba(79,216,176,.09)" });
   if (a.best.m >= 5) badges.push({ key: "dbl", label: "Fraqueza dupla", icon: AI("dano-super"), color: "#4fc47a", edge: "rgba(79,196,122,.32)", bg: "rgba(79,196,122,.07)" });
   if (a.worst.m >= 2.5) badges.push({ key: "dgr", label: "Ele bate super em você", icon: AI("recebe-muito"), color: "#ff6b55", edge: "rgba(255,107,85,.32)", bg: "rgba(255,107,85,.07)" });
   if (cover.includes(a.best.type)) badges.push({ key: "cov", label: `Precisa de ${T[a.best.type]}`, icon: TI(a.best.type), color: "#e5b34f", edge: "rgba(229,179,79,.32)", bg: "rgba(229,179,79,.07)" });
 
   const rows = [
     { key: "d", title: "Você causa", tier: a.dealt.tier, color: a.dealt.color, x: fx(a.best.m), pct: clamp(a.best.m / 5.5 * 100, 3, 100), icon: a.dealt.icon, typeIcon: TI(a.best.type), detail: `${T[a.best.type]} · ${cover.includes(a.best.type) ? "golpe de cobertura" : "tipo dele"}` },
-    { key: "t", title: "Você recebe", tier: a.taken.tier, color: a.taken.color, x: fx(a.worst.m), pct: clamp(a.worst.m / 5.5 * 100, 3, 100), icon: a.taken.icon, typeIcon: TI(a.worst.type), detail: `pior golpe dele é ${T[a.worst.type]}` },
+    { key: "t", title: "Você recebe", tier: a.taken.tier, color: a.taken.color, x: fx(a.worst.m), pct: clamp(a.worst.m / 5.5 * 100, 3, 100), icon: a.taken.icon, typeIcon: TI(a.worst.type), detail: `${a.worst.name} · ${T[a.worst.type]}` },
   ];
 
   return (

@@ -44,11 +44,11 @@ const verdictOf = (p: number) => p > 100 ? { label: "Acima do teto selvagem", co
           : { label: "Fraco", color: "#ff6b55" };
 
 interface Card { slug: string; mode: "manual" | "image"; level: string; quality: string; ivTotal: string; power: string; stats: string[]; preview: string; scan: string }
-const emptyCard = (slug = "scizor"): Card => ({ slug, mode: "manual", level: "", quality: "", ivTotal: "", power: "", stats: ["", "", "", "", "", ""], preview: "", scan: "" });
+const emptyCard = (slug = ""): Card => ({ slug, mode: "manual", level: "", quality: "", ivTotal: "", power: "", stats: ["", "", "", "", "", ""], preview: "", scan: "" });
 
 interface Analysis { sp: PokemonDexEntry; lvl: number; q: number; stats: number[]; mid: number[]; ivs: number[]; potential: number; confidence: number; impossible: boolean; saturated: number; total: { min: number; likely: number; max: number }; power: number }
 function analyse(card: Card, catalog: PokemonDexEntry[]): Analysis | null {
-  const sp = catalog.find((d) => d.s === card.slug) || catalog[0];
+  const sp = catalog.find((d) => d.s === card.slug);
   if (!sp) return null;
   const lvl = +card.level, q = +String(card.quality).replace(",", ".");
   const stats = card.stats.map((v) => +v);
@@ -260,7 +260,6 @@ export function IvScannerPage() {
       setCatalog(entries);
       const requested = entries.find((x) => x.s === params.get("p"));
       if (requested) setCards((c) => ({ ...c, a: { ...c.a, slug: requested.s } }));
-      else fillExample(entries);
     }).catch(() => setCatalog([]));
   }, [params]);
 
@@ -328,7 +327,7 @@ export function IvScannerPage() {
     const link = document.createElement("a"); link.download = "vplab-comparacao.png"; link.href = cv.toDataURL("image/png"); link.click();
   };
 
-  const reset = () => { setCards({ a: emptyCard(cards.a.slug), b: emptyCard(cards.b.slug) }); setNote({ a: "", b: "" }); };
+  const reset = () => { setCards({ a: emptyCard(), b: emptyCard() }); setNote({ a: "", b: "" }); };
 
   return (
     <main className="ivv4" style={{ padding: "24px 0 90px" }}>
@@ -435,7 +434,7 @@ function SlotCard({ card, analysis, title, tone, frame, roster, note, busy, patc
   onFile: (f: File) => void; onShare: () => void; onDownload: () => void;
 }) {
   const a = analysis;
-  const sp = roster.find((d) => d.s === card.slug) || roster[0];
+  const sp = roster.find((d) => d.s === card.slug);
   const tier = a ? tierOf(a.q) : null;
   const verdict = a ? verdictOf(a.potential) : null;
   const onDrop = (e: DragEvent<HTMLLabelElement>) => { e.preventDefault(); const f = [...e.dataTransfer.files].find((x) => x.type.startsWith("image/")); if (f) onFile(f); };
@@ -477,12 +476,12 @@ function SlotCard({ card, analysis, title, tone, frame, roster, note, busy, patc
 
       <div style={{ display: "grid", gridTemplateColumns: "88px minmax(0,1fr)", gap: 12, alignItems: "center", marginBottom: 11 }}>
         <div style={{ position: "relative", width: 88, height: 88, borderRadius: 15, border: "1px solid rgba(229,179,79,.26)", background: "radial-gradient(70% 70% at 50% 35%,rgba(194,54,41,.2),rgba(0,0,0,.55))" }}>
-          {sp && <span style={{ position: "absolute", inset: 5, ...bgIcon(sprite(sp.n)), imageRendering: "pixelated", filter: "drop-shadow(0 6px 11px rgba(0,0,0,.6))" }} />}
+          <span style={{ position: "absolute", inset: sp ? 5 : 8, ...bgIcon(sp ? sprite(sp.n) : "/assets/vplab/iv-placeholder.png"), imageRendering: sp ? "pixelated" : "auto", filter: "drop-shadow(0 6px 11px rgba(0,0,0,.6))" }} />
         </div>
         <div style={{ display: "grid", gap: 8, minWidth: 0 }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
             <span style={{ fontSize: 9.5, letterSpacing: ".09em", textTransform: "uppercase", color: "#b5a196", fontWeight: 700 }}>Pokémon</span>
-            <PokemonPicker ariaLabel="Buscar Pokémon" options={roster.map((r) => ({ slug: r.s, name: r.m, dexNo: r.n }))} value={card.slug} onSelect={(sl) => patch({ slug: sl })} />
+            <PokemonPicker ariaLabel="Buscar Pokémon" placeholder="Escolha um Pokémon..." options={roster.map((r) => ({ slug: r.s, name: r.m, dexNo: r.n }))} value={card.slug} onSelect={(sl) => patch({ slug: sl })} />
           </label>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             {sp?.t.map((t) => (
