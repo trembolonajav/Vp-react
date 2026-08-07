@@ -376,7 +376,7 @@ function Detail({ clanId, model, catalog }: { clanId: string; model: ClanData; c
         </details>
       )}
 
-      <footer className="clan-version"><span>{model.meta.model}</span><span>Última consolidação: {model.meta.consolidatedAt}</span></footer>
+      <div className="clan-version"><span>{model.meta.model}</span><span>Última consolidação: {model.meta.consolidatedAt}</span></div>
     </section>
   );
 }

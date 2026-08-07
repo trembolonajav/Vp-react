@@ -591,6 +591,22 @@ footer .footer-about{order:1}
 footer .footer-grid>div:nth-child(2){order:3}
 footer .footer-social-column{order:2}
 
+.footer-grid--with-actions{grid-template-columns:1.15fr .8fr .72fr .9fr;gap:38px}
+.vplab-footer-actions{display:grid;align-content:start;gap:9px;order:4}
+.vplab-footer-action{display:block;width:100%;max-width:260px;height:66px;padding:0;border:0;background:transparent;cursor:pointer;overflow:hidden;transition:transform .2s var(--ease),filter .2s}
+.vplab-footer-action span{display:block;width:100%;height:100%;background-position:center;background-repeat:no-repeat}
+.vplab-footer-action--referral span{background-image:url("/assets/vplab/footer-referral.png");background-size:124% auto}
+.vplab-footer-action--support span{background-image:url("/assets/vplab/footer-support.png");background-size:184% auto}
+.vplab-footer-action:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.support-modal-backdrop{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:22px;background:rgba(4,2,2,.82);backdrop-filter:blur(6px)}
+.support-modal{position:relative;width:min(700px,100%);max-height:calc(100vh - 44px);overflow:auto;padding:42px;border:1px solid rgba(229,179,79,.45);border-radius:28px;background:linear-gradient(155deg,#21110a,#080504 72%);box-shadow:0 28px 90px #000;text-align:center}
+.support-modal>span{color:#c88d24;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.support-modal h2{margin:13px 0 18px;color:#efc34e;font:800 clamp(31px,5vw,48px)/1 Cinzel,serif;text-transform:uppercase}
+.support-modal p{max-width:570px;margin:0 auto 26px;color:#cbbab0;font-size:18px;line-height:1.5}
+.support-modal__close{position:absolute;top:16px;right:16px;display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(229,179,79,.32);border-radius:50%;background:rgba(0,0,0,.28);color:#cbbab0;font-size:34px;cursor:pointer}
+.support-modal__qr{width:min(350px,80vw);aspect-ratio:1;margin:0 auto 28px;border-radius:14px;background:#000 url("/assets/vplab/support-qr.jpeg") center top/154% auto no-repeat;box-shadow:0 10px 24px rgba(0,0,0,.58)}
+.support-modal small{display:block;padding:18px;border:1px solid rgba(229,179,79,.28);border-radius:16px;color:#a99a91;font-size:13px;line-height:1.55}
+
 .intermediary-actions .intermediary-cta{
   width:240px;height:56px;padding:0;border:0;border-radius:14px;
   overflow:hidden;font-size:0;
@@ -617,6 +633,7 @@ footer .footer-social-column{order:2}
   .handles{justify-content:center}
   .trust{grid-template-columns:1fr;gap:12px}
   .footer-grid{grid-template-columns:1fr 1fr;gap:36px}
+  .footer-grid--with-actions{grid-template-columns:1fr 1fr}
   .footer-about{grid-column:1/-1}
   .community-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .community-card:last-child:nth-child(3n + 2){grid-column:auto}
