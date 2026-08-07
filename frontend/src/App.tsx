@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, type ReactNode } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HubLayout } from "./features/hub/HubLayout";
 import { HubHomePage } from "./features/hub/HubHomePage";
@@ -22,6 +22,7 @@ import { ChatPage } from "./features/bazaar/pages/ChatPage";
 import { ComoFuncionaPage } from "./features/bazaar/pages/ComoFuncionaPage";
 import { ContaPage } from "./features/bazaar/pages/ContaPage";
 import { VplabLayout } from "./features/vplab/VplabLayout";
+import { SeoManager } from "./seo";
 
 const IvScannerPage = lazy(() =>
   import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
@@ -49,33 +50,9 @@ function BazaarRedirect() {
   return null;
 }
 
-const PAGE_TITLES: Array<[RegExp, string]> = [
-  [/^\/vplab\/avaliar-iv\/?$/, "Avaliar IV — VPLab"],
-  [/^\/vplab\/pokedex\/?$/, "Pokédex — VPLab"],
-  [/^\/vplab\/pokefipe\/?$/, "PokeFipe — VPLab"],
-  [/^\/vplab\/rota\/?$/, "Rota de caça — VPLab"],
-  [/^\/vplab\/breeding\/?$/, "Breeding — VPLab"],
-  [/^\/vplab\/clas\/?$/, "Clãs — VPLab"],
-  [/^\/vplab\/profissoes\/?$/, "Profissões — VPLab"],
-  [/^\/vplab\/?$/, "Avaliar IV — VPLab"],
-  [/^\/bazaar/, "VP Bazaar — Marketplace"],
-  [/^\/store/, "VP Store — VPertsz"],
-  [/^\/admin/, "Painel administrativo — VPertsz"],
-  [/^\/comunidade\/?$/, "Comunidade — VPertsz"],
-  [/^\/$/, "VPertsz — Comunidade e ferramentas"],
-];
-
-function DocumentTitle() {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    document.title = PAGE_TITLES.find(([pattern]) => pattern.test(pathname))?.[1] ?? "VPertsz";
-  }, [pathname]);
-  return null;
-}
-
 export function App() {
   return (
-    <><DocumentTitle /><Routes>
+    <><SeoManager /><Routes>
       {/* Hub (landing) na raiz */}
       <Route element={<HubLayout />}>
         <Route index element={<HubHomePage />} />

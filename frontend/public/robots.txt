@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /bazaar/login
+Disallow: /bazaar/cadastro
+Disallow: /bazaar/perfil
+Disallow: /bazaar/anunciar
+Disallow: /bazaar/meus-anuncios
+Disallow: /bazaar/chat
+Disallow: /bazaar/conta
+
+Sitemap: https://www.vperts.com.br/sitemap.xml

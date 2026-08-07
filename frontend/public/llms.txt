@@ -1,0 +1,20 @@
+# VPertsz
+
+> Comunidade brasileira e plataforma de ferramentas e serviços para jogadores de PokeIdle World.
+
+Site oficial: https://www.vperts.com.br/
+Canal oficial na Twitch: https://www.twitch.tv/vpertsz
+
+## Áreas principais
+
+- VPLab: calculadora de IV, Pokédex, PokeFipe, rotas de caça, breeding, clãs e profissões.
+- VP Bazaar: marketplace comunitário de Pokémon, itens, contas e diamonds.
+- VP Store: atendimento para compras, vendas e intermédio de negociações.
+- Comunidade: grupos, conteúdo e canais oficiais do VPertsz.
+
+## Observações
+
+- O domínio oficial é www.vperts.com.br.
+- O nome público do projeto e da comunidade é VPertsz.
+- O canal da Twitch é twitch.tv/vpertsz.
+- Páginas administrativas, contas, conversas e formulários privados não são conteúdo público.
