@@ -4,25 +4,27 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HubLayout } from "./features/hub/HubLayout";
 import { HubHomePage } from "./features/hub/HubHomePage";
 import { ComunidadePage } from "./features/hub/ComunidadePage";
-import { StoreLayout } from "./features/store/StoreLayout";
-import { StoreHomePage } from "./features/store/pages/StoreHomePage";
-import { NegociarPage } from "./features/store/pages/NegociarPage";
-import { ContatoPage } from "./features/store/pages/ContatoPage";
-import { IntermedioPage } from "./features/store/pages/IntermedioPage";
-import { OfflinePage } from "./features/store/pages/OfflinePage";
-import { BazaarLayout } from "./layouts/BazaarLayout";
-import { LoginPage } from "./features/auth/pages/LoginPage";
-import { AdminPage } from "./features/admin/pages/AdminPage";
-import { AnuncioPage } from "./features/bazaar/pages/AnuncioPage";
-import { MarketplacePage } from "./features/bazaar/pages/MarketplacePage";
-import { PerfilPage } from "./features/bazaar/pages/PerfilPage";
-import { AnunciarPage } from "./features/bazaar/pages/AnunciarPage";
-import { MeusAnunciosPage } from "./features/bazaar/pages/MeusAnunciosPage";
-import { ChatPage } from "./features/bazaar/pages/ChatPage";
-import { ComoFuncionaPage } from "./features/bazaar/pages/ComoFuncionaPage";
-import { ContaPage } from "./features/bazaar/pages/ContaPage";
 import { VplabLayout } from "./features/vplab/VplabLayout";
 import { SeoManager } from "./seo";
+
+const StoreLayout = lazy(() => import("./features/store/StoreLayout").then((m) => ({ default: m.StoreLayout })));
+const StoreHomePage = lazy(() => import("./features/store/pages/StoreHomePage").then((m) => ({ default: m.StoreHomePage })));
+const NegociarPage = lazy(() => import("./features/store/pages/NegociarPage").then((m) => ({ default: m.NegociarPage })));
+const ContatoPage = lazy(() => import("./features/store/pages/ContatoPage").then((m) => ({ default: m.ContatoPage })));
+const IntermedioPage = lazy(() => import("./features/store/pages/IntermedioPage").then((m) => ({ default: m.IntermedioPage })));
+const OfflinePage = lazy(() => import("./features/store/pages/OfflinePage").then((m) => ({ default: m.OfflinePage })));
+const BazaarLayout = lazy(() => import("./layouts/BazaarLayout").then((m) => ({ default: m.BazaarLayout })));
+const LoginPage = lazy(() => import("./features/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const AdminPage = lazy(() => import("./features/admin/pages/AdminPage").then((m) => ({ default: m.AdminPage })));
+const AnuncioPage = lazy(() => import("./features/bazaar/pages/AnuncioPage").then((m) => ({ default: m.AnuncioPage })));
+const MarketplacePage = lazy(() => import("./features/bazaar/pages/MarketplacePage").then((m) => ({ default: m.MarketplacePage })));
+const PerfilPage = lazy(() => import("./features/bazaar/pages/PerfilPage").then((m) => ({ default: m.PerfilPage })));
+const AnunciarPage = lazy(() => import("./features/bazaar/pages/AnunciarPage").then((m) => ({ default: m.AnunciarPage })));
+const MeusAnunciosPage = lazy(() => import("./features/bazaar/pages/MeusAnunciosPage").then((m) => ({ default: m.MeusAnunciosPage })));
+const ChatPage = lazy(() => import("./features/bazaar/pages/ChatPage").then((m) => ({ default: m.ChatPage })));
+const ComoFuncionaPage = lazy(() => import("./features/bazaar/pages/ComoFuncionaPage").then((m) => ({ default: m.ComoFuncionaPage })));
+const ContaPage = lazy(() => import("./features/bazaar/pages/ContaPage").then((m) => ({ default: m.ContaPage })));
+const LauncherPage = lazy(() => import("./features/launcher/LauncherPage").then((m) => ({ default: m.LauncherPage })));
 
 const IvScannerPage = lazy(() =>
   import("./features/vplab/pages/IvScannerPage").then((module) => ({ default: module.IvScannerPage })));
@@ -52,7 +54,7 @@ function BazaarRedirect() {
 
 export function App() {
   return (
-    <><SeoManager /><Routes>
+    <><SeoManager /><Suspense fallback={<main className="page"><div className="container">Carregando…</div></main>}><Routes>
       {/* Hub (landing) na raiz */}
       <Route element={<HubLayout />}>
         <Route index element={<HubHomePage />} />
@@ -99,6 +101,10 @@ export function App() {
       {/* Compatibilidade com links antigos; a rota oficial vive no Bazaar. */}
       <Route path="login" element={<Navigate to="/bazaar/login" replace />} />
 
+      {/* Página pública de apresentação e download do Vperts Multi. */}
+      <Route path="multi" element={<LauncherPage />} />
+      <Route path="vplauncher" element={<LauncherPage />} />
+
       {/* Painel */}
       <Route path="admin" element={<Protegida admin><AdminPage /></Protegida>} />
 
@@ -134,6 +140,6 @@ export function App() {
         <Route path="clas" element={<Suspense fallback={<main className="page"><div className="container">Carregando clãs…</div></main>}><ClanPage /></Suspense>} />
         <Route path="profissoes" element={<Suspense fallback={<main className="page"><div className="container">Carregando profissões…</div></main>}><ProfessionsPage /></Suspense>} />
       </Route>
-    </Routes></>
+    </Routes></Suspense></>
   );
 }
