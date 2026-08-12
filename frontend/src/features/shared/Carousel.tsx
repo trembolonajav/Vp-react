@@ -13,7 +13,7 @@ export function Carousel({ banners }: { banners: Banner[] }) {
     return () => clearInterval(timer);
   }, [total, current]);
 
-  if (total === 0) return null;
+  if (total === 0) return <div className="carousel carousel--loading" aria-label="Carregando destaques" aria-busy="true" />;
 
   const go = (i: number) => setCurrent(((i % total) + total) % total);
 
@@ -27,7 +27,7 @@ export function Carousel({ banners }: { banners: Banner[] }) {
             href={b.link || "#"}
             {...(isExternal(b.link) ? { target: "_blank", rel: "noreferrer" } : {})}
           >
-            <img src={assetUrl(b.img)} alt={b.alt || "Banner"} />
+            <img src={assetUrl(b.img)} alt={b.alt || "Banner"} width="1672" height="941" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
           </a>
         ))}
       </div>

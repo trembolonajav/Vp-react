@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ConversationRepository extends JpaRepository<Conversation, String> {
     List<Conversation> findByBuyerIdOrSellerId(String buyerId, String sellerId);
+    List<Conversation> findByStatusOrderByUpdatedAtDesc(String status);
 }

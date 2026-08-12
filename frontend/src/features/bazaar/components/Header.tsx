@@ -4,6 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { PlatformHeader } from "../../shared/PlatformHeader";
 import { listConversations, markRead } from "../../../services/chatService";
 import type { ConversationSummary } from "../../../types/conversation";
+import { AvatarCirculo } from "../pages/profileShared";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -38,14 +39,24 @@ export function Header() {
   useEffect(() => {
     if (!user) return;
     const controller = new AbortController();
-    listConversations(controller.signal)
-      .then((result) => {
+    let running = false;
+    const syncNotifications = () => {
+      if (running || document.hidden) return;
+      running = true;
+      listConversations(controller.signal).then((result) => {
         setNotifications(result.conversations.slice(0, 5));
         setUnread(result.unread);
       })
-      .catch(() => undefined);
-    return () => controller.abort();
-  }, [user, location.pathname]);
+      .catch(() => undefined)
+      .finally(() => { running = false; });
+    };
+    syncNotifications();
+    const timer = window.setInterval(syncNotifications, 1500);
+    const refresh = () => { if (!document.hidden) syncNotifications(); };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => { controller.abort(); window.clearInterval(timer); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("focus", refresh); };
+  }, [user]);
 
   const markAllRead = async () => {
     await Promise.all(notifications.filter((item) => item.unread > 0).map((item) => markRead(item.conversation.id)));
@@ -86,7 +97,7 @@ export function Header() {
                   {unread > 0 && <b>{unread > 99 ? "99+" : unread}</b>}
                 </button>
                 <button className="bz-profile-btn" type="button" aria-expanded={menuOpen} onClick={() => { posicionar(); setMenuOpen((open) => !open); setNotificationsOpen(false); }}>
-                  <i className="bz-profile-avatar"><span>{user.username.slice(0, 2).toUpperCase()}</span></i>
+                  <AvatarCirculo avatar={user.avatar || "inicial"} nick={user.username} size={32} fonte={11} />
                   <span className="bz-profile-id">
                     <b>{user.username}</b>
                     <small>Conta VP Bazaar</small>
@@ -105,7 +116,7 @@ export function Header() {
                       const conversation = item.conversation;
                       const other = user.username === conversation.buyer ? conversation.seller : conversation.buyer;
                       return (
-                        <Link className={`bz-notif-item ${item.unread > 0 ? "unread" : ""}`} key={conversation.id} to="/bazaar/chat" onClick={() => setNotificationsOpen(false)}>
+                        <Link className={`bz-notif-item ${item.unread > 0 ? "unread" : ""}`} key={conversation.id} to={`/bazaar/chat?conversation=${encodeURIComponent(conversation.id)}`} onClick={() => setNotificationsOpen(false)}>
                           <span className="bz-notif-art" style={conversation.image ? { backgroundImage: `url("${conversation.image}")` } : undefined}><i>✦</i></span>
                           <span className="bz-notif-copy">
                             <strong>{item.lastMessage ? `Nova mensagem de ${other}` : `${other} abriu uma negociação com você`}</strong>
@@ -121,7 +132,7 @@ export function Header() {
                 {menuOpen && (
                   <div className="bz-user-pop bz-profile-pop" style={popPos}>
                     <div className="bz-pop-identity">
-                      <i className="bz-pop-avatar">{user.username.slice(0, 2).toUpperCase()}</i>
+                      <AvatarCirculo avatar={user.avatar || "inicial"} nick={user.username} size={42} fonte={15} />
                       <span><strong>{user.username}</strong><small>Conta VP Bazaar</small></span>
                     </div>
                     <Link to="/bazaar/meus-anuncios" onClick={() => setMenuOpen(false)}><span>◆</span>Meus anúncios</Link>

@@ -35,7 +35,7 @@ const rotuloEstado: Record<string, string> = { ativos: "Ativos", pausados: "Paus
 const chaveEstado: Record<string, string> = { ativos: "ativo", pausados: "pausado", vendidos: "vendido" };
 
 export function ContaPage() {
-  const { user, logout } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
   const navigate = useNavigate();
   const [secao, setSecao] = useState<"dados" | "notificacoes">("dados");
   const [bio, setBio] = useState("");
@@ -79,6 +79,7 @@ export function ContaPage() {
     setSalvando(true);
     try {
       await updateMyProfile({ bio, contact, preferredContact, avatar });
+      await refreshUser();
       setSalvo(true);
       setTimeout(() => setSalvo(false), 2600);
     } catch (err) {

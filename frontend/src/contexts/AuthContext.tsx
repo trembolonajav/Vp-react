@@ -9,6 +9,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (loginId: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -57,13 +58,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
   };
 
+  const refreshUser = async () => {
+    const updated = await authService.me();
+    setUser(updated);
+  };
+
   const logout = () => {
     tokenStore.clear();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

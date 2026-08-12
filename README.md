@@ -69,9 +69,9 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- Frontend: <http://localhost:8090>
-- Backend: <http://localhost:8080> (health em `/actuator/health`)
-- PostgreSQL: `localhost:5432`
+- Frontend: <http://localhost:8190>
+- Backend: <http://localhost:8180> (health em `/actuator/health`)
+- PostgreSQL: `localhost:55432`
 
 O Postgres sobe primeiro; o backend aplica as migrations (Flyway) e, em `dev`,
 semeia os dados iniciais. O nginx serve exclusivamente o bundle Vite e faz
@@ -85,7 +85,8 @@ Admin de desenvolvimento (perfil `dev`): **`vpadmin` / `vpadmin123`**
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173 (proxy /api e /media -> :8080)
+npm run dev        # sobe os serviços e abre http://localhost:5173 (proxy -> :8180)
+npm run dev:frontend # somente o Vite, se os serviços já estiverem ativos
 npm run build      # typecheck (tsc) + bundle de produção
 ```
 

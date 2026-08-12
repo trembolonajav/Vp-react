@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 interface ProtectedRouteProps {
@@ -22,7 +22,17 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return <Navigate to="/bazaar/login" state={{ from: location.pathname }} replace />;
   }
   if (requireAdmin && user.role !== "ADMIN") {
-    return <Navigate to="/" replace />;
+    return (
+      <main className="page">
+        <div className="container">
+          <div className="bz-empty">
+            <strong>Acesso restrito à administração</strong>
+            <p>A conta <b>{user.username}</b> está autenticada, mas não possui permissão de administrador.</p>
+            <Link className="bz-clear" to="/">Voltar ao início</Link>
+          </div>
+        </div>
+      </main>
+    );
   }
   return <>{children}</>;
 }

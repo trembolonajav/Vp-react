@@ -3,6 +3,8 @@ package com.vpertz.users;
 import com.vpertz.common.exception.ResourceNotFoundException;
 import com.vpertz.users.dto.ProfileDtos.ProfileResponse;
 import com.vpertz.users.dto.ProfileDtos.ProfileUpdateRequest;
+import com.vpertz.listings.Listing;
+import com.vpertz.listings.ListingRepository;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,9 +15,11 @@ public class ProfileService {
     private static final Set<String> CONTATOS = Set.of("Chat do Bazaar", "Discord", "WhatsApp");
 
     private final UserRepository userRepository;
+    private final ListingRepository listingRepository;
 
-    public ProfileService(UserRepository userRepository) {
+    public ProfileService(UserRepository userRepository, ListingRepository listingRepository) {
         this.userRepository = userRepository;
+        this.listingRepository = listingRepository;
     }
 
     @Transactional(readOnly = true)
@@ -42,6 +46,12 @@ public class ProfileService {
         String avatar = clean(req.avatar(), 40);
         user.setAvatar(avatar.isEmpty() ? "initial" : avatar);
         userRepository.save(user);
+        if (listingRepository != null) {
+            for (Listing listing : listingRepository.findBySellerIdOrderByCreatedAtDesc(userId)) {
+                listing.setVendedorAvatar(user.getAvatar());
+                listingRepository.save(listing);
+            }
+        }
         return toResponse(user);
     }
 

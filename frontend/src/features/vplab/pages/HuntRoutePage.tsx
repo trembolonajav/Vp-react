@@ -36,6 +36,10 @@ interface Analysis {
   target: HuntTarget; best: { type: string; m: number }; worst: { name: string; type: string; m: number; score: number };
   dealt: Tier; taken: Tier; verdict: Verdict; score: number;
 }
+interface PwgPokemonData { id: number; slug: string; types: string[]; stats: [number, number, number, number, number, number]; attacks: Array<[string, string, string, number, number]>; rarity: string }
+interface PwgMapEntry { name: string; level: number; sprite: string | null; spritePosition: string | null; spriteSize: string | null; x: number; y: number; pokemon?: PwgPokemonData }
+interface PwgMapRegion { region: string; available: boolean; reason?: string; entries: PwgMapEntry[] }
+interface PwgMapData { title: string; source: string; extractedAt: string; regions: PwgMapRegion[] }
 
 function analyse(target: HuntTarget, me: PokemonDexEntry, cover: string[]): Analysis {
   const myTypes = me.t;
@@ -106,6 +110,8 @@ const SCOPED_CSS = `
 .rotav3 .hunt-pokemon-option strong{font-size:15px;font-weight:650}
 .rotav3 .hunt-pokemon-option small{color:#e7903b;font:700 10px ui-monospace,"Cascadia Code",Consolas,monospace}
 .rotav3 .hunt-pokemon-empty{padding:17px 15px;color:#8f7b70;font-size:13px}
+.pwg-planner{display:grid;gap:17px}.pwg-planner__head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}.pwg-planner__head>div>span{display:block;color:#e5b34f;text-transform:uppercase;letter-spacing:.22em;font-size:11px;font-weight:850;margin-bottom:8px}.pwg-planner__head h2{font:700 22px Cinzel,serif;margin:0 0 5px}.pwg-planner__head p{max-width:720px;margin:0;color:#b5a196;font-size:13px}.pwg-planner__head>b{padding:8px 11px;border:1px solid rgba(229,179,79,.3);border-radius:99px;color:#e5b34f;font-size:11px;white-space:nowrap}.pwg-planner__config{display:grid;grid-template-columns:minmax(280px,1.5fr) minmax(130px,.45fr) minmax(180px,.65fr);gap:11px;align-items:end}.pwg-planner__config label{display:grid;gap:6px;min-width:0}.pwg-planner__config small{color:#8f7b70;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.pwg-planner__pokemon{display:grid;grid-template-columns:58px minmax(0,1fr);gap:11px;align-items:center;min-width:0}.pwg-planner__pokemon label>span,.pwg-card__top p{display:flex;gap:5px;flex-wrap:wrap;margin:0}.pwg-planner__pokemon em,.pwg-card em{display:inline-flex;align-items:center;gap:4px;padding:2px 7px 2px 2px;border:1px solid rgba(216,138,74,.18);border-radius:99px;color:#d9c9bf;font-size:9px;font-style:normal;font-weight:800;text-transform:uppercase}.pwg-planner__pokemon em i,.pwg-card em i{width:17px;height:17px}.pwg-marker{display:grid;place-items:center;width:52px;height:52px;flex:0 0 52px;border:1px solid rgba(229,179,79,.3);border-radius:50%;background:#0b0706;overflow:hidden}.pwg-planner__regions{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.pwg-planner__regions>span{display:grid;gap:2px;padding:10px;border:1px solid rgba(79,196,122,.2);border-radius:10px;background:rgba(79,196,122,.04)}.pwg-planner__regions small{color:#8f7b70;font-size:9px}.pwg-planner__regions .is-locked{opacity:.5;border-color:rgba(255,107,85,.25)}.pwg-planner__path{display:grid;gap:8px;padding:13px;border:1px solid rgba(229,179,79,.25);border-radius:14px;background:rgba(229,179,79,.05)}.pwg-planner__path>small{color:#d98350;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.pwg-planner__path>div{display:flex;gap:7px;overflow:auto}.pwg-planner__path span{display:grid;grid-template-columns:34px auto;flex:0 0 auto;column-gap:7px;padding:6px 10px 6px 6px;border:1px solid rgba(216,138,74,.2);border-radius:10px}.pwg-planner__path i{grid-row:1/3;width:34px;height:34px}.pwg-planner__path b{font-size:11px}.pwg-planner__path span small{color:#9b8579;font-size:9px}.pwg-band>header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:13px}.pwg-band>header>div{display:flex;align-items:center;gap:11px}.pwg-band>header>div>span{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(229,179,79,.35);border-radius:13px;color:#e5b34f;font:800 16px Cinzel,serif}.pwg-band h2{margin:0;font:700 18px Cinzel,serif}.pwg-band header p{margin:3px 0 0;color:#8f7b70;font-size:11px}.pwg-band header button{padding:8px 11px;border:1px solid rgba(216,138,74,.2);border-radius:9px;background:rgba(255,255,255,.03);color:#b5a196}.pwg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:9px}.pwg-card{display:grid;gap:9px;padding:12px;border:1px solid color-mix(in srgb,var(--pwg-tone) 38%,transparent);border-radius:14px;background:#100b09;min-width:0}.pwg-card__top{display:flex;align-items:center;gap:10px;min-width:0}.pwg-card__top>div{display:grid;gap:4px;min-width:0;flex:1}.pwg-card__top>div>span{color:#8f7b70;font-size:9px;text-transform:uppercase}.pwg-card h3{overflow:hidden;margin:0;color:#f7eee7;font:700 15px Cinzel,serif;text-overflow:ellipsis;white-space:nowrap}.pwg-card__top>b{align-self:flex-start;padding:3px 7px;border:1px solid rgba(229,179,79,.4);border-radius:99px;color:#e5b34f;font-size:8px;text-transform:uppercase}.pwg-card__result{display:flex;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid rgba(216,138,74,.1)}.pwg-card__result strong{color:var(--pwg-tone);font-size:11px;text-transform:uppercase}.pwg-card__result span{color:#8f7b70;font-size:10px;text-align:right}.pwg-card dl{display:grid;gap:6px;margin:0}.pwg-card dl>div{display:flex;justify-content:space-between;gap:8px}.pwg-card dt{color:#8f7b70;font-size:10px}.pwg-card dd{margin:0;font-size:10px;font-weight:800}.pwg-card>small{color:#62534d;font-size:9px}
+@media(max-width:700px){.rotav3{padding-top:14px!important;overflow-x:hidden}.rotav3>div{width:calc(100% - 24px)!important}.rotav3 nav{grid-template-columns:1fr!important}.rotav3 nav button{min-height:46px}.hunt-current-config{padding:16px!important}.hunt-current-grid{grid-template-columns:minmax(0,1fr)!important}.hunt-current-grid>div{min-width:0}.hunt-current-grid [style*="grid-template-columns: 104px"]{grid-template-columns:78px minmax(0,1fr)!important}.hunt-current-grid [style*="width: 104px"]{width:78px!important;height:78px!important}.hunt-current-grid [style*="repeat(auto-fit"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}.rotav3 section{min-width:0}.rotav3 section[style] {max-width:100%}.pwg-planner,.pwg-band{padding:16px!important}.pwg-planner__head{display:grid}.pwg-planner__head>b{justify-self:start}.pwg-planner__config{grid-template-columns:minmax(0,1fr)}.pwg-planner__regions{display:flex;overflow-x:auto}.pwg-planner__regions>span{flex:0 0 125px}.pwg-band>header{align-items:flex-start;flex-direction:column}.pwg-band>header button{width:100%}.pwg-grid{grid-template-columns:minmax(0,1fr)}.pwg-card__top>b{display:none}.pwg-card__result{align-items:flex-start;flex-direction:column}.pwg-card__result span{text-align:left}}
 `;
 
 export function HuntRoutePage() {
@@ -117,8 +123,11 @@ export function HuntRoutePage() {
   const [open, setOpen] = useState<Record<number, boolean>>({});
   const [pokemonQuery, setPokemonQuery] = useState("");
   const [pokemonPickerOpen, setPokemonPickerOpen] = useState(false);
+  const [routeSource, setRouteSource] = useState<"vplab" | "pwg">("vplab");
+  const [pwgData, setPwgData] = useState<PwgMapData | null>(null);
 
   useEffect(() => { loadPokemonCatalog().then(setCatalog).catch(() => setCatalog([])); }, []);
+  useEffect(() => { fetch("/vplab-data/pwg-hunt-routes.json").then((response) => response.json()).then(setPwgData).catch(() => setPwgData(null)); }, []);
 
   const targets = useMemo(() => createHuntTargets(catalog), [catalog]);
   const meSpecies = useMemo(() => catalog.find((h) => h.s === me) || catalog.find((h) => h.s === "charizard") || catalog[0], [catalog, me]);
@@ -186,13 +195,22 @@ export function HuntRoutePage() {
       <style>{SCOPED_CSS}</style>
       <div style={{ width: "min(1200px,calc(100% - 44px))", marginInline: "auto", display: "grid", gap: 18 }}>
 
+        <nav aria-label="Fonte da rota de caça" style={{ ...panel, padding: 7, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+          {([['vplab', 'ROTA DE CAÇA ATUAL'], ['pwg', 'ROTA DE CAÇA PWG']] as const).map(([key, label]) => (
+            <button key={key} type="button" aria-pressed={routeSource === key} onClick={() => setRouteSource(key)} style={{ padding: "12px 14px", borderRadius: 14, border: `1px solid ${routeSource === key ? "rgba(229,179,79,.55)" : "transparent"}`, background: routeSource === key ? "rgba(229,179,79,.12)" : "transparent", color: routeSource === key ? "#f5d47f" : "#8f7b70", fontSize: 11, fontWeight: 850, letterSpacing: ".1em", cursor: "pointer" }}>{label}</button>
+          ))}
+        </nav>
+
+        {routeSource === "pwg" && <PwgHuntRoute data={pwgData} catalog={catalog} />}
+        <div style={{ display: routeSource === "vplab" ? "contents" : "none" }}>
+
         {/* ---- Config ---- */}
-        <section style={{ ...panel, padding: 24 }}>
+        <section className="hunt-current-config" style={{ ...panel, padding: 24 }}>
           <span style={{ display: "block", color: "#d98350", textTransform: "uppercase", letterSpacing: ".22em", fontSize: 11, fontWeight: 800, marginBottom: 8 }}>Rota de caça</span>
           <h2 style={{ fontFamily: "Cinzel,serif", fontSize: 21, margin: "0 0 4px" }}>Peguei esse Pokémon — para onde eu vou?</h2>
           <p style={{ color: "#b5a196", fontSize: 13, margin: "0 0 18px", maxWidth: 780 }}>Diga quem você usa e em que nível está. O VPLab desenha a rota faixa por faixa: o <b style={{ color: "#f7eee7" }}>melhor alvo</b>, as <b style={{ color: "#f7eee7" }}>alternativas</b>, as <b style={{ color: "#f7eee7" }}>hunts seguras</b> (onde ele não consegue te acertar) e o que é <b style={{ color: "#f7eee7" }}>perda de tempo</b>.</p>
 
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.25fr)", gap: 16, alignItems: "start" }}>
+          <div className="hunt-current-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.25fr)", gap: 16, alignItems: "start" }}>
             {/* Left column */}
             <div style={{ display: "grid", gap: 13, minWidth: 0 }}>
               <div style={{ display: "grid", gridTemplateColumns: "104px minmax(0,1fr)", gap: 13, alignItems: "center" }}>
@@ -337,12 +355,122 @@ export function HuntRoutePage() {
         ))}
 
         <p style={{ margin: 0, color: "#7d6d64", fontSize: 11, lineHeight: 1.6, maxWidth: 880 }}>Hunts, níveis, tipos e golpes vêm do catálogo do próprio VPLab (data.js · Poképedia oficial com os spawns conferidos no mapa do jogo em 17/07/2026), então só aparece o que existe de verdade. Lendários ficam fora da rota por não serem hunt repetível, mas continuam selecionáveis como o seu Pokémon. Na hunt a vantagem é amplificada: ×2 vira ×2,5 e ×4 vira ×5,5; resistência divide por 1,5. O dano recebido usa o melhor golpe disponível do alvo, considerando nível, poder, STAB e stats.</p>
+        </div>
       </div>
     </main>
   );
 }
 
-function RouteCard({ a, idx, isPast, cover }: { a: Analysis; idx: number; isPast: boolean; cover: string[] }) {
+const pwgNameKey = (name: string) => name.toLocaleLowerCase("pt-BR").replace(/[^a-z0-9]/g, "");
+const PWG_NAME_ALIASES: Record<string, string> = { nidoranfe: "nidoranfemale", nidoranma: "nidoranmale", farfetchd: "farfetchd", mrmime: "mr-mime" };
+const pwgPokemonFromEntry = (entry: PwgMapEntry, fallback?: PokemonDexEntry): PokemonDexEntry | undefined => entry.pokemon ? {
+  n: entry.pokemon.id, s: `pwg-${entry.pokemon.slug}`, m: entry.name, t: entry.pokemon.types,
+  h: entry.level, r: entry.pokemon.rarity, bs: entry.pokemon.stats, g: entry.pokemon.attacks,
+  xp: 0, npc: 0, sell: 0, la: 0, loot: [], ev: null, evl: null, boss: false,
+} : fallback;
+const pwgSpriteStyle = (entry?: PwgMapEntry): CSSProperties => ({
+  width: 34, height: 34,
+  backgroundImage: entry?.sprite ? `url(${entry.sprite})` : undefined,
+  backgroundRepeat: "no-repeat", backgroundSize: entry?.spriteSize ?? undefined,
+  backgroundPosition: entry?.spritePosition ?? undefined, imageRendering: "pixelated",
+});
+
+function PwgHuntRoute({ data, catalog }: { data: PwgMapData | null; catalog: PokemonDexEntry[] }) {
+  const [meSlug, setMeSlug] = useState("");
+  const [level, setLevel] = useState<string | number>(20);
+  const [open, setOpen] = useState<Record<number, boolean>>({});
+  const [coverage, setCoverage] = useState<string[]>([]);
+  const [pokemonQuery, setPokemonQuery] = useState("");
+  const [pokemonPickerOpen, setPokemonPickerOpen] = useState(false);
+
+  const catalogByName = useMemo(() => new Map(catalog.flatMap((pokemon) => [
+    [pwgNameKey(pokemon.m), pokemon] as const, [pwgNameKey(pokemon.s), pokemon] as const,
+  ])), [catalog]);
+  const availableRegions = useMemo(() => data?.regions.filter((region) => region.available) ?? [], [data]);
+  const pwgSpecies = useMemo(() => {
+    const seen = new Set<string>();
+    return availableRegions.flatMap((region) => region.entries).flatMap((entry) => {
+      const key = pwgNameKey(entry.name);
+      if (seen.has(key)) return [];
+      const alias = PWG_NAME_ALIASES[key];
+      const fallback = catalogByName.get(key) || (alias ? catalog.find((item) => item.s === alias) : undefined);
+      const pokemon = pwgPokemonFromEntry(entry, fallback);
+      if (!pokemon) return [];
+      seen.add(key);
+      return [{ pokemon, entry }];
+    }).sort((a, b) => a.pokemon.n - b.pokemon.n);
+  }, [availableRegions, catalog, catalogByName]);
+  const me = pwgSpecies.find((item) => item.pokemon.s === meSlug)?.pokemon || pwgSpecies[0]?.pokemon;
+  const meMapEntry = pwgSpecies.find((item) => item.pokemon.s === me?.s)?.entry;
+  const pokemonOptions = pwgSpecies.filter(({ pokemon }) => {
+    const query = pokemonQuery.trim().toLocaleLowerCase("pt-BR").replace(/^#/, "");
+    return !query || pokemon.m.toLocaleLowerCase("pt-BR").includes(query) || String(pokemon.n).padStart(3, "0").includes(query);
+  });
+  const myTypes = me?.t ?? [];
+  const cover = coverage.filter((type) => !myTypes.includes(type));
+
+  const targets = useMemo(() => availableRegions.flatMap((region) => region.entries.flatMap((entry, index) => {
+    const key = pwgNameKey(entry.name);
+    const alias = PWG_NAME_ALIASES[key];
+    const fallback = catalogByName.get(key) || (alias ? catalog.find((item) => item.s === alias) : undefined);
+    const pokemon = pwgPokemonFromEntry(entry, fallback);
+    if (!pokemon || pokemon.boss) return [];
+    const target: HuntTarget = { ...pokemon, displayName: entry.name, huntLevel: entry.level, routeKey: `pwg-${region.region}-${index}-${pokemon.s}` };
+    return [{ region: region.region, entry, target }];
+  })), [availableRegions, catalog, catalogByName]);
+  const levels = useMemo(() => [...new Set(targets.map((item) => item.target.huntLevel))].sort((a, b) => a - b), [targets]);
+  const currentBand = levels.filter((huntLevel) => huntLevel <= Number(level)).pop() ?? levels[0] ?? 1;
+  const recommendations = useMemo(() => me ? targets.map((item) => ({ ...item, analysis: analyse(item.target, me, cover) }))
+    .filter((item) => item.target.huntLevel >= currentBand)
+    .sort((a, b) => a.target.huntLevel - b.target.huntLevel || b.analysis.score - a.analysis.score) : [], [me, targets, currentBand, cover]);
+  const bands = useMemo(() => [...new Set(recommendations.map((item) => item.target.huntLevel))].map((huntLevel) => {
+    const all = recommendations.filter((item) => item.target.huntLevel === huntLevel).sort((a, b) => b.analysis.score - a.analysis.score);
+    const useful = all.filter((item) => item.analysis.verdict.keep);
+    const drop = all.filter((item) => !item.analysis.verdict.keep);
+    const isOpen = !!open[huntLevel];
+    return { huntLevel, all, useful, drop, isOpen, shown: isOpen ? [...useful, ...drop] : useful.slice(0, 6) };
+  }), [recommendations, open]);
+  const path = bands.map((band) => band.useful[0] || band.all[0]).filter(Boolean);
+  const selectPokemon = (pokemon: PokemonDexEntry) => { setMeSlug(pokemon.s); setPokemonQuery(pokemon.m); setCoverage([]); setPokemonPickerOpen(false); };
+  const toggleCover = (type: string) => { if (!myTypes.includes(type)) setCoverage((value) => value.includes(type) ? value.filter((item) => item !== type) : [...value, type]); };
+
+  if (!data || !me) return <section style={{ ...panel, padding: 24, color: "#b5a196" }}>Carregando a ROTA DE CAÇA PWG…</section>;
+  return <>
+    <section className="hunt-current-config" style={{ ...panel, padding: 24 }}>
+      <span style={{ display: "block", color: "#d98350", textTransform: "uppercase", letterSpacing: ".22em", fontSize: 11, fontWeight: 800, marginBottom: 8 }}>Rota de caça</span>
+      <h2 style={{ fontFamily: "Cinzel,serif", fontSize: 21, margin: "0 0 4px" }}>Peguei esse Pokémon — para onde eu vou?</h2>
+      <p style={{ color: "#b5a196", fontSize: 13, margin: "0 0 18px", maxWidth: 780 }}>Diga quem você usa e em que nível está. O VPLab desenha a rota faixa por faixa: o <b style={{ color: "#f7eee7" }}>melhor alvo</b>, as <b style={{ color: "#f7eee7" }}>alternativas</b>, as <b style={{ color: "#f7eee7" }}>hunts seguras</b> (onde ele não consegue te acertar) e o que é <b style={{ color: "#f7eee7" }}>perda de tempo</b>.</p>
+      <div className="hunt-current-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.25fr)", gap: 16, alignItems: "start" }}>
+        <div style={{ display: "grid", gap: 13, minWidth: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "104px minmax(0,1fr)", gap: 13, alignItems: "center" }}>
+            <div style={{ position: "relative", width: 104, height: 104, overflow: "hidden", borderRadius: 16, border: "1px solid rgba(229,179,79,.28)", background: "radial-gradient(70% 70% at 50% 35%,rgba(194,54,41,.22),rgba(0,0,0,.55))" }}><span style={{ position: "absolute", left: "50%", top: "50%", ...pwgSpriteStyle(meMapEntry), transform: "translate(-50%,-50%) scale(2.35)" }} /></div>
+            <div style={{ display: "grid", gap: 9, minWidth: 0 }}><label style={{ display: "flex", flexDirection: "column", gap: 5 }}><span style={uLabel}>Meu Pokémon</span><div className="hunt-pokemon-picker"><div className="hunt-pokemon-search"><input role="combobox" aria-label="Buscar Pokémon" placeholder="Buscar Pokémon..." value={pokemonQuery} onFocus={() => setPokemonPickerOpen(true)} onBlur={() => window.setTimeout(() => setPokemonPickerOpen(false), 120)} onChange={(event) => { setPokemonQuery(event.target.value); setPokemonPickerOpen(true); }} />{pokemonQuery && <button className="hunt-pokemon-clear" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => setPokemonQuery("")}>×</button>}</div>{pokemonPickerOpen && <ul className="hunt-pokemon-options" role="listbox">{pokemonOptions.map(({ pokemon }) => <li key={pokemon.s}><button className="hunt-pokemon-option" type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => selectPokemon(pokemon)}><strong>{pokemon.m}</strong><small>#{String(pokemon.n).padStart(3, "0")}</small></button></li>)}</ul>}</div></label><div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{me.t.map((type) => <span key={type} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 11px 4px 4px", borderRadius: 99, border: "1px solid rgba(216,138,74,.22)", background: "rgba(0,0,0,.4)", fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#e8c9a8" }}><span style={{ width: 20, height: 20, ...bgIcon(TI(type)) }} />{T[type]}</span>)}</div></div>
+          </div>
+          <label style={{ display: "flex", flexDirection: "column", gap: 5 }}><span style={uLabel}>Nível atual</span><input className="mono" type="number" min={1} max={999} value={level} onChange={(event) => setLevel(event.target.value)} style={{ textAlign: "center" }} /></label>
+          <div style={{ display: "grid", gap: 7 }}><span style={uLabel}>Golpes de cobertura <span style={{ color: "#7d6d64", letterSpacing: 0, textTransform: "none", fontWeight: 600 }}>— tipos fora dos dele</span></span><div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{Object.keys(T).map((type) => { const own = myTypes.includes(type), on = coverage.includes(type); return <span key={type} onClick={() => toggleCover(type)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px 4px 4px", borderRadius: 99, border: `1px solid ${on ? "rgba(226,75,53,.45)" : "rgba(216,138,74,.16)"}`, background: on ? "rgba(226,75,53,.2)" : "rgba(0,0,0,.3)", fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", color: own ? "#7d6d64" : on ? "#fff" : "#b5a196", cursor: own ? "default" : "pointer", opacity: own ? .45 : 1 }}><span style={{ width: 17, height: 17, ...bgIcon(TI(type)) }} />{T[type]}</span>; })}</div><small style={{ fontSize: 10.5, color: "#7d6d64" }}>Marque o que ele realmente tem liberado — a rota recalcula na hora.</small></div>
+        </div>
+        <div style={{ display: "grid", gap: 11, minWidth: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}><span style={uLabel}>Resumo da rota</span><span style={{ fontSize: 11, color: "#7d6d64" }}>{targets.length} hunts no catálogo · {pwgSpecies.length} espécies · faixa {currentBand}</span></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(138px,1fr))", gap: 9 }}>{[
+            ["Valem a pena", recommendations.filter((item) => item.analysis.verdict.keep).length, "alvos que compensam com ele", "#4fc47a"],
+            ["Imunes ao moveset", recommendations.filter((item) => item.analysis.worst.m === 0 && item.analysis.best.m > 0).length, "nenhum golpe causa dano", "#4fd8b0"],
+            ["Vantagem forte", recommendations.filter((item) => item.analysis.best.m >= 2.5 && item.analysis.worst.m <= 1).length, "super eficaz sem risco extra", "#e5b34f"],
+            ["Descartados", recommendations.filter((item) => !item.analysis.verdict.keep).length, "perde tempo ou morre", "#ff6b55"],
+          ].map(([label, value, note, color]) => <div key={String(label)} style={{ padding: "12px 13px", border: `1px solid ${color}44`, borderRadius: 13, background: `${color}12` }}><div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", color: "#7d6d64" }}>{label}</div><div className="mono" style={{ marginTop: 5, fontSize: 20, fontWeight: 700, color: String(color) }}>{value}</div><div style={{ marginTop: 3, fontSize: 10.5, color: "#b5a196" }}>{note}</div></div>)}</div>
+          <div style={{ padding: 14, border: "1px solid rgba(229,179,79,.3)", borderRadius: 15, background: "linear-gradient(160deg,rgba(229,179,79,.09),rgba(13,8,7,.5))" }}><div style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", color: "#d98350", marginBottom: 10 }}>Caminho recomendado</div><div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>{path.map((item) => <span key={item.target.routeKey} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 11px 6px 6px", borderRadius: 11, border: `1px solid ${item.analysis.verdict.tone}44`, background: `${item.analysis.verdict.tone}12` }}><span style={pwgSpriteStyle(item.entry)} /><span style={{ display: "grid" }}><b style={{ fontSize: 11.5 }}>{item.target.displayName}</b><small className="mono" style={{ color: item.analysis.verdict.tone }}>Nv {item.target.huntLevel} · {fx(item.analysis.best.m)}</small></span></span>)}</div></div>
+        </div>
+      </div>
+    </section>
+
+    {bands.map((band) => <section style={{ ...panel, padding: 22 }} key={band.huntLevel}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 14, flexWrap: "wrap", marginBottom: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 12 }}><span style={{ display: "grid", placeItems: "center", width: 52, height: 52, borderRadius: 14, border: "1px solid rgba(229,179,79,.35)", color: "#e5b34f", font: "800 17px Cinzel,serif" }}>{band.huntLevel}</span><div><h2 style={{ margin: 0, font: "700 19px Cinzel,serif" }}>Faixa nível {band.huntLevel}</h2><p style={{ margin: "3px 0 0", color: "#b5a196", fontSize: 12 }}>{band.useful.length} alvos valem a pena · {band.drop.length} descartados{band.useful[0] ? ` · melhor: ${band.useful[0].target.displayName}` : ""}</p></div></div><span data-hover="x" onClick={() => setOpen((value) => ({ ...value, [band.huntLevel]: !value[band.huntLevel] }))} style={{ padding: "8px 13px", borderRadius: 10, border: "1px solid rgba(216,138,74,.2)", color: "#b5a196", cursor: "pointer" }}>{band.isOpen ? "Esconder descartados" : `Mostrar todos (${band.all.length})`}</span></div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(322px,1fr))", gap: 11 }}>{band.shown.map((item, index) => <RouteCard key={item.target.routeKey} a={item.analysis} idx={index} isPast={false} cover={cover} spriteStyle={pwgSpriteStyle(item.entry)} />)}</div>
+    </section>)}
+    <p style={{ margin: 0, color: "#7d6d64", fontSize: 11 }}>Os Pokémon desta aba vêm exclusivamente do catálogo PWG.</p>
+  </>;
+}
+
+function RouteCard({ a, idx, isPast, cover, spriteStyle }: { a: Analysis; idx: number; isPast: boolean; cover: string[]; spriteStyle?: CSSProperties }) {
   const tone = a.verdict.tone;
   const edge = a.verdict.keep ? tone + "55" : "rgba(255,107,85,.28)";
   const glow = tone + "26";
@@ -364,7 +492,7 @@ function RouteCard({ a, idx, isPast, cover }: { a: Analysis; idx: number; isPast
       <span style={{ position: "absolute", inset: "0 0 auto", height: 2, background: `linear-gradient(90deg,${tone},transparent)` }} />
       <div style={{ display: "flex", gap: 12, padding: "13px 13px 10px" }}>
         <div style={{ position: "relative", width: 78, height: 78, flex: "0 0 78px", borderRadius: 14, border: `1px solid ${edge}`, background: `radial-gradient(70% 70% at 50% 32%,${glow},rgba(0,0,0,.55))` }}>
-          <span style={{ position: "absolute", inset: 4, ...bgIcon(sprite(a.target.n)), imageRendering: "pixelated", filter: "drop-shadow(0 5px 9px rgba(0,0,0,.65))" }} />
+          <span style={spriteStyle ? { position: "absolute", left: "50%", top: "50%", ...spriteStyle, transform: "translate(-50%,-50%) scale(1.9)", imageRendering: "pixelated", filter: "drop-shadow(0 5px 9px rgba(0,0,0,.65))" } : { position: "absolute", inset: 4, ...bgIcon(sprite(a.target.n)), imageRendering: "pixelated", filter: "drop-shadow(0 5px 9px rgba(0,0,0,.65))" }} />
           <span className="mono" style={{ position: "absolute", bottom: -7, left: "50%", transform: "translateX(-50%)", padding: "1px 7px", borderRadius: 99, border: "1px solid rgba(216,138,74,.2)", background: "#0d0908", fontSize: 9, fontWeight: 700, color: "#7d6d64" }}>#{String(a.target.n).padStart(3, "0")}</span>
         </div>
         <div style={{ display: "grid", gap: 6, alignContent: "start", minWidth: 0, flex: 1 }}>

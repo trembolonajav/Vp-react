@@ -85,9 +85,9 @@ export function iniciaisDe(nick: string): string {
 export function AvatarCirculo({ avatar, nick, size, fonte }: { avatar: string; nick: string; size: number; fonte: number }) {
   const v = visualAvatar(avatar);
   return (
-    <span style={{ flex: "none", width: size, height: size, display: "grid", placeItems: "center", borderRadius: "50%", background: v.fundo, border: "1px solid rgba(240,200,130,.4)", font: `800 ${fonte}px/1 Cinzel, serif`, color: v.corIniciais, overflow: "hidden" }}>
-      <i role="img" aria-label={nick} style={{ width: "100%", height: "100%", background: v.arteBg, backgroundSize: "contain", backgroundPosition: "center", backgroundRepeat: "no-repeat", imageRendering: "pixelated", display: v.mostraSprite }} />
-      <span style={{ display: v.mostraIniciais }}>{iniciaisDe(nick)}</span>
+    <span className="bz-avatar-circle" style={{ flex: "none", width: size, height: size, boxSizing: "border-box", display: "grid", placeItems: "center", borderRadius: "50%", background: v.fundo, border: "1px solid rgba(240,200,130,.4)", font: `800 ${fonte}px/1 Cinzel, serif`, color: v.corIniciais, overflow: "hidden" }}>
+      <i role="img" aria-label={nick} style={{ gridArea: "1 / 1", width: "78%", height: "78%", background: v.arteBg, backgroundSize: "contain", backgroundPosition: "center", backgroundRepeat: "no-repeat", imageRendering: "pixelated", display: v.mostraSprite }} />
+      <span style={{ gridArea: "1 / 1", display: v.mostraIniciais }}>{iniciaisDe(nick)}</span>
     </span>
   );
 }

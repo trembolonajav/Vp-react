@@ -21,7 +21,7 @@ const JOGOS: Record<string, { nome: string; sigla: string; logo: string; cor: st
 };
 const NOMES_TIPOS: Array<[string, string]> = [["normal", "Normal"], ["fire", "Fogo"], ["water", "Água"], ["grass", "Planta"], ["electric", "Elétrico"], ["ice", "Gelo"], ["fighting", "Lutador"], ["poison", "Venenoso"], ["ground", "Terrestre"], ["flying", "Voador"], ["psychic", "Psíquico"], ["bug", "Inseto"], ["rock", "Pedra"], ["ghost", "Fantasma"], ["dragon", "Dragão"], ["dark", "Sombrio"], ["steel", "Aço"], ["fairy", "Fada"]];
 
-interface Anuncio { id: string | number; jogo: string; cat: string; intencao: string; titulo: string; detalhe: string; sprite: string; shiny?: boolean; nivel: number; iv: number; qual: number; moeda: string; preco: number; negociavel: boolean; vendedor: string; nota: string; quando: string; brilho: string }
+interface Anuncio { id: string | number; jogo: string; cat: string; intencao: string; titulo: string; detalhe: string; sprite: string; shiny?: boolean; nivel: number; iv: number; qual: number; tipos: string[]; moeda: string; preco: number; negociavel: boolean; vendedor: string; nota: string; quando: string; brilho: string }
 
 const fmt = (n: number) => n.toFixed(2).replace(".", ",");
 const num = (v: string) => { const n = parseFloat(String(v).replace(",", ".")); return isNaN(n) ? null : n; };
@@ -86,6 +86,7 @@ export function MarketplacePage() {
         nivel: item.nivel,
         iv: item.ivs.reduce((total, value) => total + value, 0),
         qual: item.qualidade,
+        tipos: item.tipos.map((tipo) => tipo.toLowerCase()),
         moeda: item.moeda,
         preco: item.preco,
         negociavel: item.negociavel,
@@ -130,7 +131,10 @@ export function MarketplacePage() {
         if (a.qual < st.qMin - 0.001 || a.qual > st.qMax + 0.001) return false;
         if (nMin !== null && a.nivel < nMin) return false;
         if (iMin !== null && a.iv < iMin) return false;
+        if (st.tipos.length > 0 && !st.tipos.some((tipo) => a.tipos.includes(tipo))) return false;
       } else if (st.qMin > ESCALA.min + 0.001 || st.qMax < ESCALA.max - 0.001 || nMin !== null || iMin !== null) {
+        return false;
+      } else if (st.tipos.length > 0) {
         return false;
       }
       return true;

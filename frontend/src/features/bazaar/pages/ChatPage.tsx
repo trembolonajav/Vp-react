@@ -37,6 +37,10 @@ const SCOPED = `
 const ESTADO_CONV: Record<string, { rotulo: string; cor: string; borda: string }> = {
   aberta: { rotulo: "Aberta", cor: "#f0d194", borda: "rgba(229,179,79,.4)" },
   "intermedio-solicitado": { rotulo: "Intermédio", cor: "#f0d194", borda: "rgba(229,179,79,.4)" },
+  "intermedio-assumido": { rotulo: "VP no chat", cor: "#f0d194", borda: "rgba(229,179,79,.4)" },
+  "produto-recebido": { rotulo: "Produto recebido", cor: "#7fd9a2", borda: "rgba(78,201,124,.4)" },
+  "pagamento-recebido": { rotulo: "Em custódia", cor: "#7fd9a2", borda: "rgba(78,201,124,.4)" },
+  "entregas-confirmadas": { rotulo: "Entregue", cor: "#7fd9a2", borda: "rgba(78,201,124,.4)" },
   concluida: { rotulo: "Concluída", cor: "#8a7a70", borda: "rgba(216,138,74,.24)" },
   encerrada: { rotulo: "Encerrada", cor: "#c98d84", borda: "rgba(195,54,41,.3)" },
 };
@@ -97,6 +101,34 @@ export function ChatPage() {
   useEffect(() => {
     if (rolagem.current) rolagem.current.scrollTop = rolagem.current.scrollHeight;
   }, [detalhe]);
+
+  useEffect(() => {
+    let running = false;
+    const sync = async () => {
+      if (running || document.hidden) return;
+      running = true;
+      try {
+        const list = await listConversations();
+        setConversas(list.conversations);
+        if (ativa) {
+          const fresh = await getConversation(ativa);
+          setDetalhe((current) => {
+            const currentLast = current?.messages[current.messages.length - 1];
+            const freshLast = fresh.messages[fresh.messages.length - 1];
+            const changed = !current || current.conversation.status !== fresh.conversation.status || current.messages.length !== fresh.messages.length || currentLast?.id !== freshLast?.id;
+            return changed ? fresh : current;
+          });
+          await markRead(ativa);
+        }
+        setError(null);
+      } catch { /* mantém a conversa visível e tenta novamente no próximo ciclo */ }
+      finally { running = false; }
+    };
+    const timer = window.setInterval(() => void sync(), 1500);
+    const onVisible = () => { if (!document.hidden) void sync(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [ativa]);
 
   const enviar = async () => {
     if (!ativa || !texto.trim() || detalhe?.conversation.status === "encerrada") return;
@@ -170,7 +202,7 @@ export function ChatPage() {
               const outro = outroDe(c);
               const ehDiamond = c.currency === "diamante" || c.currency === "diamonds";
               const precoFmt = !c.price ? "" : ehDiamond ? numeroBR(c.price) : `R$ ${c.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-              const fechado = c.status === "encerrada";
+              const fechado = c.status === "encerrada" || c.status === "concluida";
               return (
                 <>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 15px", borderBottom: "1px solid rgba(216,138,74,.16)", background: "rgba(22,14,12,.9)" }}>
@@ -219,10 +251,11 @@ export function ChatPage() {
             {detalhe ? (() => {
               const c = detalhe.conversation;
               const souComprador = user?.username === c.buyer;
-              const outro = outroDe(c);
+              const souVendedor = user?.username === c.seller;
               const encerrada = c.status === "encerrada";
               const concluida = c.status === "concluida";
-              const intermedio = c.status === "intermedio-solicitado";
+              const intermedio = !["aberta", "encerrada"].includes(c.status);
+              const teveIntermedio = c.intermediaryUsed;
 
               const et = (marca: string, titulo: string, sub: string, feita: boolean, atual: boolean, ultima: boolean) => ({
                 marca, titulo, sub, ultima,
@@ -232,15 +265,8 @@ export function ChatPage() {
                 corTitulo: feita || atual ? "#f7eee7" : "#8a7a70",
                 linha: ultima ? "transparent" : feita ? "rgba(78,201,124,.35)" : "rgba(216,138,74,.18)",
               });
-              const etapas = [
-                et("✓", "Chat aberto", dataLonga(c.createdAt), true, false, false),
-                intermedio || concluida
-                  ? et(concluida ? "✓" : "⛨", "Intermédio da VP", concluida ? "Troca acompanhada pela VP" : "Aguardando o moderador entrar", concluida, intermedio, false)
-                  : et("◇", "Sem intermédio", "Negociação direta — peça o intermédio quando quiser", false, false, false),
-                encerrada
-                  ? et("✕", "Negociação encerrada", "Sem negócio — chat fechado", false, false, true)
-                  : et(concluida ? "✓" : "3", "Recebimento confirmado", concluida ? "Anúncio finalizado pelo comprador" : "Só o comprador confirma — isso finaliza o anúncio", concluida, !concluida, true),
-              ];
+              const eventTitles: Record<string, string> = { NEGOTIATION_STARTED: "Negociação iniciada", INTERMEDIARY_REQUESTED: "Intermédio solicitado", INTERMEDIARY_ASSIGNED: "Moderador assumiu", VP_ITEM_RECEIVED: "Produto recebido pela VP", VP_PAYMENT_RECEIVED: "Pagamento recebido pela VP", VP_ITEM_DELIVERED: "Produto entregue ao comprador", VP_PAYMENT_DELIVERED: "Pagamento entregue ao vendedor", AWAITING_PARTY_CONFIRMATIONS: "Aguardando confirmação das partes", DIRECT_BUYER_ITEM_CONFIRMED: "Comprador confirmou o produto", DIRECT_SELLER_PAYMENT_CONFIRMED: "Vendedor confirmou o pagamento", BUYER_ITEM_CONFIRMED: "Comprador confirmou o produto", SELLER_PAYMENT_CONFIRMED: "Vendedor confirmou o pagamento", NEGOTIATION_COMPLETED: teveIntermedio ? "Intermédio concluído" : "Negociação direta concluída", NEGOTIATION_CANCELLED: "Negociação encerrada" };
+              const etapas = detalhe.events.map((event, index) => et(event.type === "NEGOTIATION_CANCELLED" ? "✕" : "✓", eventTitles[event.type] ?? event.details, `${event.actor} · ${new Date(event.createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}`, true, false, index === detalhe.events.length - 1));
 
               // Ação principal, dirigida pelo status real e pelo papel.
               let rotuloPrincipal: string, subPrincipal: string, fundoPrincipal: string, bordaPrincipal: string, corPrincipal: string, travada = false, aoPrincipal: (() => void) | undefined;
@@ -250,16 +276,20 @@ export function ChatPage() {
               } else if (concluida) {
                 rotuloPrincipal = "Recebimento confirmado"; subPrincipal = "Anúncio finalizado. Nada mais é necessário dos dois lados.";
                 fundoPrincipal = "linear-gradient(180deg,rgba(46,122,80,.65),rgba(24,70,46,.7))"; bordaPrincipal = "rgba(126,217,162,.5)"; corPrincipal = "#dcffe6"; travada = true;
-              } else if (souComprador) {
-                rotuloPrincipal = "Confirmar recebimento"; subPrincipal = "Confirme só depois que o item estiver na sua conta. Isso finaliza o anúncio.";
+              } else if (souComprador && (c.status === "aberta" || (teveIntermedio && c.vpItemDelivered && c.vpPaymentDelivered)) && !c.buyerProductConfirmed) {
+                rotuloPrincipal = "Confirmar produto recebido"; subPrincipal = "Confirme somente quando o produto estiver na sua conta. A negociação termina após o vendedor também confirmar o pagamento.";
                 fundoPrincipal = "linear-gradient(180deg,rgba(46,122,80,.7),rgba(24,70,46,.75))"; bordaPrincipal = "rgba(126,217,162,.5)"; corPrincipal = "#dcffe6";
-                aoPrincipal = () => void mudarStatus("concluida");
+                aoPrincipal = () => void mudarStatus("confirmar-produto");
+              } else if (souVendedor && (c.status === "aberta" || (teveIntermedio && c.vpItemDelivered && c.vpPaymentDelivered)) && !c.sellerPaymentConfirmed) {
+                rotuloPrincipal = "Confirmar pagamento recebido"; subPrincipal = "Confirme somente quando o pagamento estiver disponível. A negociação termina após o comprador também confirmar o produto.";
+                fundoPrincipal = "linear-gradient(180deg,rgba(46,122,80,.7),rgba(24,70,46,.75))"; bordaPrincipal = "rgba(126,217,162,.5)"; corPrincipal = "#dcffe6";
+                aoPrincipal = () => void mudarStatus("confirmar-pagamento");
               } else {
-                rotuloPrincipal = "Aguardando o comprador"; subPrincipal = `Quem confirma o recebimento é ${outro}. O anúncio finaliza quando ele confirmar.`;
+                rotuloPrincipal = intermedio ? "Intermédio em andamento" : "Aguardando a outra parte"; subPrincipal = intermedio ? "O moderador da VP controla as etapas de custódia e encerrará o chat após realizar as duas entregas." : c.buyerProductConfirmed ? "O comprador confirmou o produto. Falta o vendedor confirmar o pagamento." : "O vendedor confirmou o pagamento. Falta o comprador confirmar o produto.";
                 fundoPrincipal = "rgba(10,6,5,.5)"; bordaPrincipal = "rgba(229,179,79,.34)"; corPrincipal = "#c9a86a"; travada = true;
               }
 
-              const seloInter = intermedio ? "Solicitado" : concluida ? "Concluído" : "Opcional";
+              const seloInter = teveIntermedio ? (concluida ? "Concluído" : "Solicitado") : "Não utilizado";
               const corSelo = intermedio ? "#f0d194" : "#8a7a70";
               const bordaSelo = intermedio ? "rgba(229,179,79,.4)" : "rgba(216,138,74,.22)";
               const encerrarTravado = encerrada || concluida;
@@ -295,13 +325,13 @@ export function ChatPage() {
                         <span style={{ font: "800 9px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: "#7d6d64" }}>Intermédio da VP</span>
                         <span style={{ padding: "3px 8px", borderRadius: 5, border: `1px solid ${bordaSelo}`, font: "700 8.5px/1 Inter", letterSpacing: ".1em", textTransform: "uppercase", color: corSelo }}>{seloInter}</span>
                       </div>
-                      {c.status === "aberta" && (
+                      {c.status === "aberta" && !c.buyerProductConfirmed && !c.sellerPaymentConfirmed && (
                         <button data-h="inter" type="button" onClick={() => void mudarStatus("intermedio-solicitado")} style={{ display: "grid", placeItems: "center", width: "100%", marginTop: 9, padding: 11, borderRadius: 9, cursor: "pointer", border: "1px solid rgba(229,179,79,.42)", background: "rgba(229,179,79,.1)", font: "700 11.5px/1 Inter", letterSpacing: ".06em", color: "#f0d194" }}>Solicitar intermédio</button>
                       )}
                       <p style={{ margin: "8px 0 0", fontSize: 11, lineHeight: 1.45, color: "#8a7a70" }}>{intermedio ? "Pedido enviado. Um moderador da VP acompanha a troca no chat." : "Vocês podem fechar direto. Se qualquer um quiser garantia, um moderador da VP acompanha a troca."}</p>
                     </div>
 
-                    <a data-h="discord" href="https://discord.gg" target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 13, padding: "11px 12px", borderRadius: 9, border: "1px solid rgba(114,137,218,.34)", background: "rgba(24,28,52,.6)", font: "600 12px/1 Inter", color: "#c6cff2" }}>
+                    <a data-h="discord" href="https://discord.com/invite/9M3HCdytt" target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 13, padding: "11px 12px", borderRadius: 9, border: "1px solid rgba(114,137,218,.34)", background: "rgba(24,28,52,.6)", font: "600 12px/1 Inter", color: "#c6cff2" }}>
                       <span style={{ flex: "none", width: 26, height: 26, display: "grid", placeItems: "center", borderRadius: 6, background: "rgba(114,137,218,.18)" }}>
                         <svg viewBox="0 0 127 96" width="17" height="13" fill="#8ea1e1" aria-hidden="true"><path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z" /></svg>
                       </span>

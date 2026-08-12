@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "docker compose up -d postgres minio backend && npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:services": "docker compose up -d postgres minio backend",
     "build": "npm --prefix frontend run build",
     "build:clan-ranking": "node scripts/generate-clan-ranking.mjs",
     "check": "node --check scripts/generate-clan-ranking.mjs && node --check scripts/audit-auth-runtime.mjs && node --check scripts/audit-listing-management-runtime.mjs && node --check scripts/audit-marketplace-runtime.mjs && node --check scripts/audit-profile-runtime.mjs && node --check scripts/audit-react-ocr.mjs",

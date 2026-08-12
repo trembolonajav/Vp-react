@@ -35,11 +35,23 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: process.env.VITE_API_PROXY ?? "http://localhost:8080",
+        target: process.env.VITE_API_PROXY ?? "http://127.0.0.1:8180",
         changeOrigin: true,
+        configure(proxy) {
+          proxy.on("error", (_error, _request, response) => {
+            if (!response.headersSent) {
+              response.writeHead(503, { "Content-Type": "application/json; charset=utf-8" });
+            }
+            response.end(JSON.stringify({
+              status: 503,
+              error: "Service Unavailable",
+              message: "O serviço do Bazaar está iniciando ou indisponível. Tente novamente em instantes.",
+            }));
+          });
+        },
       },
       "/media": {
-        target: process.env.VITE_API_PROXY ?? "http://localhost:8080",
+        target: process.env.VITE_API_PROXY ?? "http://127.0.0.1:8180",
         changeOrigin: true,
       },
     },

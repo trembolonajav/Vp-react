@@ -30,6 +30,14 @@ public final class ChatDtos {
             String currency,
             String details,
             String status,
+            boolean intermediaryUsed,
+            boolean buyerProductConfirmed,
+            boolean sellerPaymentConfirmed,
+            String negotiationMode,
+            boolean vpItemReceived,
+            boolean vpPaymentReceived,
+            boolean vpItemDelivered,
+            boolean vpPaymentDelivered,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt) {
     }
@@ -42,8 +50,11 @@ public final class ChatDtos {
 
     public record ConversationDetail(
             ConversationView conversation,
-            List<MessageDto> messages) {
+            List<MessageDto> messages,
+            List<NegotiationEventDto> events) {
     }
+
+    public record NegotiationEventDto(String id, String type, String actor, String details, OffsetDateTime createdAt) { }
 
     public record ConversationsList(
             List<ConversationSummary> conversations,

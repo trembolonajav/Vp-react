@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { adminSendMessage, getAdminConversation, listAdminConversations } from "../../../services/adminModerationService";
+import { adminSendMessage, getAdminConversation, listAdminConversations, setAdminConversationStatus } from "../../../services/adminModerationService";
 import type { ConversationDetail, ConversationSummary } from "../../../types/conversation";
 
 const data = (iso: string) => new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
-const MSG_ASSUMIR = "🛡️ A VP entrou no chat para intermediar. A partir de agora um moderador acompanha a negociação — combinem tudo por aqui até a confirmação da troca.";
 
 export function AdminIntermediaryPanel() {
   const { user } = useAuth();
@@ -16,11 +16,21 @@ export function AdminIntermediaryPanel() {
 
   useEffect(() => {
     const controller = new AbortController();
-    listAdminConversations("intermedio-solicitado", controller.signal)
-      .then((result) => setItems(result.conversations))
-      .catch((err: Error) => { if (err.name !== "AbortError") setError(err.message); });
-    return () => controller.abort();
-  }, []);
+    let running = false;
+    const sync = async () => {
+      if (running || document.hidden) return;
+      running = true;
+      try {
+        const result = await listAdminConversations("todas", controller.signal);
+        setItems(result.conversations.filter(({ conversation }) => !["aberta", "concluida", "encerrada"].includes(conversation.status)));
+        if (detail) setDetail(await getAdminConversation(detail.conversation.id, controller.signal));
+      } catch (err) { if ((err as Error).name !== "AbortError") setError((err as Error).message); }
+      finally { running = false; }
+    };
+    void sync();
+    const timer = window.setInterval(() => void sync(), 1500);
+    return () => { controller.abort(); window.clearInterval(timer); };
+  }, [detail?.conversation.id]);
 
   const abrir = async (id: string) => {
     try { setError(null); setDetail(await getAdminConversation(id)); }
@@ -38,8 +48,21 @@ export function AdminIntermediaryPanel() {
     finally { setEnviando(false); }
   };
 
+  const avancar = async (status: string) => {
+    if (!detail) return;
+    setEnviando(true); setError(null);
+    try {
+      await setAdminConversationStatus(detail.conversation.id, status);
+      setDetail(await getAdminConversation(detail.conversation.id));
+      const result = await listAdminConversations("todas");
+      setItems(result.conversations.filter(({ conversation }) => !["aberta", "concluida", "encerrada"].includes(conversation.status)));
+      if (["concluida", "encerrada"].includes(status)) setDetail(null);
+    } catch (err) { setError((err as Error).message); }
+    finally { setEnviando(false); }
+  };
+
   // o moderador já "assumiu" se houver alguma mensagem dele (autor = admin logado) no chat
-  const assumido = !!detail && !!user && detail.messages.some((m) => m.author === user.username || m.text === MSG_ASSUMIR);
+  const assumido = !!detail && detail.conversation.status !== "intermedio-solicitado";
 
   return (
     <section className="admin-section admin-intermediary">
@@ -87,12 +110,18 @@ export function AdminIntermediaryPanel() {
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(229,179,79,.16)" }}>
-                  {!assumido && (
-                    <button type="button" disabled={enviando} onClick={() => void enviar(MSG_ASSUMIR)}
-                      style={{ alignSelf: "flex-start", padding: "9px 15px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(240,200,130,.5)", background: "linear-gradient(180deg,#a51f22,#6a1215)", boxShadow: "inset 0 1px 0 rgba(255,220,160,.3)", font: "700 11.5px/1 Cinzel, serif", letterSpacing: ".08em", textTransform: "uppercase", color: "#fff" }}>
-                      🛡️ Assumir intermédio
-                    </button>
-                  )}
+                  {detail?.conversation.status === "intermedio-solicitado" && <button type="button" disabled={enviando} onClick={() => void avancar("intermedio-assumido")} style={actionStyle}>🛡️ Assumir intermédio</button>}
+                  {detail?.conversation.status === "intermedio-assumido" && <>
+                    <strong style={{ color: "#f0d194", fontSize: 11 }}>Recebimentos em custódia</strong>
+                    <button type="button" disabled={enviando || detail.conversation.vpItemReceived} onClick={() => void avancar("vp-produto-recebido")} style={actionStyle}>{detail.conversation.vpItemReceived ? "✓ Produto recebido do vendedor" : "📦 Confirmar produto recebido do vendedor"}</button>
+                    <button type="button" disabled={enviando || detail.conversation.vpPaymentReceived} onClick={() => void avancar("vp-pagamento-recebido")} style={actionStyle}>{detail.conversation.vpPaymentReceived ? "✓ Pagamento recebido do comprador" : "💰 Confirmar pagamento recebido do comprador"}</button>
+                    {detail.conversation.vpItemReceived && detail.conversation.vpPaymentReceived && <>
+                      <strong style={{ color: "#f0d194", fontSize: 11, marginTop: 5 }}>Entregas às partes</strong>
+                      <button type="button" disabled={enviando || detail.conversation.vpItemDelivered} onClick={() => void avancar("vp-produto-entregue")} style={actionStyle}>{detail.conversation.vpItemDelivered ? "✓ Produto entregue ao comprador" : "📤 Confirmar produto entregue ao comprador"}</button>
+                      <button type="button" disabled={enviando || detail.conversation.vpPaymentDelivered} onClick={() => void avancar("vp-pagamento-entregue")} style={actionStyle}>{detail.conversation.vpPaymentDelivered ? "✓ Pagamento entregue ao vendedor" : "📤 Confirmar pagamento entregue ao vendedor"}</button>
+                    </>}
+                  </>}
+                  {assumido && <button type="button" disabled={enviando} onClick={() => void avancar("encerrada")} style={{ alignSelf: "flex-start", padding: "8px 13px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(195,54,41,.35)", background: "rgba(38,12,11,.45)", color: "#e0a49b" }}>Encerrar sem conclusão</button>}
                   <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
                     <textarea value={texto} onChange={(e) => setTexto(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void enviar(texto); } }}
@@ -112,3 +141,5 @@ export function AdminIntermediaryPanel() {
     </section>
   );
 }
+
+const actionStyle: CSSProperties = { alignSelf: "stretch", padding: "9px 15px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(126,217,162,.5)", background: "linear-gradient(180deg,rgba(46,122,80,.75),rgba(24,70,46,.8))", font: "700 11.5px/1 Inter", color: "#dcffe6", textAlign: "left" };

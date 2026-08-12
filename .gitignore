@@ -31,3 +31,11 @@ tmp/
 *.rar
 *.traineddata
 dev-server.*.log
+
+# Diagnósticos locais de navegador e capturas de validação.
+.chrome-local-diagnostic/
+.chrome-temp-scraper/
+.codex-browser-profile/
+*.log
+mobile-home-*.png
+vplab-mobile-check*.png

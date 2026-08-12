@@ -18,6 +18,14 @@ export interface ConversationView {
   currency: string;
   details: string;
   status: string;
+  intermediaryUsed: boolean;
+  buyerProductConfirmed: boolean;
+  sellerPaymentConfirmed: boolean;
+  negotiationMode: "UNDEFINED" | "DIRECT" | "INTERMEDIATED";
+  vpItemReceived: boolean;
+  vpPaymentReceived: boolean;
+  vpItemDelivered: boolean;
+  vpPaymentDelivered: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,7 +44,10 @@ export interface ConversationsList {
 export interface ConversationDetail {
   conversation: ConversationView;
   messages: ChatMessage[];
+  events: NegotiationEvent[];
 }
+
+export interface NegotiationEvent { id: string; type: string; actor: string; details: string; createdAt: string; }
 
 export interface StartConversationRequest {
   adId: string;
@@ -51,6 +62,10 @@ export interface StartConversationRequest {
 export const CONVERSATION_STATUS: Record<string, string> = {
   aberta: "Aberta",
   "intermedio-solicitado": "Intermédio solicitado",
+  "intermedio-assumido": "Intermédio assumido",
+  "produto-recebido": "Produto em custódia",
+  "pagamento-recebido": "Custódia completa",
+  "entregas-confirmadas": "Entregas confirmadas",
   concluida: "Concluída",
   encerrada: "Encerrada",
 };

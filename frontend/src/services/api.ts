@@ -45,12 +45,18 @@ async function request<T>(method: string, path: string, options: RequestOptions 
     body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body,
-    signal: options.signal,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body,
+      signal: options.signal,
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    throw new ApiError(503, "Não foi possível conectar ao Bazaar. Verifique se os serviços estão ativos.");
+  }
 
   if (response.status === 401 && token) {
     tokenStore.clear();

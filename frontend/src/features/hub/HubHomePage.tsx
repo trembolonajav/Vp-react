@@ -15,7 +15,7 @@ export function HubHomePage() {
             <h1 id="hub-title">O ponto de encontro da comunidade Vpertsz.</h1>
             <p>Live, ferramentas para PokeIdle, marketplace, loja e os canais oficiais da comunidade.</p>
             <div className="hub-intro-actions">
-              <a className="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">
+              <a className="btn-icon-label btn-twitch" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" aria-label="Assistir à live do VPertsz na Twitch">
                 <Icon name="twitch" />
                 <span>Assistir à live</span>
               </a>
@@ -24,7 +24,7 @@ export function HubHomePage() {
           </div>
           <div className="hub-feature">
             <span className="hub-feature-label">Destaques da live</span>
-            {config && <Carousel banners={config.banners} />}
+            <Carousel banners={config?.banners ?? []} />
           </div>
         </section>
 
@@ -32,15 +32,15 @@ export function HubHomePage() {
           <p className="services-title">O que você procura?</p>
           <div className="services-grid">
             <Link className="asset-service-card" to="/store" aria-label="Acessar VP Store">
-              <img src="/assets/tool-store.webp" alt="VP Store" />
+              <img src="/assets/tool-store.webp" alt="VP Store" width="620" height="506" loading="lazy" decoding="async" />
               <span>Compra e venda com atendimento direto.</span>
             </Link>
             <a className="asset-service-card" href="/bazaar/" aria-label="Acessar VP Bazaar">
-              <img src="/assets/tool-bazaar.webp" alt="VP Bazaar" />
+              <img src="/assets/tool-bazaar.webp" alt="VP Bazaar" width="620" height="502" loading="lazy" decoding="async" />
               <span>Veja anúncios e negocie com outros jogadores.</span>
             </a>
             <a className="asset-service-card" href="/vplab/" aria-label="Acessar VPLab">
-              <img src="/assets/tool-vplab.webp" alt="VPLab" />
+              <img src="/assets/tool-vplab.webp" alt="VPLab" width="620" height="463" loading="lazy" decoding="async" />
               <span>Pokédex, IV, PokeFipe, hunts e outras utilidades.</span>
             </a>
           </div>
@@ -49,7 +49,7 @@ export function HubHomePage() {
         <section className="section">
           <div className="streamer">
             <div className="streamer-brand">
-              <img src="/assets/logo-vpertsz-quadrada.webp" alt="Emblema do VPertsz" loading="lazy" />
+              <img src="/assets/logo-vpertsz-quadrada.webp" alt="Emblema do VPertsz" width="760" height="760" loading="lazy" decoding="async" />
             </div>
             <div>
               <span className="kicker">Quem é o VPertsz</span>

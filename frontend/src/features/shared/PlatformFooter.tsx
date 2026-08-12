@@ -19,7 +19,7 @@ export function PlatformFooter({ vplabActions = false }: { vplabActions?: boolea
       <div className="container">
         <div className={vplabActions ? "footer-grid footer-grid--with-actions" : "footer-grid"}>
           <div className="footer-about">
-            <img className="footer-logo" src="/assets/logo-vpertsz-horizontal.webp" alt="VPertsz" />
+            <img className="footer-logo" src="/assets/logo-vpertsz-horizontal.webp" alt="VPertsz" width="760" height="242" loading="lazy" decoding="async" />
             <p>O hub oficial do streamer VPertsz: ferramentas, comunidade e a live diária do PokeIdle World. Negociação transparente e comunidade ativa todos os dias.</p>
           </div>
           <div>

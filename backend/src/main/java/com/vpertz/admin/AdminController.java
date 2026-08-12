@@ -12,6 +12,8 @@ import com.vpertz.chat.dto.ChatDtos.ConversationDetail;
 import com.vpertz.chat.dto.ChatDtos.ConversationsList;
 import com.vpertz.chat.dto.ChatDtos.MessageDto;
 import com.vpertz.chat.dto.ChatDtos.MessageRequest;
+import com.vpertz.chat.dto.ChatDtos.StatusRequest;
+import com.vpertz.chat.dto.ChatDtos.ConversationView;
 import org.springframework.http.HttpStatus;
 import com.vpertz.integrations.WhatsAppBridge;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -96,6 +98,14 @@ public class AdminController {
             @RequestBody MessageRequest request) {
         MessageDto msg = chatService.adminSendMessage(id, principal.userId(), principal.username(), request.text());
         return ResponseEntity.status(HttpStatus.CREATED).body(msg);
+    }
+
+    @PatchMapping("/conversations/{id}/status")
+    public ResponseEntity<ConversationView> conversationStatus(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @RequestBody StatusRequest request) {
+        return ResponseEntity.ok(chatService.adminSetStatus(id, principal.userId(), principal.username(), request.status()));
     }
 
     @GetMapping("/me")

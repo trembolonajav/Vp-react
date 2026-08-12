@@ -49,6 +49,27 @@ public class Conversation {
     @Column(nullable = false, length = 32)
     private String status = "aberta";
 
+    @Column(name = "intermediary_used", nullable = false)
+    private boolean intermediaryUsed;
+
+    @Column(name = "buyer_product_confirmed", nullable = false)
+    private boolean buyerProductConfirmed;
+
+    @Column(name = "seller_payment_confirmed", nullable = false)
+    private boolean sellerPaymentConfirmed;
+
+    @Column(name = "negotiation_mode", nullable = false, length = 16)
+    private String negotiationMode = "UNDEFINED";
+
+    @Column(name = "vp_item_received", nullable = false)
+    private boolean vpItemReceived;
+    @Column(name = "vp_payment_received", nullable = false)
+    private boolean vpPaymentReceived;
+    @Column(name = "vp_item_delivered", nullable = false)
+    private boolean vpItemDelivered;
+    @Column(name = "vp_payment_delivered", nullable = false)
+    private boolean vpPaymentDelivered;
+
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 

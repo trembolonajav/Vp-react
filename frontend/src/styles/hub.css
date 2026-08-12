@@ -135,6 +135,7 @@
 .hub-intro-copy>small{display:flex;align-items:center;gap:8px;margin-top:17px;color:var(--faint);font-size:11.5px}
 .hub-intro-copy>small i{width:7px;height:7px;border-radius:50%;background:#df4a37;box-shadow:0 0 8px #c23629}
 .hub-feature-label{display:block;margin:0 0 8px 3px;color:var(--gold-soft);font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+.hub-feature{min-width:0}
 .hub-feature .carousel{width:100%;aspect-ratio:2.05/1;border-radius:16px}
 
 /* ------------------------------------------------ grade de ferramentas */
@@ -320,7 +321,10 @@
   .hub-header .header-live-asset{width:128px}
   .community-social-grid,.store-support-actions{grid-template-columns:1fr}
   .tools-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:22px 16px}
-  .hub-intro-copy h1{font-size:34px}
+  .hub-intro-copy h1{max-width:100%;font-size:clamp(27px,8vw,32px);line-height:1.14;overflow-wrap:anywhere;text-wrap:balance}
+  .hub-intro-copy>p{font-size:14px;line-height:1.55}
+  .hub-intro{min-height:0;padding-top:8px}
+  .hub-intro-copy{min-width:0;padding:18px 0 12px}
   .hub-feature .carousel{aspect-ratio:1.65/1}
   .community-callout{padding:22px 20px}
   .streamer{grid-template-columns:1fr}
@@ -330,4 +334,6 @@
   .community-directory .community-grid{grid-template-columns:1fr}
   .services-strip{margin-top:30px}
   .service-card{min-height:118px;padding:17px}
+  .asset-service-card{min-height:158px;grid-template-rows:120px auto}
+  .asset-service-card img{height:120px}
 }

@@ -1,6 +1,6 @@
 import { apiGet, apiPatch, apiPost, apiPut } from "./api";
 import type { Listing, Page } from "../types/listing";
-import type { ChatMessage, ConversationDetail, ConversationsList } from "../types/conversation";
+import type { ChatMessage, ConversationDetail, ConversationsList, ConversationView } from "../types/conversation";
 
 export interface AdminReport {
   id: string;
@@ -51,6 +51,10 @@ export function getAdminConversation(id: string, signal?: AbortSignal): Promise<
 /** O moderador do intermédio posta no chat da negociação (visível a comprador e vendedor). */
 export function adminSendMessage(id: string, text: string): Promise<ChatMessage> {
   return apiPost<ChatMessage>(`/api/v1/admin/conversations/${encodeURIComponent(id)}/messages`, { text });
+}
+
+export function setAdminConversationStatus(id: string, status: string): Promise<ConversationView> {
+  return apiPatch<ConversationView>(`/api/v1/admin/conversations/${encodeURIComponent(id)}/status`, { status });
 }
 
 export interface WhatsAppStatus { status: string; qr: string | null; phone: string | null; lastConnection: string | null; error: string | null; groupJid: string | null }

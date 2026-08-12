@@ -7,6 +7,7 @@ import com.vpertz.listings.dto.ListingFilter;
 import com.vpertz.listings.dto.ListingResponse;
 import com.vpertz.listings.dto.ListingWriteRequest;
 import com.vpertz.listings.dto.PageResponse;
+import com.vpertz.users.UserRepository;
 import java.math.BigDecimal;
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -35,10 +36,12 @@ public class ListingService {
 
     private final ListingRepository repository;
     private final ListingMapper mapper;
+    private final UserRepository userRepository;
 
-    public ListingService(ListingRepository repository, ListingMapper mapper) {
+    public ListingService(ListingRepository repository, ListingMapper mapper, UserRepository userRepository) {
         this.repository = repository;
         this.mapper = mapper;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -88,6 +91,7 @@ public class ListingService {
         listing.setPublicId(generatePublicId(request.titulo()));
         listing.setSellerId(principal.userId());
         listing.setVendedor(principal.username());
+        userRepository.findById(principal.userId()).ifPresent(user -> listing.setVendedorAvatar(user.getAvatar()));
         listing.setCriadoEm(LocalDate.now());
         ListingSanitizer.apply(request, listing);
         applyDestaque(listing, request, principal);

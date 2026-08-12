@@ -237,11 +237,14 @@ h2{font-size:clamp(23px,3vw,32px);font-weight:700}
   display:flex;gap:8px;z-index:2;
 }
 .dot{
-  width:9px;height:9px;padding:0;border:0;border-radius:20px;
+  width:44px;height:44px;padding:0;border:17px solid transparent;border-radius:20px;
   background:rgba(255,255,255,.4);cursor:pointer;
   transition:width .3s var(--ease),background .2s;
+  background-clip:content-box;
 }
-.dot.active{width:30px;background:linear-gradient(90deg,var(--red-2),var(--gold))}
+.dot.active{width:52px;background:linear-gradient(90deg,var(--red-2),var(--gold));background-clip:content-box}
+.carousel--loading{min-height:1px;background:linear-gradient(110deg,#100b0a 20%,#211310 38%,#100b0a 56%);background-size:200% 100%;animation:carousel-loading 1.4s linear infinite}
+@keyframes carousel-loading{to{background-position:-200% 0}}
 
 /* ------------------------------------------------ cards de jogo */
 .games-grid{

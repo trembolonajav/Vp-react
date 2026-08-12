@@ -60,6 +60,8 @@ export function MeusAnunciosPage() {
   const [ordem, setOrdem] = useState("recentes");
   const [menu, setMenu] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
+  const [shareItems, setShareItems] = useState<Listing[]>([]);
+  const [shareMode, setShareMode] = useState<"card" | "list">("card");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -106,22 +108,12 @@ export function MeusAnunciosPage() {
 
   const preco = (l: Listing) => !l.preco ? "A combinar" : l.moeda === "diamonds" ? numeroBR(l.preco) : brl(l.preco);
 
-  const compartilhar = async (items: Listing[]) => {
+  const compartilhar = (items: Listing[], mode: "card" | "list" = items.length > 1 ? "list" : "card") => {
     if (!items.length) return;
-    const lista = items.length > 1;
-    const title = lista ? `Lista de anúncios de ${user?.username ?? "vendedor"}` : items[0].titulo;
-    const text = lista
-      ? items.map((item) => `• ${item.titulo} — ${preco(item)}\n${window.location.origin}/bazaar/anuncio/${item.id}`).join("\n\n")
-      : `${items[0].titulo}\n${preco(items[0])}`;
-    const url = lista
-      ? `${window.location.origin}/bazaar/perfil/${encodeURIComponent(user?.username ?? "")}`
-      : `${window.location.origin}/bazaar/anuncio/${items[0].id}`;
-    try {
-      const nativeShare = typeof navigator.share === "function";
-      if (nativeShare) await navigator.share({ title, text, url });
-      else await navigator.clipboard.writeText(`${title}\n\n${text}\n\n${url}`);
-      setShareStatus(nativeShare ? "Compartilhamento aberto." : "Lista copiada.");
-    } catch (err) { if ((err as Error).name !== "AbortError") setShareStatus("Não foi possível compartilhar."); }
+    setMenu(null);
+    setShareStatus(null);
+    setShareMode(mode);
+    setShareItems(items);
   };
 
   const alternar = (id: string) => setSelecionados((prev) => {
@@ -163,7 +155,7 @@ export function MeusAnunciosPage() {
             <p style={{ margin: "7px 0 0", fontSize: 13.5, color: "#b5a196" }}>Uma linha por anúncio, com o desempenho ao lado. Ações raras ficam no menu <b style={{ color: "#e5b34f" }}>⋯</b>.</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <button type="button" data-h="share" disabled={!temSelecao} onClick={() => void compartilhar(selecionadosLista)}
+            <button type="button" data-h="share" disabled={!temSelecao} onClick={() => compartilhar(selecionadosLista, "list")}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 16px", borderRadius: 9, cursor: temSelecao ? "pointer" : "not-allowed", border: "1px solid rgba(216,138,74,.3)", background: "linear-gradient(180deg,#241813,#160f0c)", font: "700 11.5px/1 Inter", letterSpacing: ".08em", textTransform: "uppercase", color: "#e5b34f", opacity: temSelecao ? 1 : 0.55 }}>
               Compartilhar lista <span style={{ color: "#8a7a70" }}>({selecionados.size})</span>
             </button>
@@ -223,7 +215,7 @@ export function MeusAnunciosPage() {
             <div style={{ display: "flex", gap: 7, marginLeft: "auto", flexWrap: "wrap" }}>
               <button data-h="bpausar" onClick={() => void acaoMassa("pausado")} style={btnMassa("rgba(216,138,74,.3)", "rgba(10,6,5,.55)", "#e6d3b4")}>Pausar</button>
               <button data-h="bvendido" onClick={() => void acaoMassa("vendido")} style={btnMassa("rgba(78,201,124,.4)", "rgba(78,201,124,.08)", "#7fd9a2")}>Marcar vendido</button>
-              <button data-h="bshare" onClick={() => void compartilhar(selecionadosLista)} style={btnMassa("rgba(229,179,79,.4)", "rgba(229,179,79,.1)", "#f0d194")}>Compartilhar juntos</button>
+              <button data-h="bshare" onClick={() => compartilhar(selecionadosLista)} style={btnMassa("rgba(229,179,79,.4)", "rgba(229,179,79,.1)", "#f0d194")}>Compartilhar juntos</button>
               <button data-h="bexcluir" onClick={() => { void (async () => { for (const item of selecionadosLista) await excluir(item); })(); }} style={btnMassa("rgba(195,54,41,.4)", "rgba(195,54,41,.1)", "#e8b4a8")}>Excluir</button>
             </div>
           </div>
@@ -304,7 +296,7 @@ export function MeusAnunciosPage() {
                         {m.status === "ativo" && <button data-h="mitem" onClick={() => void alterarStatus(m, "pausado")} style={menuItem("#e0d0c4", true)}><span style={menuIco("#e5b34f")}>❚❚</span>Pausar anúncio</button>}
                         {m.status === "pausado" && <button data-h="mitem" onClick={() => void alterarStatus(m, "ativo")} style={menuItem("#e0d0c4", true)}><span style={menuIco("#e5b34f")}>▶</span>Reativar anúncio</button>}
                         {m.status !== "vendido" && <button data-h="mitem" onClick={() => void alterarStatus(m, "vendido")} style={menuItem("#e0d0c4", true)}><span style={menuIco("#7fd9a2")}>✓</span>Marcar como vendido</button>}
-                        <button data-h="mitem" onClick={() => { setMenu(null); void compartilhar([m]); }} style={menuItem("#e0d0c4", true)}><span style={menuIco("#e5b34f")}>⧉</span>Compartilhar card</button>
+                        <button data-h="mitem" onClick={() => compartilhar([m], "card")} style={menuItem("#e0d0c4", true)}><span style={menuIco("#e5b34f")}>⧉</span>Compartilhar card</button>
                         <button data-h="mitem" disabled={busy === m.id} onClick={() => void excluir(m)} style={menuItem("#d68b7c", true)}><span style={menuIco("#d8503c")}>✕</span>Excluir anúncio</button>
                       </div>
                     )}
@@ -321,8 +313,75 @@ export function MeusAnunciosPage() {
           </div>
         )}
       </div>
+      {shareItems.length > 0 && (
+        <ShareListingsModal
+          items={shareItems}
+          mode={shareMode}
+          seller={user?.username ?? "vendedor"}
+          onClose={() => setShareItems([])}
+          onStatus={setShareStatus}
+        />
+      )}
     </main>
   );
+}
+
+function ShareListingsModal({ items, mode, seller, onClose, onStatus }: { items: Listing[]; mode: "card" | "list"; seller: string; onClose: () => void; onStatus: (status: string) => void }) {
+  const isList = mode === "list";
+  const first = items[0];
+  const price = (item: Listing) => !item.preco ? "A combinar" : item.moeda === "diamonds" ? `${numeroBR(item.preco)} diamonds` : brl(item.preco);
+  const listingUrl = `${window.location.origin}/api/v1/share/${encodeURIComponent(first.id)}`;
+  const profileUrl = `${window.location.origin}/bazaar/perfil/${encodeURIComponent(seller)}`;
+  const url = isList ? profileUrl : listingUrl;
+  const text = isList
+    ? `Lista de ${seller}\n\n${items.map((item) => `• ${item.titulo} — ${price(item)}\n${window.location.origin}/bazaar/anuncio/${encodeURIComponent(item.id)}`).join("\n\n")}\n\n${profileUrl}`
+    : `${first.titulo}\n${first.nivel ? `Lv. ${first.nivel} · ` : ""}${first.qualidade ? `Qualidade ${first.qualidade.toFixed(2).replace(".", ",")} · ` : ""}${ivTotal(first.ivs) != null ? `IV ${ivTotal(first.ivs)}/192\n` : ""}${price(first)}${first.negociavel ? " — aceita propostas" : ""}\n${listingUrl}`;
+  const sprite = first.dex ? spriteUrl(first.dex, first.shiny) : first.img;
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(text); onStatus(isList ? "Lista copiada." : "Mensagem do anúncio copiada."); }
+    catch { onStatus("Não foi possível copiar."); }
+  };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, display: "grid", placeItems: "center", padding: 24, background: "rgba(6,3,3,.82)", backdropFilter: "blur(6px)" }}>
+      <div onClick={(event) => event.stopPropagation()} style={{ width: "100%", maxWidth: 590, maxHeight: "88vh", overflow: "auto", borderRadius: 14, border: "1px solid rgba(229,179,79,.32)", background: "linear-gradient(180deg,#1c1412,#100b09)", boxShadow: "0 30px 70px rgba(0,0,0,.75)" }}>
+        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid rgba(216,138,74,.16)" }}>
+          <strong style={{ font: "700 15px/1 Cinzel,serif", color: "#f7eee7" }}>{isList ? `Compartilhar lista (${items.length})` : "Compartilhar anúncio"}</strong>
+          <button onClick={onClose} aria-label="Fechar" style={{ width: 29, height: 29, borderRadius: 7, cursor: "pointer", border: "1px solid rgba(216,138,74,.24)", background: "transparent", color: "#a4937e" }}>×</button>
+        </header>
+        <div style={{ padding: 18 }}>
+          <div style={{ marginBottom: 10, font: "800 9px/1 Inter", letterSpacing: ".15em", textTransform: "uppercase", color: "#7d6d64" }}>{isList ? "Card de lista · substitui a lista digitada no grupo" : "Preview do compartilhamento"}</div>
+          {isList ? (
+            <div style={{ overflow: "hidden", borderRadius: 11, border: "1px solid rgba(229,179,79,.3)", background: "#120c0a" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 17px", background: "linear-gradient(90deg,rgba(120,26,26,.48),rgba(24,14,12,.92))" }}>
+                <img src="/assets/bazaar/logo-vpbazaar.webp" alt="VP Bazaar" style={{ width: 42, height: 42, objectFit: "contain" }} />
+                <div style={{ flex: 1 }}><strong style={{ font: "700 18px/1 Cinzel,serif", color: "#f7eee7" }}>Lista de {seller}</strong><span style={{ display: "block", marginTop: 5, font: "700 9px/1 Inter", letterSpacing: ".13em", textTransform: "uppercase", color: "#a4937e" }}>{items.length} {items.length === 1 ? "anúncio à venda" : "anúncios à venda"}</span></div>
+                <span style={{ padding: "7px 12px", borderRadius: 999, border: "1px solid rgba(229,179,79,.4)", color: "#f0d194", font: "700 10px/1 Cinzel,serif", textTransform: "uppercase" }}>À venda</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))" }}>
+                {items.map((item, index) => { const itemIv = ivTotal(item.ivs); const itemSprite = item.dex ? spriteUrl(item.dex, item.shiny) : item.img; const tier = tierQualidade(item.qualidade); return <div key={item.id} style={{ display: "grid", gridTemplateColumns: "42px minmax(0,1fr) auto", alignItems: "center", gap: 9, minHeight: 70, padding: "10px 13px", borderTop: "1px solid rgba(229,179,79,.12)", borderLeft: index % 2 ? "1px solid rgba(229,179,79,.12)" : 0 }}><img src={itemSprite} alt="" style={{ width: 38, height: 38, objectFit: "contain", imageRendering: "pixelated" }} /><div style={{ minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", font: "700 12.5px/1.25 Inter", color: "#eee4dc" }}>{item.titulo}</strong><span style={{ display: "block", marginTop: 5, fontSize: 10, color: "#8a7a70" }}>{item.nivel ? `Lv. ${item.nivel}` : item.quantidade > 1 ? `${item.quantidade} un.` : "Anúncio"}{item.tipos?.length ? ` · ${item.tipos.join(" / ")}` : ""}</span></div><div style={{ textAlign: "right" }}>{tier && <b style={{ display: "block", whiteSpace: "nowrap", color: "#f0d194", font: "700 10px/1 Cinzel,serif" }}>{tier.texto}</b>}{itemIv != null && <span style={{ display: "block", marginTop: 5, whiteSpace: "nowrap", color: "#7fd9a2", font: "700 10px/1 Inter" }}>IV {itemIv}/192</span>}</div></div>; })}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "11px 15px", borderTop: "1px solid rgba(229,179,79,.2)", color: "#8a7a70", fontSize: 10.5 }}><span style={{ color: "#7fd9a2" }}>♜ Negociação com intermédio da VP</span><b style={{ color: "#e5b34f" }}>{profileUrl}</b></div>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 130px", gap: 14, padding: 14, borderRadius: 11, border: "1px solid rgba(78,201,124,.3)", background: "rgba(13,43,25,.55)" }}>
+              <div><strong style={{ font: "700 17px/1.2 Inter", color: "#f7eee7" }}>{first.titulo}</strong><p style={{ margin: "9px 0 0", whiteSpace: "pre-line", fontSize: 12, lineHeight: 1.55, color: "#c9bdb4" }}>{text.split("\n").slice(1, -1).join("\n")}</p><small style={{ display: "block", marginTop: 10, color: "#7d8d80" }}>{window.location.host}</small></div>
+              <div style={{ minHeight: 120, borderRadius: 9, background: `url(${sprite}) center/80% no-repeat, radial-gradient(circle,rgba(195,54,41,.25),rgba(10,6,5,.92))`, imageRendering: "pixelated" }} />
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
+            <a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer" style={shareAction("#a8e6bf", "rgba(37,211,102,.3)")}>WhatsApp <span>↗</span></a>
+            <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer" style={shareAction("#b9d8f2", "rgba(64,158,222,.3)")}>Telegram <span>↗</span></a>
+            <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer" style={shareAction("#ddd4cd", "rgba(216,138,74,.26)")}>X / Twitter <span>↗</span></a>
+            <button onClick={() => void copy()} style={{ ...shareAction("#f0d194", "rgba(229,179,79,.35)"), cursor: "pointer" }}>Copiar mensagem <span>⧉</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function shareAction(color: string, border: string): CSSProperties {
+  return { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 13px", borderRadius: 9, border: `1px solid ${border}`, background: "rgba(10,6,5,.55)", color, font: "700 12px/1 Inter", textDecoration: "none" };
 }
 
 function btnMassa(borda: string, fundo: string, cor: string): CSSProperties {
