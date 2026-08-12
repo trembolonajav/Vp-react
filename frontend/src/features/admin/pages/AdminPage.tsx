@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { listAdminConversations, listAdminReports } from "../../../services/adminModerationService";
 import { AdminOverview } from "../components/AdminOverview";
-import { AdminConfigForm } from "../components/AdminConfigForm";
 import { AdminModerationPanel } from "../components/AdminModerationPanel";
 import { AdminIntermediaryPanel } from "../components/AdminIntermediaryPanel";
 import { AdminWhatsAppPanel } from "../components/AdminWhatsAppPanel";
+import { AdminConfigProvider } from "../config/AdminConfigContext";
+import { AdminStorePanel } from "../config/AdminStorePanel";
+import { AdminHubPanel } from "../config/AdminHubPanel";
+import { AdminBazaarPanel } from "../config/AdminBazaarPanel";
+import { AdminSaveBar } from "../config/AdminSaveBar";
 
 // Porte fiel da tela 13 "Painel de admin": shell de duas colunas (sidebar + conteúdo).
 // A sidebar troca a vista; "Visão geral" é o dashboard (AdminOverview) e "Configurações"
@@ -31,6 +35,20 @@ const NAV: Array<{ id: Vista; simbolo: string; rotulo: string }> = [
   { id: "hub", simbolo: "❖", rotulo: "VPertsz" },
   { id: "config", simbolo: "⚙", rotulo: "Configurações" },
 ];
+
+const svg = (children: ReactNode) => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+);
+const ICONS: Record<Vista, ReactNode> = {
+  geral: svg(<><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></>),
+  intermedios: svg(<path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z" />),
+  denuncias: svg(<><path d="M12 3.5 21 19H3z" /><path d="M12 10v4" /><path d="M12 17h.01" /></>),
+  anuncios: svg(<><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h10" /></>),
+  whatsapp: svg(<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5.1A8.3 8.3 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z" />),
+  store: svg(<><path d="M5 8h14l-1 12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></>),
+  hub: svg(<path d="M12 3.2l2.5 5.1 5.6.8-4 3.9 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-3.9 5.6-.8z" />),
+  config: svg(<><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></>),
+};
 
 export function AdminPage() {
   const { logout, user } = useAuth();
@@ -68,7 +86,7 @@ export function AdminPage() {
                 const badge = counts[n.id];
                 return (
                   <button key={n.id} data-h="nav" onClick={() => setVista(n.id)} style={navBtn(ativa)}>
-                    <span style={{ flex: "none", width: 15, textAlign: "center", color: "#e5b34f" }}>{n.simbolo}</span>{n.rotulo}
+                    <span style={{ flex: "none", display: "grid", placeItems: "center", width: 17, height: 17, color: "#e5b34f" }}>{ICONS[n.id]}</span>{n.rotulo}
                     {badge ? <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", boxSizing: "border-box", display: "grid", placeItems: "center", borderRadius: 999, background: "linear-gradient(180deg,#c33629,#7d1a15)", font: "800 9.5px/1 Inter", color: "#fff" }}>{badge}</span> : null}
                   </button>
                 );
@@ -86,23 +104,18 @@ export function AdminPage() {
             {vista === "denuncias" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminModerationPanel initialTab="reports" /></div>}
             {vista === "anuncios" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminModerationPanel initialTab="listings" /></div>}
             {vista === "whatsapp" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminWhatsAppPanel /></div>}
-            {vista === "store" && (
-              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
-                <ConfigHeader kicker="VP Store" titulo="Gestão da loja" sub="Catálogo de diamonds (jogos), contato de WhatsApp e mensagem de negociação da loja." />
-                <AdminConfigForm scope="store" />
-              </div>
-            )}
-            {vista === "hub" && (
-              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
-                <ConfigHeader kicker="VPertsz" titulo="Gestão do hub" sub="Banners do carrossel e contatos da comunidade exibidos na página inicial." />
-                <AdminConfigForm scope="hub" />
-              </div>
-            )}
-            {vista === "config" && (
-              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
-                <ConfigHeader kicker="Configurações" titulo="Ajustes do Bazaar" sub="Disponibilidade, mensagens, servidores e categorias do marketplace." />
-                <AdminConfigForm scope="bazaar" />
-              </div>
+            {(vista === "store" || vista === "hub" || vista === "config") && (
+              <AdminConfigProvider>
+                <div className="an-form-wrap" style={{ maxWidth: "none" }}>
+                  {vista === "store" && <ConfigHeader kicker="VP Store" titulo="Gestão da loja" sub="Catálogo de diamonds (jogos), contato de WhatsApp e mensagem de negociação da loja." />}
+                  {vista === "hub" && <ConfigHeader kicker="VPertsz" titulo="Gestão do hub" sub="Banners do carrossel e contatos da comunidade exibidos na página inicial." />}
+                  {vista === "config" && <ConfigHeader kicker="Configurações" titulo="Ajustes do Bazaar" sub="Disponibilidade, mensagens, servidores e categorias do marketplace." />}
+                  {vista === "store" && <AdminStorePanel />}
+                  {vista === "hub" && <AdminHubPanel />}
+                  {vista === "config" && <AdminBazaarPanel />}
+                  <AdminSaveBar />
+                </div>
+              </AdminConfigProvider>
             )}
           </div>
         </div>
