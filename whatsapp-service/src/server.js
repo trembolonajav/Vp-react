@@ -2,6 +2,7 @@ import express from "express";
 import QRCode from "qrcode";
 import pino from "pino";
 import makeWASocket, { DisconnectReason, useMultiFileAuthState } from "@whiskeysockets/baileys";
+import { mkdir, readdir, rm } from "node:fs/promises";
 
 const port = Number(process.env.PORT || 3000);
 const authDir = process.env.WHATSAPP_AUTH_DIR || "/data/auth";
@@ -12,16 +13,19 @@ let socket;
 let state = { status: "starting", qr: null, phone: null, lastConnection: null, error: null };
 let configuredGroup = process.env.WHATSAPP_GROUP_JID || "";
 let reconnectTimer;
+let connectionGeneration = 0;
 
 const publicState = () => ({ ...state, groupJid: configuredGroup || null });
 
 async function connect() {
   clearTimeout(reconnectTimer);
+  const generation = ++connectionGeneration;
   state = { ...state, status: "connecting", qr: null, error: null };
   const { state: auth, saveCreds } = await useMultiFileAuthState(authDir);
   socket = makeWASocket({ auth, logger, printQRInTerminal: false, syncFullHistory: false, markOnlineOnConnect: false });
   socket.ev.on("creds.update", saveCreds);
   socket.ev.on("connection.update", async ({ connection, qr, lastDisconnect }) => {
+    if (generation !== connectionGeneration) return;
     if (qr) state = { ...state, status: "qr", qr: await QRCode.toDataURL(qr), error: null };
     if (connection === "open") {
       state = { status: "connected", qr: null, phone: socket.user?.id?.split(":")[0] || null, lastConnection: new Date().toISOString(), error: null };
@@ -35,6 +39,28 @@ async function connect() {
   });
 }
 
+async function clearSession() {
+  clearTimeout(reconnectTimer);
+  connectionGeneration += 1;
+  const previousSocket = socket;
+  socket = undefined;
+  try { await previousSocket?.logout(); } catch (error) { logger.debug(error); }
+  try { previousSocket?.end(new Error("Sessão reiniciada pelo administrador.")); } catch (error) { logger.debug(error); }
+  await mkdir(authDir, { recursive: true });
+  const authEntries = await readdir(authDir);
+  await Promise.all(authEntries.map((entry) => rm(`${authDir}/${entry}`, { recursive: true, force: true })));
+}
+
+async function waitForQrOrConnection(timeoutMs = 7000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (state.status === "qr" || state.status === "connected") return publicState();
+    if (state.error) throw new Error(state.error);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  throw new Error("O WhatsApp não gerou um QR Code a tempo. Tente novamente.");
+}
+
 const app = express();
 app.use(express.json({ limit: "100kb" }));
 const protectedRoute = (req, res, next) => req.headers.authorization === `Bearer ${serviceToken}` ? next() : res.status(401).json({ message: "Não autorizado." });
@@ -42,8 +68,17 @@ const protectedRoute = (req, res, next) => req.headers.authorization === `Bearer
 app.get("/health", (_req, res) => res.json({ ok: true, status: state.status }));
 app.use(protectedRoute);
 app.get("/status", (_req, res) => res.json(publicState()));
-app.post("/connect", async (_req, res) => { await connect(); res.status(202).json(publicState()); });
-app.post("/disconnect", async (_req, res) => { await socket?.logout(); state = { ...state, status: "disconnected", qr: null, phone: null }; res.json(publicState()); });
+app.post("/connect", async (_req, res) => {
+  await clearSession();
+  state = { status: "connecting", qr: null, phone: null, lastConnection: null, error: null };
+  await connect();
+  res.json(await waitForQrOrConnection());
+});
+app.post("/disconnect", async (_req, res) => {
+  await clearSession();
+  state = { status: "disconnected", qr: null, phone: null, lastConnection: null, error: null };
+  res.json(publicState());
+});
 app.get("/groups", async (_req, res) => {
   if (state.status !== "connected") return res.status(409).json({ message: "WhatsApp não conectado." });
   const groups = await socket.groupFetchAllParticipating();

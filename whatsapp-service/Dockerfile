@@ -3,8 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY src ./src
-RUN mkdir -p /data/auth && chown -R node:node /data
-USER node
+COPY docker-entrypoint.sh /usr/local/bin/whatsapp-entrypoint
+RUN chmod +x /usr/local/bin/whatsapp-entrypoint && mkdir -p /data/auth
 ENV PORT=3000 WHATSAPP_AUTH_DIR=/data/auth
 EXPOSE 3000
-CMD ["npm", "start"]
+ENTRYPOINT ["whatsapp-entrypoint"]
