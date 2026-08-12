@@ -5,6 +5,7 @@ import { HubLayout } from "./features/hub/HubLayout";
 import { HubHomePage } from "./features/hub/HubHomePage";
 import { ComunidadePage } from "./features/hub/ComunidadePage";
 import { VplabLayout } from "./features/vplab/VplabLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
 import { SeoManager } from "./seo";
 
 const StoreLayout = lazy(() => import("./features/store/StoreLayout").then((m) => ({ default: m.StoreLayout })));
@@ -105,8 +106,10 @@ export function App() {
       <Route path="multi" element={<LauncherPage />} />
       <Route path="vplauncher" element={<LauncherPage />} />
 
-      {/* Painel */}
-      <Route path="admin" element={<Protegida admin><AdminPage /></Protegida>} />
+      {/* Painel — dentro do layout da plataforma (cabeçalho + rodapé do site) */}
+      <Route path="admin" element={<Protegida admin><AdminLayout /></Protegida>}>
+        <Route index element={<AdminPage />} />
+      </Route>
 
       {/* O layout compartilhado mantém o cabeçalho e a navegação consistentes
           em todas as ferramentas oficiais do VPLab. */}

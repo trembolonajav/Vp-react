@@ -1,281 +1,131 @@
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
-import { getConfig, saveConfig } from "../../../services/configService";
+import type { CSSProperties } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { ApiError } from "../../../services/api";
-import type { AdminConfigRequest, Banner, Contact, Game, SiteConfig } from "../../../types/config";
+import { listAdminConversations, listAdminReports } from "../../../services/adminModerationService";
+import { AdminOverview } from "../components/AdminOverview";
+import { AdminConfigForm } from "../components/AdminConfigForm";
 import { AdminModerationPanel } from "../components/AdminModerationPanel";
+import { AdminIntermediaryPanel } from "../components/AdminIntermediaryPanel";
+import { AdminWhatsAppPanel } from "../components/AdminWhatsAppPanel";
 
-const ICONES = [
-  "instagram", "youtube", "twitch", "whatsapp", "tiktok", "discord",
-  "x", "telegram", "facebook", "kick", "email", "site",
+// Porte fiel da tela 13 "Painel de admin": shell de duas colunas (sidebar + conteúdo).
+// A sidebar troca a vista; "Visão geral" é o dashboard (AdminOverview) e "Configurações"
+// reaproveita o editor de config existente. Badges vêm de contagens reais.
+
+type Vista = "geral" | "intermedios" | "denuncias" | "anuncios" | "whatsapp" | "store" | "hub" | "config";
+
+const SCOPED = `
+.bzadminshell [data-h=nav]:hover{border-color:rgba(229,179,79,.4) !important;color:#f7eee7 !important}
+.bzadminshell [data-h=sair]:hover{border-color:#c33629 !important;color:#f7d9d2 !important}
+@media(max-width:900px){.bzadminshell-grid{grid-template-columns:1fr !important}}
+@media(max-width:1100px){.bzadmin .admin-kpi-grid{grid-template-columns:repeat(2,1fr) !important}.bzadmin .admin-2col{grid-template-columns:1fr !important}}
+`;
+
+const NAV: Array<{ id: Vista; simbolo: string; rotulo: string }> = [
+  { id: "geral", simbolo: "◧", rotulo: "Visão geral" },
+  { id: "intermedios", simbolo: "⛨", rotulo: "Intermédios" },
+  { id: "denuncias", simbolo: "⚠", rotulo: "Denúncias" },
+  { id: "anuncios", simbolo: "☰", rotulo: "Anúncios" },
+  { id: "whatsapp", simbolo: "◉", rotulo: "WhatsApp" },
+  { id: "store", simbolo: "▦", rotulo: "VP Store" },
+  { id: "hub", simbolo: "❖", rotulo: "VPertsz" },
+  { id: "config", simbolo: "⚙", rotulo: "Configurações" },
 ];
-
-interface AdminState {
-  whatsapp: string;
-  msgNegociar: string;
-  bazaarAtivo: boolean;
-  msgInteresse: string;
-  msgAnunciar: string;
-  servidoresText: string;
-  categoriasText: string;
-  games: Game[];
-  banners: Banner[];
-  contatos: Contact[];
-}
-
-function fromConfig(config: SiteConfig): AdminState {
-  return {
-    whatsapp: config.whatsapp,
-    msgNegociar: config.msgNegociar,
-    bazaarAtivo: config.bazaar.ativo,
-    msgInteresse: config.bazaar.msgInteresse,
-    msgAnunciar: config.bazaar.msgAnunciar,
-    servidoresText: config.bazaar.servidores.join("\n"),
-    categoriasText: config.bazaar.categorias.join("\n"),
-    games: config.games.map((g) => ({ ...g })),
-    banners: config.banners.map((b) => ({ ...b })),
-    contatos: config.contatos.map((c) => ({ ...c })),
-  };
-}
-
-const linhas = (text: string): string[] =>
-  text.split("\n").map((s) => s.trim()).filter(Boolean);
 
 export function AdminPage() {
   const { logout, user } = useAuth();
-  const [state, setState] = useState<AdminState | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [ok, setOk] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [vista, setVista] = useState<Vista>("geral");
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const controller = new AbortController();
-    getConfig(controller.signal)
-      .then((config) => setState(fromConfig(config)))
-      .catch((err: Error) => {
-        if (err.name !== "AbortError") setError(err.message);
-      });
+    Promise.all([
+      listAdminConversations("intermedio-solicitado", controller.signal),
+      listAdminReports("aberta", controller.signal),
+    ])
+      .then(([conversas, reports]) => setCounts({ intermedios: conversas.conversations.length, denuncias: reports.totalElements }))
+      .catch(() => { /* badges são opcionais */ });
     return () => controller.abort();
   }, []);
 
-  if (error && !state) {
-    return (
-      <main className="page">
-        <div className="container">
-          <div className="bz-empty">
-            <strong>Erro ao carregar o painel</strong>
-            <p>{error}</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-  if (!state) {
-    return (
-      <main className="page">
-        <div className="container">
-          <div className="bz-empty">
-            <strong>Carregando painel…</strong>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  const patch = (change: Partial<AdminState>) => setState((s) => (s ? { ...s, ...change } : s));
-  const patchGame = (i: number, change: Partial<Game>) =>
-    patch({ games: state.games.map((g, j) => (j === i ? { ...g, ...change } : g)) });
-  const patchBanner = (i: number, change: Partial<Banner>) =>
-    patch({ banners: state.banners.map((b, j) => (j === i ? { ...b, ...change } : b)) });
-  const patchContato = (i: number, change: Partial<Contact>) =>
-    patch({ contatos: state.contatos.map((c, j) => (j === i ? { ...c, ...change } : c)) });
-
-  const novoGame = (): Game => ({
-    id: "", nome: "", item: "Itens", unidade: "item", botao: "", img: "", icone: "",
-    precoCompra: 0, precoVenda: 0, min: 1, max: 1000, ativo: true,
-  });
-
-  const save = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setOk(false);
-    setBusy(true);
-    const body: AdminConfigRequest = {
-      whatsapp: state.whatsapp,
-      msgNegociar: state.msgNegociar,
-      banners: state.banners,
-      games: state.games,
-      bazaar: {
-        ativo: state.bazaarAtivo,
-        msgInteresse: state.msgInteresse,
-        msgAnunciar: state.msgAnunciar,
-        servidores: linhas(state.servidoresText),
-        categorias: linhas(state.categoriasText),
-      },
-      contatos: state.contatos,
-    };
-    try {
-      const salvo = await saveConfig(body);
-      setState(fromConfig(salvo));
-      setOk(true);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Falha ao salvar.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
-    <main className="page">
-      <div className="container an-form-wrap">
-        <div className="admin-head">
-          <h1 className="bz-form-title">Painel — Configuração</h1>
-          <div>
-            <span className="admin-user">{user?.username}</span>
-            <button type="button" className="bz-clear" onClick={logout}>Sair</button>
+    <main className="page bzadminshell">
+      <style>{SCOPED}</style>
+      <div className="container" style={{ maxWidth: 1500 }}>
+        <div className="bzadminshell-grid" style={{ display: "grid", gridTemplateColumns: "236px minmax(0,1fr)", gap: 16, alignItems: "start" }}>
+
+          <aside style={{ border: "1px solid rgba(229,179,79,.22)", borderRadius: 12, background: "linear-gradient(180deg,#1a1210,#120c0a)", overflow: "hidden", position: "sticky", top: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderBottom: "1px solid rgba(229,179,79,.16)" }}>
+              <img src="/assets/logo-vp-bazaar-quadrada-oficial.webp" alt="" style={{ width: 30, height: 30, objectFit: "contain" }} />
+              <div>
+                <div style={{ font: "700 12.5px/1 Cinzel, serif", letterSpacing: ".06em", color: "#f7eee7" }}>Administração</div>
+                <div style={{ marginTop: 5, font: "700 8.5px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: "#c33629" }}>Acesso restrito</div>
+              </div>
+            </div>
+            <div style={{ padding: 8 }}>
+              {NAV.map((n) => {
+                const ativa = vista === n.id;
+                const badge = counts[n.id];
+                return (
+                  <button key={n.id} data-h="nav" onClick={() => setVista(n.id)} style={navBtn(ativa)}>
+                    <span style={{ flex: "none", width: 15, textAlign: "center", color: "#e5b34f" }}>{n.simbolo}</span>{n.rotulo}
+                    {badge ? <span style={{ marginLeft: "auto", minWidth: 18, height: 18, padding: "0 5px", boxSizing: "border-box", display: "grid", placeItems: "center", borderRadius: 999, background: "linear-gradient(180deg,#c33629,#7d1a15)", font: "800 9.5px/1 Inter", color: "#fff" }}>{badge}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ padding: "11px 13px", borderTop: "1px solid rgba(229,179,79,.14)", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ minWidth: 0, flex: 1, font: "600 11px/1.3 Inter", color: "#b5a196", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.username}</span>
+              <button type="button" data-h="sair" onClick={logout} style={{ flex: "none", padding: "6px 11px", borderRadius: 7, cursor: "pointer", border: "1px solid rgba(216,138,74,.3)", background: "rgba(10,6,5,.5)", font: "700 10px/1 Inter", letterSpacing: ".06em", textTransform: "uppercase", color: "#e6d3b4" }}>Sair</button>
+            </div>
+          </aside>
+
+          <div style={{ minWidth: 0 }}>
+            {vista === "geral" && <AdminOverview onNavigate={setVista} />}
+            {vista === "intermedios" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminIntermediaryPanel /></div>}
+            {vista === "denuncias" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminModerationPanel initialTab="reports" /></div>}
+            {vista === "anuncios" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminModerationPanel initialTab="listings" /></div>}
+            {vista === "whatsapp" && <div className="an-form-wrap" style={{ maxWidth: "none" }}><AdminWhatsAppPanel /></div>}
+            {vista === "store" && (
+              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
+                <ConfigHeader kicker="VP Store" titulo="Gestão da loja" sub="Catálogo de diamonds (jogos), contato de WhatsApp e mensagem de negociação da loja." />
+                <AdminConfigForm scope="store" />
+              </div>
+            )}
+            {vista === "hub" && (
+              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
+                <ConfigHeader kicker="VPertsz" titulo="Gestão do hub" sub="Banners do carrossel e contatos da comunidade exibidos na página inicial." />
+                <AdminConfigForm scope="hub" />
+              </div>
+            )}
+            {vista === "config" && (
+              <div className="an-form-wrap" style={{ maxWidth: "none" }}>
+                <ConfigHeader kicker="Configurações" titulo="Ajustes do Bazaar" sub="Disponibilidade, mensagens, servidores e categorias do marketplace." />
+                <AdminConfigForm scope="bazaar" />
+              </div>
+            )}
           </div>
         </div>
-
-        <AdminModerationPanel />
-
-        <form onSubmit={save} className="an-form">
-          <section className="admin-section">
-            <h2 className="an-block-title">Loja</h2>
-            <div className="an-form-grid">
-              <div className="bz-group">
-                <label htmlFor="ad-wa">WhatsApp (55 + DDD + número)</label>
-                <input className="bz-input" id="ad-wa" value={state.whatsapp}
-                  onChange={(e) => patch({ whatsapp: e.target.value })} />
-              </div>
-              <div className="bz-group">
-                <label htmlFor="ad-neg">Mensagem de negociação</label>
-                <input className="bz-input" id="ad-neg" value={state.msgNegociar}
-                  onChange={(e) => patch({ msgNegociar: e.target.value })} />
-              </div>
-            </div>
-          </section>
-
-          <section className="admin-section">
-            <h2 className="an-block-title">Bazaar</h2>
-            <label className="admin-check">
-              <input type="checkbox" checked={state.bazaarAtivo}
-                onChange={(e) => patch({ bazaarAtivo: e.target.checked })} /> Bazaar ativo
-            </label>
-            <div className="an-form-grid">
-              <div className="bz-group">
-                <label htmlFor="ad-int">Mensagem de interesse</label>
-                <input className="bz-input" id="ad-int" value={state.msgInteresse}
-                  onChange={(e) => patch({ msgInteresse: e.target.value })} />
-              </div>
-              <div className="bz-group">
-                <label htmlFor="ad-anu">Mensagem de anunciar</label>
-                <input className="bz-input" id="ad-anu" value={state.msgAnunciar}
-                  onChange={(e) => patch({ msgAnunciar: e.target.value })} />
-              </div>
-              <div className="bz-group">
-                <label htmlFor="ad-serv">Servidores (um por linha)</label>
-                <textarea className="bz-input" id="ad-serv" rows={4} value={state.servidoresText}
-                  onChange={(e) => patch({ servidoresText: e.target.value })} />
-              </div>
-              <div className="bz-group">
-                <label htmlFor="ad-cat">Categorias (uma por linha)</label>
-                <textarea className="bz-input" id="ad-cat" rows={4} value={state.categoriasText}
-                  onChange={(e) => patch({ categoriasText: e.target.value })} />
-              </div>
-            </div>
-          </section>
-
-          <section className="admin-section">
-            <div className="admin-section-head">
-              <h2 className="an-block-title">Jogos</h2>
-              <button type="button" className="bz-clear" onClick={() => patch({ games: [...state.games, novoGame()] })}>
-                + Adicionar
-              </button>
-            </div>
-            {state.games.map((g, i) => (
-              <div key={i} className="admin-row">
-                <div className="an-form-grid">
-                  <input className="bz-input" placeholder="id (slug)" value={g.id} onChange={(e) => patchGame(i, { id: e.target.value })} />
-                  <input className="bz-input" placeholder="Nome" value={g.nome} onChange={(e) => patchGame(i, { nome: e.target.value })} />
-                  <input className="bz-input" placeholder="Item (plural)" value={g.item} onChange={(e) => patchGame(i, { item: e.target.value })} />
-                  <input className="bz-input" placeholder="Unidade" value={g.unidade} onChange={(e) => patchGame(i, { unidade: e.target.value })} />
-                  <input className="bz-input" placeholder="Arte do card (URL)" value={g.img} onChange={(e) => patchGame(i, { img: e.target.value })} />
-                  <input className="bz-input" placeholder="Ícone (URL)" value={g.icone} onChange={(e) => patchGame(i, { icone: e.target.value })} />
-                  <input className="bz-input" type="number" step="0.01" placeholder="Preço compra" value={g.precoCompra} onChange={(e) => patchGame(i, { precoCompra: Number(e.target.value) })} />
-                  <input className="bz-input" type="number" step="0.01" placeholder="Preço venda" value={g.precoVenda} onChange={(e) => patchGame(i, { precoVenda: Number(e.target.value) })} />
-                  <input className="bz-input" type="number" placeholder="Mín" value={g.min} onChange={(e) => patchGame(i, { min: Number(e.target.value) })} />
-                  <input className="bz-input" type="number" placeholder="Máx" value={g.max} onChange={(e) => patchGame(i, { max: Number(e.target.value) })} />
-                </div>
-                <div className="admin-row-foot">
-                  <label className="admin-check">
-                    <input type="checkbox" checked={g.ativo} onChange={(e) => patchGame(i, { ativo: e.target.checked })} /> Ativo
-                  </label>
-                  <button type="button" className="bz-clear" onClick={() => patch({ games: state.games.filter((_, j) => j !== i) })}>
-                    Remover
-                  </button>
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="admin-section">
-            <div className="admin-section-head">
-              <h2 className="an-block-title">Banners</h2>
-              <button type="button" className="bz-clear" onClick={() => patch({ banners: [...state.banners, { img: "", alt: "", link: "" }] })}>
-                + Adicionar
-              </button>
-            </div>
-            {state.banners.map((b, i) => (
-              <div key={i} className="admin-row">
-                <div className="an-form-grid">
-                  <input className="bz-input" placeholder="Imagem (URL)" value={b.img} onChange={(e) => patchBanner(i, { img: e.target.value })} />
-                  <input className="bz-input" placeholder="Texto alternativo" value={b.alt} onChange={(e) => patchBanner(i, { alt: e.target.value })} />
-                  <input className="bz-input" placeholder="Link" value={b.link} onChange={(e) => patchBanner(i, { link: e.target.value })} />
-                </div>
-                <div className="admin-row-foot">
-                  <button type="button" className="bz-clear" onClick={() => patch({ banners: state.banners.filter((_, j) => j !== i) })}>
-                    Remover
-                  </button>
-                </div>
-              </div>
-            ))}
-          </section>
-
-          <section className="admin-section">
-            <div className="admin-section-head">
-              <h2 className="an-block-title">Contatos</h2>
-              <button type="button" className="bz-clear" onClick={() => patch({ contatos: [...state.contatos, { icone: "site", nome: "", info: "", url: "" }] })}>
-                + Adicionar
-              </button>
-            </div>
-            {state.contatos.map((c, i) => (
-              <div key={i} className="admin-row">
-                <div className="an-form-grid">
-                  <select className="bz-select" value={c.icone} onChange={(e) => patchContato(i, { icone: e.target.value })}>
-                    {ICONES.map((ic) => <option key={ic} value={ic}>{ic}</option>)}
-                  </select>
-                  <input className="bz-input" placeholder="Nome" value={c.nome} onChange={(e) => patchContato(i, { nome: e.target.value })} />
-                  <input className="bz-input" placeholder="Info" value={c.info} onChange={(e) => patchContato(i, { info: e.target.value })} />
-                  <input className="bz-input" placeholder="URL" value={c.url} onChange={(e) => patchContato(i, { url: e.target.value })} />
-                </div>
-                <div className="admin-row-foot">
-                  <button type="button" className="bz-clear" onClick={() => patch({ contatos: state.contatos.filter((_, j) => j !== i) })}>
-                    Remover
-                  </button>
-                </div>
-              </div>
-            ))}
-          </section>
-
-          {error && <p className="bz-form-error">{error}</p>}
-          {ok && <p className="bz-form-ok">Configuração salva.</p>}
-
-          <button className="bz-submit" type="submit" disabled={busy}>
-            {busy ? "Salvando…" : "Salvar configuração"}
-          </button>
-        </form>
       </div>
     </main>
   );
+}
+
+function ConfigHeader({ kicker, titulo, sub }: { kicker: string; titulo: string; sub: string }) {
+  return (
+    <div>
+      <span style={{ font: "800 10.5px/1 Inter", letterSpacing: ".2em", textTransform: "uppercase", color: "#c33629" }}>{kicker}</span>
+      <h1 style={{ margin: "9px 0 0", font: "700 28px/1.05 Cinzel, serif", color: "#f7eee7" }}>{titulo}</h1>
+      <p style={{ margin: "7px 0 14px", fontSize: 13, color: "#b5a196" }}>{sub}</p>
+    </div>
+  );
+}
+
+function navBtn(ativa: boolean): CSSProperties {
+  return {
+    display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 11px", borderRadius: 8, cursor: "pointer",
+    border: `1px solid ${ativa ? "rgba(229,179,79,.5)" : "transparent"}`,
+    background: ativa ? "rgba(229,179,79,.12)" : "transparent",
+    font: "600 12.5px/1 Inter", color: ativa ? "#f7eee7" : "#b5a196", marginBottom: 4, textAlign: "left",
+  };
 }

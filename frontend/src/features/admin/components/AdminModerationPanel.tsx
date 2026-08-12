@@ -12,8 +12,8 @@ import { ApiError } from "../../../services/api";
 
 type Tab = "reports" | "listings";
 
-export function AdminModerationPanel() {
-  const [tab, setTab] = useState<Tab>("reports");
+export function AdminModerationPanel({ initialTab = "reports" }: { initialTab?: Tab } = {}) {
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [reportStatus, setReportStatus] = useState("aberta");
   const [listingStatus, setListingStatus] = useState("todos");
   const [query, setQuery] = useState("");

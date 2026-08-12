@@ -1,5 +1,6 @@
-import { apiGet, apiPatch } from "./api";
+import { apiGet, apiPatch, apiPost, apiPut } from "./api";
 import type { Listing, Page } from "../types/listing";
+import type { ConversationDetail, ConversationsList } from "../types/conversation";
 
 export interface AdminReport {
   id: string;
@@ -38,3 +39,20 @@ export function moderateListing(publicId: string, status: string): Promise<Listi
     { status },
   );
 }
+
+export function listAdminConversations(status = "intermedio-solicitado", signal?: AbortSignal): Promise<ConversationsList> {
+  return apiGet<ConversationsList>(`/api/v1/admin/conversations?status=${encodeURIComponent(status)}`, signal);
+}
+
+export function getAdminConversation(id: string, signal?: AbortSignal): Promise<ConversationDetail> {
+  return apiGet<ConversationDetail>(`/api/v1/admin/conversations/${encodeURIComponent(id)}`, signal);
+}
+
+export interface WhatsAppStatus { status: string; qr: string | null; phone: string | null; lastConnection: string | null; error: string | null; groupJid: string | null }
+export interface WhatsAppGroup { id: string; name: string; size: number }
+export const getWhatsAppStatus = (signal?: AbortSignal) => apiGet<WhatsAppStatus>("/api/v1/admin/whatsapp/status", signal);
+export const getWhatsAppGroups = () => apiGet<WhatsAppGroup[]>("/api/v1/admin/whatsapp/groups");
+export const connectWhatsApp = () => apiPost<WhatsAppStatus>("/api/v1/admin/whatsapp/connect");
+export const disconnectWhatsApp = () => apiPost<WhatsAppStatus>("/api/v1/admin/whatsapp/disconnect");
+export const configureWhatsAppGroup = (groupJid: string) => apiPut<WhatsAppStatus>("/api/v1/admin/whatsapp/config", { groupJid });
+export const testWhatsApp = () => apiPost<{ sent: boolean }>("/api/v1/admin/whatsapp/test");
