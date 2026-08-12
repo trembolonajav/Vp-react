@@ -1,18 +1,14 @@
-import { Link } from "react-router-dom";
+import { PlatformHeader } from "../shared/PlatformHeader";
+import { PlatformFooter } from "../shared/PlatformFooter";
 import "./launcher.css";
 
 const DOWNLOAD_URL = "/download/vplauncher";
 
 export function LauncherPage() {
   return (
-    <main className="launcher-page">
-      <nav className="launcher-nav" aria-label="Navegação do VP Launcher">
-        <Link to="/" className="launcher-brand" aria-label="Voltar para Vpertz">
-          <img src="/assets/platform/header/vpertsz-logo_horizontal.png" alt="Vpertz" />
-        </Link>
-        <Link to="/" className="launcher-back">Voltar ao site</Link>
-      </nav>
-
+    <>
+      <PlatformHeader activeArea="hub" subnavLabel="Vperts Multi" />
+      <main className="launcher-page">
       <section className="launcher-hero">
         <div className="launcher-glow" aria-hidden="true" />
         <div className="launcher-copy">
@@ -61,10 +57,8 @@ export function LauncherPage() {
         <article><span>03</span><h2>Feito para a comunidade</h2><p>Um ponto de acesso organizado para os jogadores Vpertz.</p></article>
       </section>
 
-      <footer className="launcher-footer">
-        <span>Vpertz © 2026</span>
-        <span>Vperts Multi v0.9.4</span>
-      </footer>
-    </main>
+      </main>
+      <PlatformFooter />
+    </>
   );
 }

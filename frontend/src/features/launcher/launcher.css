@@ -1,4 +1,4 @@
-.launcher-page{min-height:100vh;overflow:hidden;background:#07090d;color:#f4f6fb;font-family:Inter,system-ui,sans-serif}
+.launcher-page{min-height:70vh;overflow:hidden;background:transparent;color:#f4f6fb;font-family:Inter,system-ui,sans-serif;padding-top:40px}
 .launcher-page::before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 78% 28%,rgba(210,43,54,.2),transparent 28%),radial-gradient(circle at 10% 80%,rgba(225,166,64,.08),transparent 30%);z-index:0}
 .launcher-nav,.launcher-hero,.launcher-features,.launcher-footer{position:relative;z-index:1;width:min(1180px,calc(100% - 48px));margin-inline:auto}
 .launcher-nav{height:92px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}

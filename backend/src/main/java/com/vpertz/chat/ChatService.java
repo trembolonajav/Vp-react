@@ -13,6 +13,7 @@ import com.vpertz.listings.Listing;
 import com.vpertz.listings.ListingRepository;
 import com.vpertz.users.User;
 import com.vpertz.users.UserRepository;
+import com.vpertz.integrations.WhatsAppBridge;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -35,15 +36,21 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ListingRepository listingRepository;
+    private final WhatsAppBridge whatsAppBridge;
+    private final String publicBaseUrl;
 
     ChatService(ConversationRepository conversationRepository,
                MessageRepository messageRepository,
                UserRepository userRepository,
-               ListingRepository listingRepository) {
+               ListingRepository listingRepository,
+               WhatsAppBridge whatsAppBridge,
+               @org.springframework.beans.factory.annotation.Value("${app.public-base-url:http://localhost:8190}") String publicBaseUrl) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.listingRepository = listingRepository;
+        this.whatsAppBridge = whatsAppBridge;
+        this.publicBaseUrl = (publicBaseUrl == null ? "http://localhost:8190" : publicBaseUrl).replaceAll("/+$", "");
     }
 
     @Transactional(readOnly = true)
@@ -74,12 +81,44 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
+    public ConversationsList listForAdmin(String status) {
+        List<Conversation> conversas = "todas".equals(status)
+                ? conversationRepository.findAll()
+                : conversationRepository.findByStatusOrderByUpdatedAtDesc(status);
+        Map<String, String> nomes = usernames(conversas.stream()
+                .flatMap(c -> java.util.stream.Stream.of(c.getBuyerId(), c.getSellerId()))
+                .collect(Collectors.toSet()));
+        List<ConversationSummary> resumos = conversas.stream()
+                .map(c -> {
+                    List<Message> msgs = messageRepository.findByConversationIdOrderByCreatedAtAsc(c.getId());
+                    Message ultima = msgs.isEmpty() ? null : msgs.get(msgs.size() - 1);
+                    return new ConversationSummary(view(c, nomes), ultima == null ? null : message(ultima, nomes), 0);
+                })
+                .sorted(Comparator.comparing((ConversationSummary s) -> s.conversation().updatedAt()).reversed())
+                .toList();
+        return new ConversationsList(resumos, 0);
+    }
+
+    @Transactional(readOnly = true)
+    public ConversationDetail getDetailForAdmin(String conversationId) {
+        Conversation conversa = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversa não encontrada."));
+        List<Message> mensagens = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
+        Set<String> ids = new HashSet<>(Set.of(conversa.getBuyerId(), conversa.getSellerId()));
+        mensagens.stream().map(Message::getAuthorId).filter(java.util.Objects::nonNull).forEach(ids::add);
+        Map<String, String> nomes = usernames(ids);
+        return new ConversationDetail(view(conversa, nomes), mensagens.stream().map(m -> message(m, nomes)).toList());
+    }
+
+    @Transactional(readOnly = true)
     public ConversationDetail getDetail(String conversationId, String userId) {
         Conversation conversa = requireParticipant(conversationId, userId);
-        Map<String, String> nomes = usernames(Set.of(conversa.getBuyerId(), conversa.getSellerId()));
-        List<MessageDto> mensagens = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId).stream()
-                .map(m -> message(m, nomes))
-                .toList();
+        List<Message> msgs = messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
+        // inclui autores das mensagens (ex.: moderador do intermédio) além de comprador/vendedor
+        Set<String> ids = new HashSet<>(Set.of(conversa.getBuyerId(), conversa.getSellerId()));
+        msgs.stream().map(Message::getAuthorId).filter(java.util.Objects::nonNull).forEach(ids::add);
+        Map<String, String> nomes = usernames(ids);
+        List<MessageDto> mensagens = msgs.stream().map(m -> message(m, nomes)).toList();
         return new ConversationDetail(view(conversa, nomes), mensagens);
     }
 
@@ -146,6 +185,32 @@ public class ChatService {
         return new MessageDto(message.getId(), conversationId, username, userId, limpo, message.getCreatedAt());
     }
 
+    /** Envio pelo painel de admin (moderador do intermédio): não exige ser participante. */
+    @Transactional
+    public MessageDto adminSendMessage(String conversationId, String adminId, String adminUsername, String texto) {
+        Conversation conversa = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Conversa não encontrada."));
+        String limpo = texto == null ? "" : texto.trim();
+        if (limpo.isEmpty()) {
+            throw new ValidationException("Mensagem vazia.");
+        }
+        if (limpo.length() > 1000) {
+            limpo = limpo.substring(0, 1000);
+        }
+        Message message = new Message();
+        message.setId(UUID.randomUUID().toString());
+        message.setConversationId(conversationId);
+        message.setAuthorId(adminId);
+        message.setText(limpo);
+        message.getReadBy().add(adminId);
+        messageRepository.save(message);
+
+        conversa.setUpdatedAt(OffsetDateTime.now());
+        conversationRepository.save(conversa);
+
+        return new MessageDto(message.getId(), conversationId, adminUsername, adminId, limpo, message.getCreatedAt());
+    }
+
     @Transactional
     public void markRead(String conversationId, String userId) {
         requireParticipant(conversationId, userId);
@@ -163,11 +228,18 @@ public class ChatService {
         if (!STATUS.contains(status)) {
             throw new ValidationException("Estado inválido.");
         }
+        String statusAnterior = conversa.getStatus();
         conversa.setStatus(status);
         conversa.setUpdatedAt(OffsetDateTime.now());
         conversationRepository.save(conversa);
         Map<String, String> nomes = usernames(Set.of(conversa.getBuyerId(), conversa.getSellerId()));
-        return view(conversa, nomes);
+        ConversationView result = view(conversa, nomes);
+        if (whatsAppBridge != null && "intermedio-solicitado".equals(status) && !status.equals(statusAnterior)) {
+            whatsAppBridge.alertIntermediary(conversa.getId(), nz(conversa.getTitle()),
+                    nomes.getOrDefault(conversa.getBuyerId(), ""), nomes.getOrDefault(conversa.getSellerId(), ""),
+                    publicBaseUrl + "/admin#intermedios");
+        }
+        return result;
     }
 
     private Conversation requireParticipant(String conversationId, String userId) {

@@ -7,6 +7,15 @@ import com.vpertz.auth.AuthService;
 import com.vpertz.auth.dto.UserDto;
 import com.vpertz.common.security.AuthPrincipal;
 import com.vpertz.config.dto.ConfigResponse;
+import com.vpertz.chat.ChatService;
+import com.vpertz.chat.dto.ChatDtos.ConversationDetail;
+import com.vpertz.chat.dto.ChatDtos.ConversationsList;
+import com.vpertz.chat.dto.ChatDtos.MessageDto;
+import com.vpertz.chat.dto.ChatDtos.MessageRequest;
+import org.springframework.http.HttpStatus;
+import com.vpertz.integrations.WhatsAppBridge;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Map;
 import com.vpertz.listings.dto.ListingResponse;
 import com.vpertz.listings.dto.ListingStatusRequest;
 import com.vpertz.listings.dto.PageResponse;
@@ -14,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,14 +39,63 @@ public class AdminController {
     private final AuthService authService;
     private final AdminConfigService adminConfigService;
     private final AdminModerationService moderationService;
+    private final ChatService chatService;
+    private final WhatsAppBridge whatsAppBridge;
 
     public AdminController(
             AuthService authService,
             AdminConfigService adminConfigService,
-            AdminModerationService moderationService) {
+            AdminModerationService moderationService,
+            ChatService chatService,
+            WhatsAppBridge whatsAppBridge) {
         this.authService = authService;
         this.adminConfigService = adminConfigService;
         this.moderationService = moderationService;
+        this.chatService = chatService;
+        this.whatsAppBridge = whatsAppBridge;
+    }
+
+    @GetMapping("/whatsapp/status")
+    public ResponseEntity<JsonNode> whatsappStatus() { return ResponseEntity.ok(whatsAppBridge.get("/status")); }
+
+    @GetMapping("/whatsapp/groups")
+    public ResponseEntity<JsonNode> whatsappGroups() { return ResponseEntity.ok(whatsAppBridge.get("/groups")); }
+
+    @PostMapping("/whatsapp/connect")
+    public ResponseEntity<JsonNode> whatsappConnect() { return ResponseEntity.ok(whatsAppBridge.post("/connect", Map.of())); }
+
+    @PostMapping("/whatsapp/disconnect")
+    public ResponseEntity<JsonNode> whatsappDisconnect() { return ResponseEntity.ok(whatsAppBridge.post("/disconnect", Map.of())); }
+
+    @PutMapping("/whatsapp/config")
+    public ResponseEntity<JsonNode> whatsappConfig(@RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(whatsAppBridge.put("/config", body));
+    }
+
+    @PostMapping("/whatsapp/test")
+    public ResponseEntity<JsonNode> whatsappTest() {
+        return ResponseEntity.ok(whatsAppBridge.post("/send", Map.of("message", "✅ Teste de alertas do VP Bazaar.")));
+    }
+
+    @GetMapping("/conversations")
+    public ResponseEntity<ConversationsList> conversations(
+            @RequestParam(defaultValue = "intermedio-solicitado") String status) {
+        return ResponseEntity.ok(chatService.listForAdmin(status));
+    }
+
+    @GetMapping("/conversations/{id}")
+    public ResponseEntity<ConversationDetail> conversation(@PathVariable String id) {
+        return ResponseEntity.ok(chatService.getDetailForAdmin(id));
+    }
+
+    /** O moderador do intermédio posta no chat (aparece para comprador e vendedor). */
+    @PostMapping("/conversations/{id}/messages")
+    public ResponseEntity<MessageDto> conversationMessage(
+            @PathVariable String id,
+            @AuthenticationPrincipal AuthPrincipal principal,
+            @RequestBody MessageRequest request) {
+        MessageDto msg = chatService.adminSendMessage(id, principal.userId(), principal.username(), request.text());
+        return ResponseEntity.status(HttpStatus.CREATED).body(msg);
     }
 
     @GetMapping("/me")
