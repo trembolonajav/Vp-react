@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getListing } from "../../../services/listingsService";
 import { startConversation } from "../../../services/chatService";
 import { createReport } from "../../../services/reportsService";
+import { getProfile } from "../../../services/profileService";
 import type { Listing } from "../../../types/listing";
 import { AvatarCirculo } from "./profileShared";
 
@@ -53,6 +54,7 @@ export function AnuncioPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [listing, setListing] = useState<Listing | null>(null);
+  const [avatarVendedor, setAvatarVendedor] = useState("");
   const [erroApi, setErroApi] = useState("");
   const [modal, setModal] = useState("");
   const [plataforma, setPlataforma] = useState("wa");
@@ -71,6 +73,16 @@ export function AnuncioPage() {
     });
     return () => controller.abort();
   }, [id]);
+
+  useEffect(() => {
+    if (!listing?.vendedor) return;
+    const controller = new AbortController();
+    setAvatarVendedor(listing.vendedorAvatar || "");
+    getProfile(listing.vendedor, controller.signal)
+      .then((profile) => setAvatarVendedor(profile.avatar || "inicial"))
+      .catch((error: Error) => { if (error.name !== "AbortError") setAvatarVendedor(listing.vendedorAvatar || "inicial"); });
+    return () => controller.abort();
+  }, [listing?.vendedor, listing?.vendedorAvatar]);
 
   useEffect(() => {
     if (listing && new URLSearchParams(location.search).get("compartilhar") === "1") {
@@ -176,6 +188,11 @@ export function AnuncioPage() {
   // trabalho em andamento compilÃ¡vel atÃ© esses blocos entrarem no JSX.
   void [setQtd, totalCompra, tagsConsumivel, regrasItem, fichaVenda, condicoesItem, oQueFaz];
 
+  // Ícone da moeda do anúncio: diamante (diamonds) ou "R$" (dinheiro).
+  const moedaIcone = (size: number) => listing?.moeda === "brl"
+    ? <span style={{ font: `700 ${Math.round(size * 0.82)}px/1 Inter`, color: "#c9a986" }}>R$</span>
+    : <img src={AB("diamante.png")} alt="Diamonds" style={{ width: size, height: size, objectFit: "contain", flex: "none" }} />;
+
   const fecharModal = () => setModal("");
 
   return (
@@ -200,17 +217,7 @@ export function AnuncioPage() {
               <div style={{ position: "relative", aspectRatio: "1/1", display: "grid", placeItems: "center", background: "radial-gradient(58% 58% at 50% 44%, rgba(221,79,127,.2), rgba(10,6,5,.92))" }}>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "56%", aspectRatio: "1/1", borderRadius: "50%", border: "1px solid rgba(229,179,79,.14)" }} />
                 {ehCard ? (
-                  <div style={{ position: "relative", width: "60%", aspectRatio: "5/7", borderRadius: 12, padding: 7, boxSizing: "border-box", background: "linear-gradient(150deg,#f6e0a8,#a06a24 38%,#4a2c0e 62%,#e5b34f)", boxShadow: "0 18px 30px rgba(0,0,0,.7)" }}>
-                    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", borderRadius: 8, overflow: "hidden", background: "linear-gradient(180deg,#1d1224,#120b16)" }}>
-                      <div style={{ flex: 1, display: "grid", placeItems: "center", background: "radial-gradient(58% 58% at 50% 46%, rgba(154,111,187,.4), rgba(12,7,14,.9))" }}>
-                        <img src={listing?.dex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${listing.dex}.png` : spriteAnuncio} alt={tituloAnuncio} style={{ width: "78%", height: "78%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 8px 14px rgba(0,0,0,.7))" }} />
-                      </div>
-                      <div style={{ flex: "none", padding: "7px 9px 8px", borderTop: "1px solid rgba(229,179,79,.28)", background: "rgba(10,6,10,.6)" }}>
-                        <div style={{ font: "800 7.5px/1 Inter", letterSpacing: ".18em", textTransform: "uppercase", color: "#c9a86a" }}>Shiny Card</div>
-                        <div style={{ marginTop: 4, font: "700 13px/1.1 Cinzel, serif", color: "#f7eee7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tituloAnuncio}</div>
-                      </div>
-                    </div>
-                  </div>
+                  <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: "58%", objectFit: "contain", borderRadius: 12, imageRendering: "pixelated", filter: "drop-shadow(0 18px 30px rgba(0,0,0,.75))" }} />
                 ) : (
                   <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: ehItem ? "58%" : "66%", height: ehItem ? "58%" : "66%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 16px 22px rgba(0,0,0,.8))" }} />
                 )}
@@ -290,7 +297,9 @@ export function AnuncioPage() {
                       {fichaVenda.map(([rot, val, cor]) => (
                         <div key={rot} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "10px 12px", background: "#150e0c" }}>
                           <span style={{ flex: "none", font: "600 11.5px/1 Inter", whiteSpace: "nowrap", color: "#8a7a70" }}>{rot}</span>
-                          <span style={{ minWidth: 0, textAlign: "right", font: "700 12.5px/1 Inter", whiteSpace: "nowrap", color: cor }}>{val}</span>
+                          {rot === "Preço unitário"
+                            ? <span style={{ display: "inline-flex", alignItems: "center", gap: 5, textAlign: "right", font: "700 12.5px/1 Inter", whiteSpace: "nowrap", color: cor }}>{moedaIcone(14)}{precoAnuncio}</span>
+                            : <span style={{ minWidth: 0, textAlign: "right", font: "700 12.5px/1 Inter", whiteSpace: "nowrap", color: cor }}>{val}</span>}
                         </div>
                       ))}
                     </div>
@@ -302,7 +311,7 @@ export function AnuncioPage() {
                         <button data-h="ghost" onClick={() => setQtd(Math.min(estoque, qtdSel + 1))} style={{ width: 36, height: 36, flex: "none", display: "grid", placeItems: "center", borderRadius: 9, cursor: "pointer", border: "1px solid rgba(216,138,74,.26)", background: "rgba(10,6,5,.6)", font: "700 16px/1 Inter", color: "#c9a86a" }}>+</button>
                         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 9, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(229,179,79,.28)", background: "rgba(229,179,79,.08)" }}>
                           <span style={{ font: "700 9px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: "#8a7a70" }}>Total</span>
-                          <span style={{ font: "700 13px/1 Inter", color: "#c9a986" }}>{unidadeMoeda}</span>
+                          {moedaIcone(16)}
                           <span style={{ font: "700 19px/1 Cinzel, serif", color: "#e5b34f" }}>{totalCompra}</span>
                         </div>
                       </div>
@@ -366,7 +375,7 @@ export function AnuncioPage() {
             <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.22)", background: "linear-gradient(180deg,#1c1412,#110b09)", padding: 16 }}>
               <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#7d6d64" }}>Vendedor</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                <AvatarCirculo avatar={listing?.vendedorAvatar || "inicial"} nick={vendedorAnuncio} size={52} fonte={14} />
+                <AvatarCirculo key={avatarVendedor || "inicial"} avatar={avatarVendedor || "inicial"} nick={vendedorAnuncio} size={52} fonte={14} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ font: "700 17px/1.1 Cinzel, serif", color: "#f7eee7" }}>{vendedorAnuncio}</div>
                   <div style={{ marginTop: 5, fontSize: 11.5, color: "#8a7a70" }}>Anunciante no VP Bazaar</div>
