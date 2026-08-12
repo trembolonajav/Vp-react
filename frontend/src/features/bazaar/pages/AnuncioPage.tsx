@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { getListing } from "../../../services/listingsService";
 import { startConversation } from "../../../services/chatService";
 import { createReport } from "../../../services/reportsService";
 import type { Listing } from "../../../types/listing";
+import { AvatarCirculo } from "./profileShared";
 
 // Migração pixel-perfect de "VP Bazaar - Anuncio Pokemon.dc.html" (conteúdo; header/footer no BazaarLayout).
 // Conteúdo de demonstração (Gardevoir Shiny) preservado do original; a busca por :id via API entra na integração.
@@ -50,6 +51,7 @@ const MOTIVOS: Array<[string, string]> = [
 export function AnuncioPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [listing, setListing] = useState<Listing | null>(null);
   const [erroApi, setErroApi] = useState("");
   const [modal, setModal] = useState("");
@@ -60,6 +62,7 @@ export function AnuncioPage() {
   const [motivo, setMotivo] = useState("");
   const [detalhes, setDetalhes] = useState("");
   const [enviada, setEnviada] = useState(false);
+  const [qtd, setQtd] = useState(1);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,6 +71,12 @@ export function AnuncioPage() {
     });
     return () => controller.abort();
   }, [id]);
+
+  useEffect(() => {
+    if (listing && new URLSearchParams(location.search).get("compartilhar") === "1") {
+      setModal("share");
+    }
+  }, [listing, location.search]);
 
   const negociar = async () => {
     if (!listing) return;
@@ -129,6 +138,44 @@ export function AnuncioPage() {
   const moves = ["Moonblast", "Psychic", "Thunderbolt", "Calm Mind"];
   const condicoes = ["Negocio apenas pelo chat da plataforma.", "Transferência em até 10 minutos.", "Aceito troca por shiny de qualidade parecida.", "Intermédio da VP disponível a pedido."];
 
+  // ---- consumível (item / shiny card): mapeado dos campos reais do anúncio ----
+  const estoque = listing?.quantidade || 1;
+  const qtdSel = Math.max(1, Math.min(estoque, qtd));
+  const totalCompra = ((listing?.preco || 0) * qtdSel).toLocaleString("pt-BR");
+  const seloCat = ehCard ? "Shiny Card" : "Item";
+  const catCor = ehCard ? "#dcc3f2" : "#9dbbe2";
+  const catBorda = ehCard ? "rgba(154,111,187,.5)" : "rgba(80,140,220,.45)";
+  const catFundo = ehCard ? "rgba(38,24,52,.7)" : "rgba(12,24,46,.7)";
+  const tagsConsumivel: Array<[string, string, string, string]> = [
+    ["Consumível · uso único", "#a8f0c4", "rgba(126,217,162,.4)", "rgba(20,50,36,.4)"],
+    [ehCard ? "Shiny Card" : "Item de inventário", catCor, catBorda, ehCard ? "rgba(38,24,52,.5)" : "rgba(12,24,46,.5)"],
+    [`${estoque} em estoque`, "#e5b34f", "rgba(216,138,74,.3)", "rgba(229,179,79,.08)"],
+  ];
+  const regrasItem: Array<[string, string, string]> = [
+    ["Categoria", seloCat, catCor],
+    ["Uso", "Consumível", "#a8f0c4"],
+    ["Aceita troca", listing?.aceitaTroca ? "Sim" : "Não", listing?.aceitaTroca ? "#7fd9a2" : "#a4937e"],
+  ];
+  const fichaVenda: Array<[string, string, string]> = [
+    ["Em estoque", `${estoque} ${estoque === 1 ? "unidade" : "unidades"}`, "#f7eee7"],
+    ["Preço unitário", `${unidadeMoeda} ${precoAnuncio}`, "#e5b34f"],
+    ["Disponibilidade", listing?.disponibilidade || (listing?.aceitaTroca ? "Venda e troca" : "Venda"), "#f7eee7"],
+    ["Entrega", "Imediata, no chat", "#7fd9a2"],
+  ];
+  const condicoesItem = [
+    "Negocio apenas pelo chat da plataforma.",
+    "Entrega imediata das unidades combinadas.",
+    listing?.aceitaTroca ? "Aceito troca por itens equivalentes." : "Somente venda (sem troca).",
+    "Intermédio da VP disponível a pedido.",
+  ];
+  const oQueFaz = listing?.descricao || (ehCard
+    ? "Shiny Card consumível do Altar: garante a versão shiny da espécie. Combine a entrega pelo chat da plataforma."
+    : "Item consumível do Poke Idle World. Combine a quantidade e a entrega pelo chat da plataforma.");
+
+  // Estrutura preparada para a ficha especÃ­fica de consumÃ­veis; mantÃ©m o
+  // trabalho em andamento compilÃ¡vel atÃ© esses blocos entrarem no JSX.
+  void [setQtd, totalCompra, tagsConsumivel, regrasItem, fichaVenda, condicoesItem, oQueFaz];
+
   const fecharModal = () => setModal("");
 
   return (
@@ -152,10 +199,26 @@ export function AnuncioPage() {
               <span style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#2f6fb8,#63b3d8)" }} />
               <div style={{ position: "relative", aspectRatio: "1/1", display: "grid", placeItems: "center", background: "radial-gradient(58% 58% at 50% 44%, rgba(221,79,127,.2), rgba(10,6,5,.92))" }}>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "56%", aspectRatio: "1/1", borderRadius: "50%", border: "1px solid rgba(229,179,79,.14)" }} />
-                <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: "66%", height: "66%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 16px 22px rgba(0,0,0,.8))" }} />
+                {ehCard ? (
+                  <div style={{ position: "relative", width: "60%", aspectRatio: "5/7", borderRadius: 12, padding: 7, boxSizing: "border-box", background: "linear-gradient(150deg,#f6e0a8,#a06a24 38%,#4a2c0e 62%,#e5b34f)", boxShadow: "0 18px 30px rgba(0,0,0,.7)" }}>
+                    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", borderRadius: 8, overflow: "hidden", background: "linear-gradient(180deg,#1d1224,#120b16)" }}>
+                      <div style={{ flex: 1, display: "grid", placeItems: "center", background: "radial-gradient(58% 58% at 50% 46%, rgba(154,111,187,.4), rgba(12,7,14,.9))" }}>
+                        <img src={listing?.dex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${listing.dex}.png` : spriteAnuncio} alt={tituloAnuncio} style={{ width: "78%", height: "78%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 8px 14px rgba(0,0,0,.7))" }} />
+                      </div>
+                      <div style={{ flex: "none", padding: "7px 9px 8px", borderTop: "1px solid rgba(229,179,79,.28)", background: "rgba(10,6,10,.6)" }}>
+                        <div style={{ font: "800 7.5px/1 Inter", letterSpacing: ".18em", textTransform: "uppercase", color: "#c9a86a" }}>Shiny Card</div>
+                        <div style={{ marginTop: 4, font: "700 13px/1.1 Cinzel, serif", color: "#f7eee7", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tituloAnuncio}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: ehItem ? "58%" : "66%", height: ehItem ? "58%" : "66%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 16px 22px rgba(0,0,0,.8))" }} />
+                )}
                 <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
                   <span style={{ padding: "5px 9px", borderRadius: 6, border: "1px solid rgba(229,179,79,.45)", background: "rgba(38,24,12,.75)", backdropFilter: "blur(3px)", font: "800 9.5px/1 Inter", letterSpacing: ".12em", textTransform: "uppercase", whiteSpace: "nowrap", color: "#ffe0b8" }}>À venda</span>
-                  {(ehPokemon && listing?.shiny) || ehCard ? <span style={{ padding: "5px 9px", borderRadius: 6, border: "1px solid rgba(126,217,162,.45)", background: "rgba(20,50,36,.75)", backdropFilter: "blur(3px)", font: "800 9.5px/1 Inter", letterSpacing: ".12em", textTransform: "uppercase", color: "#a8f0c4" }}>{ehCard ? "Shiny Card" : "Shiny"}</span> : null}
+                  {ehPokemon
+                    ? (listing?.shiny ? <span style={{ padding: "5px 9px", borderRadius: 6, border: "1px solid rgba(126,217,162,.45)", background: "rgba(20,50,36,.75)", backdropFilter: "blur(3px)", font: "800 9.5px/1 Inter", letterSpacing: ".12em", textTransform: "uppercase", color: "#a8f0c4" }}>Shiny</span> : null)
+                    : <span style={{ padding: "5px 9px", borderRadius: 6, border: `1px solid ${catBorda}`, background: catFundo, backdropFilter: "blur(3px)", font: "800 9.5px/1 Inter", letterSpacing: ".12em", textTransform: "uppercase", whiteSpace: "nowrap", color: catCor }}>{seloCat}</span>}
                 </div>
                 <span title="Poke Idle World" style={{ position: "absolute", top: 8, right: 8, display: "flex", alignItems: "center", gap: 8, height: 44, padding: "0 12px", borderRadius: 10, border: "1px solid rgba(80,140,220,.5)", background: "rgba(12,24,46,.75)", backdropFilter: "blur(5px)" }}>
                   <img src={AB("logo-pokeidleworld.png")} alt="Poke Idle World" style={{ height: 30, width: "auto", display: "block" }} />
@@ -163,7 +226,7 @@ export function AnuncioPage() {
                 </span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1, background: "rgba(216,138,74,.14)", borderTop: "1px solid rgba(216,138,74,.16)" }}>
-                {((ehPokemon ? [["Nível", String(nivelAnuncio), "#f7eee7", "#7d6d64", false], ["IV total", String(total), "#e5b34f", "#7d6d64", true], ["Qualidade", qualidadeAnuncio, "#e5b34f", "#e5b34f", false]] : [["Categoria", ehCard ? "Shiny Card" : "Item", "#f7eee7", "#7d6d64", false], ["Quantidade", String(listing?.quantidade || 1), "#e5b34f", "#7d6d64", false]]) as Array<[string, string, string, string, boolean]>).map(([rot, val, valCor, rotCor, ivt]) => (
+                {((ehPokemon ? [["Nível", String(nivelAnuncio), "#f7eee7", "#7d6d64", false], ["IV total", String(total), "#e5b34f", "#7d6d64", true], ["Qualidade", qualidadeAnuncio, "#e5b34f", "#e5b34f", false]] : [["Disponível", String(estoque), "#f7eee7", "#7d6d64", false], ["Por unidade", precoAnuncio, "#e5b34f", "#7d6d64", false], ["Uso", "Consumível", "#a8f0c4", "#7fd9a2", false]]) as Array<[string, string, string, string, boolean]>).map(([rot, val, valCor, rotCor, ivt]) => (
                   <div key={rot} style={{ padding: "11px 12px", background: "#150e0c" }}>
                     <div style={{ font: "700 8.5px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: rotCor }}>{rot}</div>
                     <div style={{ marginTop: 6, font: "700 17px/1 Cinzel, serif", color: valCor }}>{val}{ivt && <span style={{ fontSize: 12, color: "#8a7a70" }}>/192</span>}</div>
@@ -183,28 +246,79 @@ export function AnuncioPage() {
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 18, flexWrap: "wrap" }}>
                 <div style={{ minWidth: 0 }}>
                   <h1 style={{ margin: 0, font: "700 31px/1.08 Cinzel, serif", color: "#f7eee7" }}>{tituloAnuncio} {ehPokemon && listing?.shiny && <span style={{ fontSize: 20, color: "#a8f0c4" }}>Shiny</span>}</h1>
-                  <div style={{ display: "flex", gap: 6, marginTop: 11 }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px 5px 7px", borderRadius: 999, border: "1px solid #dd4f7f", background: "rgba(221,79,127,.14)", font: "700 11.5px/1 Inter", color: "#f7c9d9" }}><img src={AB("types/psychic.webp")} alt="" style={{ width: 16, height: 16, objectFit: "contain" }} />Psíquico</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px 5px 7px", borderRadius: 999, border: "1px solid #c96f9e", background: "rgba(201,111,158,.14)", font: "700 11.5px/1 Inter", color: "#f4d3e4" }}><img src={AB("types/fairy.webp")} alt="" style={{ width: 16, height: 16, objectFit: "contain" }} />Fada</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 999, border: "1px solid rgba(216,138,74,.3)", background: "rgba(229,179,79,.08)", font: "700 11.5px/1 Inter", color: "#e5b34f" }}>Venda e troca</span>
+                  <div style={{ display: "flex", gap: 6, marginTop: 11, flexWrap: "wrap" }}>
+                    {ehPokemon ? (
+                      <>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px 5px 7px", borderRadius: 999, border: "1px solid #dd4f7f", background: "rgba(221,79,127,.14)", font: "700 11.5px/1 Inter", color: "#f7c9d9" }}><img src={AB("types/psychic.webp")} alt="" style={{ width: 16, height: 16, objectFit: "contain" }} />Psíquico</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px 5px 7px", borderRadius: 999, border: "1px solid #c96f9e", background: "rgba(201,111,158,.14)", font: "700 11.5px/1 Inter", color: "#f4d3e4" }}><img src={AB("types/fairy.webp")} alt="" style={{ width: 16, height: 16, objectFit: "contain" }} />Fada</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 999, border: "1px solid rgba(216,138,74,.3)", background: "rgba(229,179,79,.08)", font: "700 11.5px/1 Inter", color: "#e5b34f" }}>Venda e troca</span>
+                      </>
+                    ) : tagsConsumivel.map(([texto, cor, borda, fundo]) => (
+                      <span key={texto} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 11px", borderRadius: 999, border: `1px solid ${borda}`, background: fundo, font: "700 11.5px/1 Inter", whiteSpace: "nowrap", color: cor }}>{texto}</span>
+                    ))}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flex: "none", padding: "11px 16px", borderRadius: 11, border: "1px solid rgba(229,179,79,.3)", background: "linear-gradient(180deg,rgba(120,26,26,.5),rgba(48,14,12,.6))" }}>
                   <img src={AB("diamante.png")} alt="Diamonds" style={{ width: 30, height: 30, objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(70,140,255,.5))" }} />
                   <div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}><span style={{ font: "700 30px/1 Cinzel, serif", color: "#f6e7c8" }}>{precoAnuncio}</span><span style={{ font: "700 10px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#c9a986" }}>{listing?.moeda === "brl" ? "Reais" : "Diamonds"}</span></div>
-                    <div style={{ marginTop: 6, font: "600 10.5px/1 Inter", color: "#e5b34f" }}>Aceita propostas</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}><span style={{ font: "700 30px/1 Cinzel, serif", color: "#f6e7c8" }}>{precoAnuncio}</span><span style={{ font: "700 10px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#c9a986" }}>{ehPokemon ? (listing?.moeda === "brl" ? "Reais" : "Diamonds") : "por unidade"}</span></div>
+                    <div style={{ marginTop: 6, font: "600 10.5px/1 Inter", color: "#e5b34f" }}>{ehPokemon ? "Aceita propostas" : (estoque > 1 ? `${estoque} unidades disponíveis` : "Última unidade")}</div>
                   </div>
                 </div>
               </div>
             </div>
+
+            {!ehPokemon && (
+              <>
+                <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "linear-gradient(180deg,#181110,#100b09)", padding: "15px 18px 17px" }}>
+                  <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#e5b34f" }}>O que este item faz</div>
+                  <p style={{ margin: "10px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "#dcd0c6" }}>{oQueFaz}</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 1, marginTop: 14, borderRadius: 9, overflow: "hidden", background: "rgba(216,138,74,.12)" }}>
+                    {regrasItem.map(([rot, val, cor]) => (
+                      <div key={rot} style={{ padding: "12px 13px", background: "#150e0c" }}>
+                        <div style={{ font: "700 8.5px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: "#7d6d64" }}>{rot}</div>
+                        <div style={{ marginTop: 6, font: "700 12.5px/1.3 Inter", color: cor }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "linear-gradient(180deg,#181110,#100b09)", padding: "15px 18px 17px" }}>
+                  <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#e5b34f" }}>Estoque e forma de venda</div>
+                  <div className="bzad-ivs" style={{ display: "grid", gridTemplateColumns: "236px minmax(0,1fr)", gap: 18, marginTop: 14, alignItems: "start" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 1, borderRadius: 9, overflow: "hidden", background: "rgba(216,138,74,.12)" }}>
+                      {fichaVenda.map(([rot, val, cor]) => (
+                        <div key={rot} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "10px 12px", background: "#150e0c" }}>
+                          <span style={{ flex: "none", font: "600 11.5px/1 Inter", whiteSpace: "nowrap", color: "#8a7a70" }}>{rot}</span>
+                          <span style={{ minWidth: 0, textAlign: "right", font: "700 12.5px/1 Inter", whiteSpace: "nowrap", color: cor }}>{val}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <div style={{ font: "600 11.5px/1 Inter", color: "#8a7a70" }}>Quantas unidades você quer?</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 11, flexWrap: "wrap" }}>
+                        <button data-h="ghost" onClick={() => setQtd(Math.max(1, qtdSel - 1))} style={{ width: 36, height: 36, flex: "none", display: "grid", placeItems: "center", borderRadius: 9, cursor: "pointer", border: "1px solid rgba(216,138,74,.26)", background: "rgba(10,6,5,.6)", font: "700 16px/1 Inter", color: "#c9a86a" }}>−</button>
+                        <input type="number" value={qtdSel} min={1} max={estoque} onChange={(e) => setQtd(Math.max(1, Math.min(estoque, Number(e.target.value) || 1)))} style={{ width: 84, flex: "none", boxSizing: "border-box", padding: 10, borderRadius: 9, border: "1px solid rgba(216,138,74,.22)", background: "rgba(10,6,5,.7)", color: "#f7eee7", font: "700 15px/1 Cinzel, serif", textAlign: "center" }} />
+                        <button data-h="ghost" onClick={() => setQtd(Math.min(estoque, qtdSel + 1))} style={{ width: 36, height: 36, flex: "none", display: "grid", placeItems: "center", borderRadius: 9, cursor: "pointer", border: "1px solid rgba(216,138,74,.26)", background: "rgba(10,6,5,.6)", font: "700 16px/1 Inter", color: "#c9a86a" }}>+</button>
+                        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 9, padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(229,179,79,.28)", background: "rgba(229,179,79,.08)" }}>
+                          <span style={{ font: "700 9px/1 Inter", letterSpacing: ".14em", textTransform: "uppercase", color: "#8a7a70" }}>Total</span>
+                          <span style={{ font: "700 13px/1 Inter", color: "#c9a986" }}>{unidadeMoeda}</span>
+                          <span style={{ font: "700 19px/1 Cinzel, serif", color: "#e5b34f" }}>{totalCompra}</span>
+                        </div>
+                      </div>
+                      <p style={{ margin: "11px 0 0", fontSize: 11.5, lineHeight: 1.5, color: "#8a7a70" }}>O vendedor tem {estoque} {estoque === 1 ? "unidade" : "unidades"}. O total acompanha a quantidade e segue junto quando você abre o chat.</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
 
             <div style={{ display: ehPokemon ? undefined : "none", borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "linear-gradient(180deg,#181110,#100b09)", padding: "15px 18px 17px" }}>
               <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#e5b34f" }}>Descrição do anúncio</div>
               <p style={{ margin: "10px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "#b5a196" }}>{listing?.descricao || "Pokémon anunciado pela comunidade VP Bazaar. Combine a entrega e as condições pelo chat da plataforma."}</p>
             </div>
 
-            <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "linear-gradient(180deg,#181110,#100b09)", padding: "15px 18px 17px" }}>
+            <div style={{ display: ehPokemon ? undefined : "none", borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "linear-gradient(180deg,#181110,#100b09)", padding: "15px 18px 17px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
                 <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#e5b34f" }}>Informações do pokémon</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -242,7 +356,7 @@ export function AnuncioPage() {
             <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.18)", background: "rgba(18,12,10,.8)", padding: "14px 18px 16px" }}>
               <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#7d6d64" }}>Condições do vendedor</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: "6px 22px", marginTop: 10 }}>
-                {condicoes.map((c) => <div key={c} style={{ display: "flex", gap: 8, fontSize: 12.5, lineHeight: 1.45, color: "#a4937e" }}><span style={{ color: "#c33629" }}>◆</span>{c}</div>)}
+                {(ehPokemon ? condicoes : condicoesItem).map((c) => <div key={c} style={{ display: "flex", gap: 8, fontSize: 12.5, lineHeight: 1.45, color: "#a4937e" }}><span style={{ color: "#c33629" }}>◆</span>{c}</div>)}
               </div>
             </div>
           </div>
@@ -252,15 +366,13 @@ export function AnuncioPage() {
             <div style={{ borderRadius: 12, border: "1px solid rgba(216,138,74,.22)", background: "linear-gradient(180deg,#1c1412,#110b09)", padding: 16 }}>
               <div style={{ font: "800 9.5px/1 Inter", letterSpacing: ".16em", textTransform: "uppercase", color: "#7d6d64" }}>Vendedor</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                <span style={{ flex: "none", width: 52, height: 52, borderRadius: "50%", overflow: "hidden", display: "grid", placeItems: "center", border: "1px solid rgba(216,138,74,.34)", background: "radial-gradient(62% 62% at 50% 40%, rgba(221,79,127,.24), rgba(10,6,5,.9))" }}>
-                  <img src={spriteAnuncio} alt={vendedorAnuncio} style={{ width: 44, height: 44, objectFit: "contain", imageRendering: "pixelated" }} />
-                </span>
+                <AvatarCirculo avatar={listing?.vendedorAvatar || "inicial"} nick={vendedorAnuncio} size={52} fonte={14} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ font: "700 17px/1.1 Cinzel, serif", color: "#f7eee7" }}>{vendedorAnuncio}</div>
                   <div style={{ marginTop: 5, fontSize: 11.5, color: "#8a7a70" }}>Anunciante no VP Bazaar</div>
                 </div>
               </div>
-              <Link data-h="ghost" to="/bazaar/perfil/moonlight" style={{ display: "grid", placeItems: "center", marginTop: 12, padding: 10, borderRadius: 8, border: "1px solid rgba(216,138,74,.26)", font: "600 12px/1 Inter", color: "#d8c4b6", textDecoration: "none" }}>Ver perfil do vendedor</Link>
+              <Link data-h="ghost" to={`/bazaar/perfil/${encodeURIComponent(listing?.vendedor || "")}`} style={{ display: "grid", placeItems: "center", marginTop: 12, padding: 10, borderRadius: 8, border: "1px solid rgba(216,138,74,.26)", font: "600 12px/1 Inter", color: "#d8c4b6", textDecoration: "none" }}>Ver perfil do vendedor</Link>
               <button data-h="neg" type="button" onClick={() => void negociar()} disabled={!listing} style={{ display: "grid", placeItems: "center", width: "100%", boxSizing: "border-box", marginTop: 8, padding: 13, borderRadius: 9, cursor: listing ? "pointer" : "default", border: "1px solid rgba(240,200,130,.5)", background: "linear-gradient(180deg,#a51f22,#6a1215)", boxShadow: "inset 0 1px 0 rgba(255,220,160,.3)", font: "700 13px/1 Cinzel, serif", letterSpacing: ".12em", textTransform: "uppercase", color: "#fff" }}>Negociar</button>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginTop: 8 }}>
                 <button data-h="ghost" onClick={() => setModal("share")} style={{ padding: "10px 6px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(216,138,74,.22)", background: "rgba(10,6,5,.5)", font: "600 11.5px/1 Inter", color: "#a4937e" }}>Compartilhar</button>
@@ -307,9 +419,19 @@ export function AnuncioPage() {
                       <div style={{ position: "absolute", left: 12, bottom: 10 }}>
                         <div style={{ font: "700 17px/1 Cinzel, serif", color: "#f7eee7" }}>{tituloAnuncio}</div>
                         <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
-                          <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(229,179,79,.4)", font: "700 8.5px/1 Inter", color: "#f0d194" }}>Lendária 1,80</span>
-                          <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(126,217,162,.4)", font: "700 8.5px/1 Inter", color: "#a8f0c4" }}>IV {total}/192</span>
-                          <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(216,138,74,.3)", font: "700 8.5px/1 Inter", color: "#d8c4b6" }}>Lv. 100</span>
+                          {ehPokemon ? (
+                            <>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(229,179,79,.4)", font: "700 8.5px/1 Inter", color: "#f0d194" }}>Qualidade {qualidadeAnuncio}</span>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(126,217,162,.4)", font: "700 8.5px/1 Inter", color: "#a8f0c4" }}>IV {total}/192</span>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(216,138,74,.3)", font: "700 8.5px/1 Inter", color: "#d8c4b6" }}>Lv. {nivelAnuncio}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: `1px solid ${catBorda}`, font: "700 8.5px/1 Inter", color: catCor }}>{seloCat}</span>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(126,217,162,.4)", font: "700 8.5px/1 Inter", color: "#a8f0c4" }}>Consumível</span>
+                              <span style={{ padding: "3px 7px", borderRadius: 4, border: "1px solid rgba(216,138,74,.3)", font: "700 8.5px/1 Inter", color: "#d8c4b6" }}>{estoque} un.</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <div style={{ position: "absolute", right: 12, bottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
