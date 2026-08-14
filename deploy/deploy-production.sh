@@ -14,10 +14,13 @@ docker compose -f compose.production.yml ps
 
 backend_id="$(docker compose -f compose.production.yml ps -q backend)"
 frontend_id="$(docker compose -f compose.production.yml ps -q frontend)"
+whatsapp_id="$(docker compose -f compose.production.yml ps -q whatsapp)"
 
 test -n "$backend_id"
 test -n "$frontend_id"
+test -n "$whatsapp_id"
 test "$(docker inspect -f '{{.State.Health.Status}}' "$backend_id")" = "healthy"
 test "$(docker inspect -f '{{.State.Status}}' "$frontend_id")" = "running"
+test "$(docker inspect -f '{{.State.Health.Status}}' "$whatsapp_id")" = "healthy"
 
 echo "Production deploy completed successfully."

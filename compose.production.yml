@@ -37,6 +37,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       minio: { condition: service_healthy }
+      whatsapp: { condition: service_healthy }
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-vpertz}
@@ -52,12 +53,31 @@ services:
       STORAGE_S3_ACCESS_KEY: ${MINIO_ROOT_USER:?Defina MINIO_ROOT_USER no .env}
       STORAGE_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?Defina MINIO_ROOT_PASSWORD no .env}
       STORAGE_S3_BUCKET: ${STORAGE_S3_BUCKET:-vpertz-media}
+      WHATSAPP_SERVICE_URL: http://whatsapp:3000
+      WHATSAPP_SERVICE_TOKEN: ${WHATSAPP_SERVICE_TOKEN:?Defina WHATSAPP_SERVICE_TOKEN no .env}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 8
       start_period: 45s
+    networks: [internal]
+
+  whatsapp:
+    build: ./whatsapp-service
+    restart: unless-stopped
+    environment:
+      WHATSAPP_SERVICE_TOKEN: ${WHATSAPP_SERVICE_TOKEN:?Defina WHATSAPP_SERVICE_TOKEN no .env}
+      WHATSAPP_AUTH_DIR: /data/auth
+      WHATSAPP_GROUP_JID: ${WHATSAPP_GROUP_JID:-}
+    volumes:
+      - whatsappdata:/data/auth
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     networks: [internal]
 
   frontend:
@@ -86,6 +106,7 @@ services:
 volumes:
   pgdata:
   miniodata:
+  whatsappdata:
   caddy_data:
   caddy_config:
 
