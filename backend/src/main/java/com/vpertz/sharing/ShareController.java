@@ -82,7 +82,7 @@ public class ShareController {
 
     /** Entrega uma arte 1200x630 consistente, em vez de sprites pequenos usados como thumbnail. */
     private String socialImage(String encodedId) {
-        return publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png?v=3";
+        return publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png?v=4";
     }
 
     @GetMapping(value = "/{listingId}/image.png", produces = MediaType.IMAGE_PNG_VALUE)
@@ -100,11 +100,15 @@ public class ShareController {
     }
 
     private static String description(Listing listing) {
-        String level = listing.getNivel() > 0 ? "Nv. " + listing.getNivel() : "";
         String price = listing.getPreco() != null && listing.getPreco().compareTo(BigDecimal.ZERO) > 0
                 ? ("diamonds".equals(listing.getMoeda()) ? "💎 " : "R$ ") + listing.getPreco().stripTrailingZeros().toPlainString()
                 : "Preço a combinar";
-        return java.util.stream.Stream.of(level, listing.getCategoria(), price, listing.getVendedor())
+        String primary = switch (listingKind(listing)) {
+            case "pokemon" -> listing.getNivel() > 0 ? "Nv. " + listing.getNivel() : "Pokémon";
+            case "shinycard" -> "Shiny Card · " + Math.max(1, listing.getQuantidade()) + " un.";
+            default -> "Item · " + Math.max(1, listing.getQuantidade()) + " un.";
+        };
+        return java.util.stream.Stream.of(primary, price, listing.getVendedor())
                 .filter(value -> value != null && !value.isBlank())
                 .collect(java.util.stream.Collectors.joining(" · "));
     }
@@ -154,16 +158,24 @@ public class ShareController {
         }
     }
 
-    private static String details(Listing listing) {
-        boolean pokemon = "pokemon".equalsIgnoreCase(listing.getTipo()) || listing.getDex() > 0;
-        if (pokemon) {
+    static String details(Listing listing) {
+        String kind = listingKind(listing);
+        if ("pokemon".equals(kind)) {
             String quality = listing.getQualidade() == null ? "0,00"
                     : listing.getQualidade().setScale(2, java.math.RoundingMode.HALF_UP).toString().replace('.', ',');
             return "QUALIDADE " + quality + "   ·   IV " + (listing.getIvTotal() == null ? 0 : listing.getIvTotal())
                     + "/192   ·   LV. " + listing.getNivel();
         }
-        String category = listing.getCategoria() == null ? "ITEM" : listing.getCategoria().toUpperCase(Locale.ROOT);
+        String category = "shinycard".equals(kind) ? "SHINY CARD" : "ITEM";
         return category + "   ·   CONSUMÍVEL   ·   " + Math.max(1, listing.getQuantidade()) + " UN.";
+    }
+
+    private static String listingKind(Listing listing) {
+        String type = listing.getTipo() == null ? "" : listing.getTipo().trim().toLowerCase(Locale.ROOT);
+        String category = listing.getCategoria() == null ? "" : listing.getCategoria().trim().toLowerCase(Locale.ROOT);
+        if ("shinycard".equals(type) || "card".equals(category) || "shiny card".equals(category)) return "shinycard";
+        if ("item".equals(type) || "item".equals(category) || "itens".equals(category)) return "item";
+        return "pokemon";
     }
 
     private BufferedImage loadArtwork(String value) {

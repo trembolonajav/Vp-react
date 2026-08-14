@@ -67,10 +67,37 @@ class ShareControllerTest {
         String html = controller.share("gyarados").getBody();
 
         assertThat(html)
-                .contains("property=\"og:image\" content=\"https://vpertz.example/api/v1/share/gyarados/image.png?v=3\"")
+                .contains("property=\"og:image\" content=\"https://vpertz.example/api/v1/share/gyarados/image.png?v=4\"")
                 .contains("name=\"twitter:card\" content=\"summary_large_image\"")
                 .contains("og:image:width\" content=\"1200", "og:image:height\" content=\"630")
                 .doesNotContain("https://sprites.example/flareon.png");
+    }
+
+    @Test
+    void separaDetalhesDePokemonShinyCardEItemMesmoQuandoCardTemDex() {
+        Listing pokemon = listing();
+        pokemon.setTipo("pokemon");
+        pokemon.setDex(130);
+        pokemon.setNivel(433);
+        pokemon.setIvTotal(185);
+        pokemon.setQualidade(new BigDecimal("1.800"));
+
+        Listing card = listing();
+        card.setTipo("shinycard");
+        card.setCategoria("card");
+        card.setDex(12);
+        card.setQuantidade(10);
+
+        Listing item = listing();
+        item.setTipo("item");
+        item.setCategoria("item");
+        item.setQuantidade(4);
+
+        assertThat(ShareController.details(pokemon)).contains("QUALIDADE 1,80", "IV 185/192", "LV. 433");
+        assertThat(ShareController.details(card)).isEqualTo("SHINY CARD   ·   CONSUMÍVEL   ·   10 UN.");
+        assertThat(ShareController.details(item)).isEqualTo("ITEM   ·   CONSUMÍVEL   ·   4 UN.");
+        assertThat(ShareController.details(card)).doesNotContain("IV", "QUALIDADE", "LV.");
+        assertThat(ShareController.details(item)).doesNotContain("IV", "QUALIDADE", "LV.");
     }
 
     @Test
