@@ -41,7 +41,7 @@ export function HubHomePage() {
             </a>
             <a className="asset-service-card" href="/vplab/" aria-label="Acessar VPLab">
               <img src="/assets/tool-vplab.webp" alt="VPLab" width="620" height="463" loading="lazy" decoding="async" />
-              <span>Pokédex, IV, PokeFipe, hunts e outras utilidades.</span>
+              <span>Pokédex, avaliação de IV, hunts e outras utilidades.</span>
             </a>
           </div>
         </section>

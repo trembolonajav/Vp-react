@@ -216,7 +216,6 @@ function PokemonDetail({ sel }: { sel: PokemonDexEntry }) {
   const actions = [
     { label: "Avaliar IV", icon: ACTION_ICONS.avaliar, color: "#e8c9a8", edge: "rgba(216,138,74,.24)", bg: "rgba(255,255,255,.03)", to: `/vplab/avaliar-iv?p=${sel.s}` },
     { label: "Planejar rota", icon: ACTION_ICONS.rota, color: "#ffd9cf", edge: "rgba(226,75,53,.4)", bg: "linear-gradient(180deg,rgba(226,75,53,.2),rgba(142,29,25,.26))", to: `/vplab/rota?p=${sel.s}` },
-    { label: "Ver na PokeFipe", icon: ACTION_ICONS.fipe, color: "#e5b34f", edge: "rgba(229,179,79,.3)", bg: "rgba(229,179,79,.08)", to: `/vplab/pokefipe?p=${sel.s}` },
   ];
 
   const sectionLabel: CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: ".13em", textTransform: "uppercase", color: "#7d6d64" };

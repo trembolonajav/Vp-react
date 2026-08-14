@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import "./vplab-header.css";
 
+const SHOW_POKEFIPE = false;
 const tools = [
   { label: "Pokédex", path: "/vplab/pokedex", icon: "pokedex.png", group: "Consultar" },
   { label: "Avaliar IV", path: "/vplab/avaliar-iv", icon: "evaluate-iv.webp", group: "Avaliar" },
@@ -9,7 +10,7 @@ const tools = [
   { label: "Breeding", path: "/vplab/breeding", icon: "breeding.png", group: "Planejar" },
   { label: "Clãs", path: "/vplab/clas", icon: "clans.png", group: "Planejar" },
   { label: "Profissões", path: "/vplab/profissoes", icon: "professions.png", group: "Planejar" },
-] as const;
+].filter((tool) => SHOW_POKEFIPE || tool.path !== "/vplab/pokefipe");
 
 export function VplabHeader() {
   const location = useLocation();

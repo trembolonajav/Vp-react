@@ -39,10 +39,10 @@ const SCOPED = `
 `;
 
 const PLATS: Array<[string, string, string, string, string, string, string]> = [
-  ["wa", "WhatsApp", "#25d366", "rgba(12,34,22,.75)", "rgba(37,211,102,.28)", "rgba(18,48,32,.9)", "No WhatsApp a prévia é pequena: a miniatura entra ao lado do título, por isso qualidade, IV e preço também vão no texto."],
-  ["dc", "Discord", "#7289da", "rgba(20,24,44,.7)", "rgba(114,137,218,.3)", "", "O Discord não tem link de compartilhamento: o botão copia a mensagem pronta e abre o app — você só cola no canal. O embed usa a cor da VP na barra lateral e mostra a imagem 1200×630 inteira."],
-  ["tg", "Telegram", "#409ede", "rgba(12,28,44,.7)", "rgba(64,158,222,.3)", "rgba(16,36,54,.9)", "O Telegram monta a prévia com miniatura, título e descrição do link — o texto pronto segue junto na mensagem."],
-  ["x", "X / Twitter", "#f7eee7", "rgba(16,12,11,.75)", "rgba(216,138,74,.26)", "", "No X o card usa summary_large_image: só a imagem 1200×630 e o título, então os dados precisam estar legíveis na arte."],
+  ["wa", "WhatsApp", "#25d366", "rgba(12,34,22,.75)", "rgba(37,211,102,.28)", "rgba(18,48,32,.9)", "Copie a mensagem e cole em qualquer versão do WhatsApp. O link gera a miniatura e os dados principais seguem no texto."],
+  ["dc", "Discord", "#7289da", "rgba(20,24,44,.7)", "rgba(114,137,218,.3)", "", "Copie e cole no canal desejado. O texto usa Markdown do Discord e o link público gera o embed automaticamente."],
+  ["tg", "Telegram", "#409ede", "rgba(12,28,44,.7)", "rgba(64,158,222,.3)", "rgba(16,36,54,.9)", "Copie e cole na conversa desejada. O Telegram monta a prévia usando o link público do anúncio."],
+  ["x", "X / Twitter", "#f7eee7", "rgba(16,12,11,.75)", "rgba(216,138,74,.26)", "", "Copie o texto curto e cole na publicação. O link contém os metadados do card social."],
 ];
 const MOTIVOS: Array<[string, string]> = [
   ["golpe", "Golpe ou tentativa de fraude"], ["spam", "Anúncio duplicado ou spam"], ["falso", "Preço ou informações falsas"],
@@ -60,7 +60,6 @@ export function AnuncioPage() {
   const [plataforma, setPlataforma] = useState("wa");
   const [copiadoLink, setCopiadoLink] = useState(false);
   const [copiadoTexto, setCopiadoTexto] = useState(false);
-  const [copiadoDiscord, setCopiadoDiscord] = useState(false);
   const [motivo, setMotivo] = useState("");
   const [detalhes, setDetalhes] = useState("");
   const [enviada, setEnviada] = useState(false);
@@ -120,10 +119,10 @@ export function AnuncioPage() {
     "rare candy": "/assets/bazaar/sprite-rare-candy.png",
     "bronze boss token": "https://poke.idleworld.online/assets/items/bronze_boss_token.png",
   };
-  const spriteAnuncio = listing?.img
-    || (ehCard && listing?.dex ? `https://poke.idleworld.online/assets/cards/${16254 + listing.dex}.png` : "")
+  const spriteFallback = (ehCard && listing?.dex ? `https://poke.idleworld.online/assets/cards/${16254 + listing.dex}.png` : "")
     || (ehItem ? itemSprites[tituloAnuncio.toLowerCase()] : "")
     || (listing?.dex ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${listing.shiny ? "shiny/" : ""}${listing.dex}.png` : SPRITE);
+  const spriteAnuncio = listing?.img || spriteFallback;
   const qualidadeAnuncio = listing?.qualidade ? listing.qualidade.toFixed(2).replace(".", ",") : "1,80";
   const precoAnuncio = listing ? listing.preco.toLocaleString("pt-BR") : "350";
   const vendedorAnuncio = listing?.vendedor || "MoonLight";
@@ -135,7 +134,20 @@ export function AnuncioPage() {
     : `${ehCard ? "Shiny Card" : "Item"} · ${listing?.quantidade || 1} un.`;
   const resumoCompartilhamento = `${tituloAnuncio} — ${detalhesCompartilhamento} · ${unidadeMoeda} ${precoAnuncio}`;
   const mensagem = `${tituloAnuncio}\n${detalhesCompartilhamento}\n${unidadeMoeda} ${precoAnuncio} — ${listing?.negociavel !== false ? "aceita propostas" : "preço fechado"}\n${url}`;
-  const copiar = (txt: string, set: (v: boolean) => void) => { if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(() => { }); set(true); window.setTimeout(() => set(false), 1800); };
+  const mensagemDiscord = `**${tituloAnuncio}**\n${detalhesCompartilhamento}\n**${unidadeMoeda} ${precoAnuncio}** — ${listing?.negociavel !== false ? "aceita propostas" : "preço fechado"}\n${url}`;
+  const mensagemX = `${resumoCompartilhamento}\n${url}`;
+  const mensagemPlataforma = plataforma === "dc" ? mensagemDiscord : plataforma === "x" ? mensagemX : mensagem;
+  const copiar = async (txt: string, set: (v: boolean) => void) => {
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(txt);
+      else {
+        const area = document.createElement("textarea");
+        area.value = txt; area.style.position = "fixed"; area.style.opacity = "0";
+        document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove();
+      }
+      set(true); window.setTimeout(() => set(false), 1800);
+    } catch { setErroApi("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C."); }
+  };
 
   const atual = PLATS.find((p) => p[0] === plataforma) || PLATS[0];
   const prevGrande = plataforma === "dc" || plataforma === "x";
@@ -217,9 +229,9 @@ export function AnuncioPage() {
               <div style={{ position: "relative", aspectRatio: "1/1", display: "grid", placeItems: "center", background: "radial-gradient(58% 58% at 50% 44%, rgba(221,79,127,.2), rgba(10,6,5,.92))" }}>
                 <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "56%", aspectRatio: "1/1", borderRadius: "50%", border: "1px solid rgba(229,179,79,.14)" }} />
                 {ehCard ? (
-                  <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: "58%", objectFit: "contain", borderRadius: 12, imageRendering: "pixelated", filter: "drop-shadow(0 18px 30px rgba(0,0,0,.75))" }} />
+                  <img src={spriteAnuncio} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = spriteFallback; }} alt={tituloAnuncio} style={{ position: "relative", width: "58%", objectFit: "contain", borderRadius: 12, imageRendering: "pixelated", filter: "drop-shadow(0 18px 30px rgba(0,0,0,.75))" }} />
                 ) : (
-                  <img src={spriteAnuncio} alt={tituloAnuncio} style={{ position: "relative", width: ehItem ? "58%" : "66%", height: ehItem ? "58%" : "66%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 16px 22px rgba(0,0,0,.8))" }} />
+                  <img src={spriteAnuncio} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = spriteFallback; }} alt={tituloAnuncio} style={{ position: "relative", width: ehItem ? "58%" : "66%", height: ehItem ? "58%" : "66%", objectFit: "contain", imageRendering: "pixelated", filter: "drop-shadow(0 16px 22px rgba(0,0,0,.8))" }} />
                 )}
                 <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
                   <span style={{ padding: "5px 9px", borderRadius: 6, border: "1px solid rgba(229,179,79,.45)", background: "rgba(38,24,12,.75)", backdropFilter: "blur(3px)", font: "800 9.5px/1 Inter", letterSpacing: ".12em", textTransform: "uppercase", whiteSpace: "nowrap", color: "#ffe0b8" }}>À venda</span>
@@ -398,7 +410,7 @@ export function AnuncioPage() {
 
       {/* MODAL SHARE */}
       {modal === "share" && (
-        <div onClick={fecharModal} style={{ position: "fixed", inset: 0, zIndex: 60, display: "grid", placeItems: "center", padding: 26, background: "rgba(6,3,3,.8)", backdropFilter: "blur(5px)" }}>
+        <div onClick={fecharModal} style={{ position: "fixed", inset: 0, zIndex: 60, display: "grid", placeItems: "center", padding: 26, background: "rgba(6,3,3,.92)" }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 552, maxHeight: "88vh", overflow: "auto", borderRadius: 14, border: "1px solid rgba(229,179,79,.3)", background: "linear-gradient(180deg,#1c1412,#100b09)", boxShadow: "0 30px 70px rgba(0,0,0,.7)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px", borderBottom: "1px solid rgba(216,138,74,.16)" }}>
               <span style={{ font: "700 15px/1 Cinzel, serif", letterSpacing: ".06em", color: "#f7eee7" }}>Compartilhar anúncio</span>
@@ -447,7 +459,7 @@ export function AnuncioPage() {
                         <img src={AB("diamante.png")} alt="" style={{ width: 17, height: 17, objectFit: "contain" }} />
                         <span style={{ font: "700 19px/1 Cinzel, serif", color: "#e5b34f" }}>{precoAnuncio}</span>
                       </div>
-                      <img src={spriteAnuncio} alt={tituloAnuncio} style={{ width: "46%", height: "80%", objectFit: "contain", imageRendering: "pixelated", transform: "translateX(18%)" }} />
+                      <img src={spriteAnuncio} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = spriteFallback; }} alt={tituloAnuncio} style={{ width: "46%", height: "80%", objectFit: "contain", imageRendering: "pixelated", transform: "translateX(18%)" }} />
                     </div>
                   </div>
                 ) : (
@@ -458,7 +470,7 @@ export function AnuncioPage() {
                         <div style={{ marginTop: 5, fontSize: 10.5, color: "#b9b0a7" }}>{detalhesCompartilhamento} · {unidadeMoeda} {precoAnuncio}</div>
                         <div style={{ marginTop: 6, fontSize: 9.5, color: "#7d6d64" }}>{window.location.host}</div>
                       </div>
-                      <i role="img" aria-label={tituloAnuncio} style={{ width: 78, height: 78, borderRadius: 6, background: `url(${spriteAnuncio}) center/78% no-repeat, radial-gradient(60% 60% at 50% 44%, rgba(221,79,127,.22), rgba(10,6,5,.9))`, imageRendering: "pixelated" }} />
+                      <img src={spriteAnuncio} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = spriteFallback; }} alt={tituloAnuncio} style={{ width: 78, height: 78, padding: 8, boxSizing: "border-box", borderRadius: 6, objectFit: "contain", background: "radial-gradient(60% 60% at 50% 44%, rgba(221,79,127,.22), rgba(10,6,5,.9))", imageRendering: "pixelated" }} />
                     </div>
                     <div style={{ padding: "2px 12px 10px", font: "400 11.5px/1.5 Inter", whiteSpace: "pre-line", color: "#e6ded6" }}>{mensagem}</div>
                   </div>
@@ -467,18 +479,13 @@ export function AnuncioPage() {
 
               <p style={{ margin: "9px 0 0", fontSize: 11, lineHeight: 1.5, color: "#8a7a70" }}>{atual[6]}</p>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
-                <a data-h="wa" href={"https://wa.me/?text=" + encodeURIComponent(mensagem)} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 13px", borderRadius: 9, border: "1px solid rgba(37,211,102,.34)", background: "rgba(12,34,22,.6)", font: "700 12px/1 Inter", color: "#a8e6bf", textDecoration: "none" }}>WhatsApp<span style={{ marginLeft: "auto", fontSize: 11, opacity: .6 }}>↗</span></a>
-                <a data-h="dc" href="https://discord.com/channels/@me" onClick={() => copiar(mensagem, setCopiadoDiscord)} target="_blank" rel="noreferrer" title="Copia a mensagem pronta e abre o Discord" style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 13px", borderRadius: 9, border: "1px solid rgba(114,137,218,.34)", background: "rgba(24,28,52,.6)", font: "700 12px/1 Inter", color: "#c6cff2", textDecoration: "none" }}>{copiadoDiscord ? "Copiado — cole no canal" : "Discord"}<span style={{ marginLeft: "auto", fontSize: 11, opacity: .6 }}>↗</span></a>
-                <a data-h="tg" href={"https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(resumoCompartilhamento)} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 13px", borderRadius: 9, border: "1px solid rgba(64,158,222,.34)", background: "rgba(12,28,44,.6)", font: "700 12px/1 Inter", color: "#b9d8f2", textDecoration: "none" }}>Telegram<span style={{ marginLeft: "auto", fontSize: 11, opacity: .6 }}>↗</span></a>
-                <a data-h="x" href={"https://twitter.com/intent/tweet?text=" + encodeURIComponent(mensagem)} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 13px", borderRadius: 9, border: "1px solid rgba(216,138,74,.26)", background: "rgba(16,12,11,.7)", font: "700 12px/1 Inter", color: "#d8c4b6", textDecoration: "none" }}>X / Twitter<span style={{ marginLeft: "auto", fontSize: 11, opacity: .6 }}>↗</span></a>
-              </div>
+              <textarea value={mensagemPlataforma} readOnly aria-label={`Mensagem pronta para ${atual[1]}`} style={{ width: "100%", minHeight: 92, resize: "vertical", boxSizing: "border-box", marginTop: 14, padding: "11px 13px", borderRadius: 9, border: `1px solid ${atual[4]}`, background: "rgba(10,6,5,.65)", color: "#e6ded6", font: "500 12px/1.5 Inter" }} />
 
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <input type="text" value={url} readOnly style={{ flex: 1, minWidth: 0, padding: "11px 13px", borderRadius: 9, border: "1px solid rgba(216,138,74,.2)", background: "rgba(10,6,5,.65)", color: "#d8c4b6", fontSize: 12.5 }} />
                 <button data-h="copy" onClick={() => copiar(url, setCopiadoLink)} style={{ flex: "none", padding: "11px 17px", borderRadius: 9, cursor: "pointer", border: "1px solid rgba(229,179,79,.4)", background: "rgba(229,179,79,.12)", font: "700 11.5px/1 Inter", letterSpacing: ".06em", color: "#f0d194" }}>{copiadoLink ? "Copiado ✓" : "Copiar"}</button>
               </div>
-              <button data-h="ghost" onClick={() => copiar(mensagem, setCopiadoTexto)} style={{ display: "grid", placeItems: "center", width: "100%", marginTop: 8, padding: 11, borderRadius: 9, cursor: "pointer", border: "1px dashed rgba(216,138,74,.3)", background: "none", font: "600 11.5px/1 Inter", color: "#a4937e" }}>{copiadoTexto ? "Mensagem copiada ✓" : "Copiar mensagem pronta (nome, nível, qualidade, IV e preço)"}</button>
+              <button data-h="ghost" onClick={() => void copiar(mensagemPlataforma, setCopiadoTexto)} style={{ display: "grid", placeItems: "center", width: "100%", marginTop: 8, padding: 11, borderRadius: 9, cursor: "pointer", border: `1px solid ${atual[4]}`, background: atual[3], font: "700 11.5px/1 Inter", color: atual[2] }}>{copiadoTexto ? "Mensagem copiada ✓" : `Copiar para ${atual[1]} — depois cole onde quiser`}</button>
             </div>
           </div>
         </div>
@@ -486,7 +493,7 @@ export function AnuncioPage() {
 
       {/* MODAL REPORT */}
       {modal === "report" && (
-        <div onClick={fecharModal} style={{ position: "fixed", inset: 0, zIndex: 60, display: "grid", placeItems: "center", padding: 26, background: "rgba(6,3,3,.8)", backdropFilter: "blur(5px)" }}>
+        <div onClick={fecharModal} style={{ position: "fixed", inset: 0, zIndex: 60, display: "grid", placeItems: "center", padding: 26, background: "rgba(6,3,3,.92)" }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 500, maxHeight: "88vh", overflow: "auto", borderRadius: 14, border: "1px solid rgba(195,54,41,.34)", background: "linear-gradient(180deg,#1d1210,#100b09)", boxShadow: "0 30px 70px rgba(0,0,0,.7)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px", borderBottom: "1px solid rgba(195,54,41,.22)" }}>
               <span style={{ font: "700 15px/1 Cinzel, serif", letterSpacing: ".06em", color: "#f7eee7" }}>Denunciar anúncio</span>

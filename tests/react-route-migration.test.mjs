@@ -155,6 +155,9 @@ test("compartilhamento usa Open Graph gerado pelo Spring", () => {
   assert.match(controller, /image\.png/);
   assert.match(controller, /\/bazaar\/anuncio\//);
   assert.match(config, /public-base-url:/);
+  assert.match(detail, /mensagemPlataforma/);
+  assert.match(detail, /Copiar para \$\{atual\[1\]\}/);
+  assert.doesNotMatch(detail, /wa\.me\/\?text|discord\.com\/channels|t\.me\/share|twitter\.com\/intent/);
 });
 
 test("uploads usam MinIO e mantêm metadados no PostgreSQL", () => {
