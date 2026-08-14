@@ -12,7 +12,7 @@ test("compartilhamento prepara texto por plataforma sem abrir aplicativos", () =
   assert.match(detail, /mensagemDiscord/);
   assert.match(detail, /mensagemPlataforma/);
   assert.match(detail, /Copiar para \$\{atual\[1\]\}/);
-  assert.match(detail, /\?v=2/);
+  assert.match(detail, /\?v=3/);
   assert.match(detail, /"💎"/);
   assert.doesNotMatch(detail, /wa\.me\/\?text|discord\.com\/channels|t\.me\/share|twitter\.com\/intent/);
 });

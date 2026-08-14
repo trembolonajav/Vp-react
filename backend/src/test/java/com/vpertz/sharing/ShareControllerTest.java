@@ -8,6 +8,8 @@ import com.vpertz.common.exception.ResourceNotFoundException;
 import com.vpertz.listings.Listing;
 import com.vpertz.listings.ListingRepository;
 import java.math.BigDecimal;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,13 @@ class ShareControllerTest {
 
         assertThat(png).isNotNull().startsWith((byte) 0x89, (byte) 0x50, (byte) 0x4e, (byte) 0x47);
         assertThat(png.length).isGreaterThan(10_000);
+        try {
+            var image = ImageIO.read(new ByteArrayInputStream(png));
+            assertThat(image.getWidth()).isEqualTo(1200);
+            assertThat(image.getHeight()).isEqualTo(630);
+        } catch (Exception exception) {
+            throw new AssertionError(exception);
+        }
     }
 
     @Test
@@ -58,7 +67,7 @@ class ShareControllerTest {
         String html = controller.share("gyarados").getBody();
 
         assertThat(html)
-                .contains("property=\"og:image\" content=\"https://vpertz.example/api/v1/share/gyarados/image.png?v=2\"")
+                .contains("property=\"og:image\" content=\"https://vpertz.example/api/v1/share/gyarados/image.png?v=3\"")
                 .contains("name=\"twitter:card\" content=\"summary_large_image\"")
                 .contains("og:image:width\" content=\"1200", "og:image:height\" content=\"630")
                 .doesNotContain("https://sprites.example/flareon.png");
