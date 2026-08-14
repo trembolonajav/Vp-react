@@ -7,7 +7,7 @@ import type { ConversationSummary } from "../../../types/conversation";
 import { AvatarCirculo } from "../pages/profileShared";
 
 export function Header() {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -81,7 +81,12 @@ export function Header() {
             )}
           </div>
           <div className="header-actions">
-            {user ? (
+            {loading ? (
+              <div aria-label="Verificando sessão" aria-busy="true" style={{ width: 190, height: 44, display: "flex", alignItems: "center", gap: 10, padding: "0 13px", boxSizing: "border-box", borderRadius: 12, border: "1px solid rgba(216,138,74,.16)", background: "rgba(20,13,11,.6)" }}>
+                <span style={{ width: 30, height: 30, flex: "0 0 30px", borderRadius: "50%", background: "rgba(229,179,79,.12)" }} />
+                <span style={{ width: 104, height: 9, borderRadius: 99, background: "rgba(229,179,79,.1)" }} />
+              </div>
+            ) : user ? (
               <div className="bz-userbar" ref={userbar}>
                 <button
                   className="bz-notif-btn"

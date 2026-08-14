@@ -89,6 +89,24 @@ export function AnuncioPage() {
     }
   }, [listing, location.search]);
 
+  if (!listing) {
+    return (
+      <main className="bzad" aria-busy={!erroApi} style={{ minHeight: "calc(100vh - 150px)", padding: "34px 26px 70px", background: "#0a0605" }}>
+        <div style={{ maxWidth: 1500, margin: "0 auto" }}>
+          {erroApi ? (
+            <div role="alert" style={{ padding: "18px 20px", border: "1px solid rgba(195,54,41,.34)", borderRadius: 12, background: "rgba(38,12,11,.5)", color: "#e8a49a", fontSize: 13 }}>
+              Não foi possível carregar este anúncio: {erroApi}
+            </div>
+          ) : (
+            <div aria-label="Carregando anúncio" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,280px),1fr))", gap: 16 }}>
+              {[410, 330, 410].map((height, index) => <div key={index} style={{ width: "100%", height, borderRadius: 12, border: "1px solid rgba(216,138,74,.13)", background: "linear-gradient(110deg,rgba(26,18,16,.78) 30%,rgba(54,35,29,.72) 45%,rgba(26,18,16,.78) 60%)", backgroundSize: "220% 100%" }} />)}
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
   const negociar = async () => {
     if (!listing) return;
     try {

@@ -6,6 +6,7 @@ const detail = fs.readFileSync("frontend/src/features/bazaar/pages/AnuncioPage.t
 const header = fs.readFileSync("frontend/src/features/vplab/components/VplabHeader.tsx", "utf8");
 const pokedex = fs.readFileSync("frontend/src/features/vplab/pages/PokedexPage.tsx", "utf8");
 const app = fs.readFileSync("frontend/src/App.tsx", "utf8");
+const bazaarHeader = fs.readFileSync("frontend/src/features/bazaar/components/Header.tsx", "utf8");
 
 test("compartilhamento prepara texto por plataforma sem abrir aplicativos", () => {
   assert.match(detail, /mensagemDiscord/);
@@ -24,4 +25,11 @@ test("PokeFipe fica oculta dos atalhos sem remover sua implementação", () => {
   assert.match(header, /tool\.path !== "\/vplab\/pokefipe"/);
   assert.doesNotMatch(pokedex, /Ver na PokeFipe/);
   assert.match(app, /path="pokefipe"/);
+});
+
+test("anúncio e sessão aguardam as APIs sem exibir dados fictícios", () => {
+  assert.match(detail, /if \(!listing\)/);
+  assert.match(detail, /Carregando anúncio/);
+  assert.match(bazaarHeader, /user, loading, logout/);
+  assert.match(bazaarHeader, /loading \? \(/);
 });
