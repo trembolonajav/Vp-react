@@ -42,7 +42,7 @@ public class ShareController {
         Listing listing = requireListing(listingId);
         String encodedId = UriUtils.encodePathSegment(listing.getPublicId(), java.nio.charset.StandardCharsets.UTF_8);
         String target = publicBaseUrl + "/bazaar/anuncio/" + encodedId;
-        String image = socialImage(listing, encodedId);
+        String image = socialImage(encodedId);
         String title = listing.getTitulo() + " — VP Bazaar";
         String description = description(listing);
         String html = """
@@ -53,14 +53,17 @@ public class ShareController {
                 <meta property="og:type" content="website"><meta property="og:site_name" content="VP Bazaar">
                 <meta property="og:title" content="%s"><meta property="og:description" content="%s">
                 <meta property="og:url" content="%s"><meta property="og:image" content="%s">
-                <meta name="twitter:card" content="summary">
+                <meta property="og:image:secure_url" content="%s"><meta property="og:image:type" content="image/png">
+                <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+                <meta property="og:image:alt" content="%s">
+                <meta name="twitter:card" content="summary_large_image">
                 <meta name="twitter:title" content="%s"><meta name="twitter:description" content="%s">
                 <meta name="twitter:image" content="%s">
                 <meta http-equiv="refresh" content="0;url=%s"></head>
                 <body><a href="%s">Abrir anúncio</a></body></html>
                 """.formatted(
                 esc(title), esc(description), esc(target), esc(listing.getTitulo()), esc(description),
-                esc(target), esc(image), esc(listing.getTitulo()), esc(description), esc(image),
+                esc(target), esc(image), esc(image), esc(listing.getTitulo()), esc(listing.getTitulo()), esc(description), esc(image),
                 esc(target), esc(target));
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(java.time.Duration.ofMinutes(5)).cachePublic())
@@ -68,16 +71,9 @@ public class ShareController {
                 .body(html);
     }
 
-    /** Usa a própria arte do anúncio para os mensageiros exibirem miniatura compacta. */
-    private String socialImage(Listing listing, String encodedId) {
-        String image = listing.getImgUrl();
-        if (image != null && image.startsWith("https://")) {
-            return image;
-        }
-        if (image != null && !image.isBlank()) {
-            return publicBaseUrl + (image.startsWith("/") ? image : "/" + image);
-        }
-        return publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png";
+    /** Entrega uma arte 1200x630 consistente, em vez de sprites pequenos usados como thumbnail. */
+    private String socialImage(String encodedId) {
+        return publicBaseUrl + "/api/v1/share/" + encodedId + "/image.png?v=2";
     }
 
     @GetMapping(value = "/{listingId}/image.png", produces = MediaType.IMAGE_PNG_VALUE)
@@ -97,7 +93,7 @@ public class ShareController {
     private static String description(Listing listing) {
         String level = listing.getNivel() > 0 ? "Nv. " + listing.getNivel() : "";
         String price = listing.getPreco() != null && listing.getPreco().compareTo(BigDecimal.ZERO) > 0
-                ? ("diamonds".equals(listing.getMoeda()) ? "◆ " : "R$ ") + listing.getPreco().stripTrailingZeros().toPlainString()
+                ? ("diamonds".equals(listing.getMoeda()) ? "💎 " : "R$ ") + listing.getPreco().stripTrailingZeros().toPlainString()
                 : "Preço a combinar";
         return java.util.stream.Stream.of(level, listing.getCategoria(), price, listing.getVendedor())
                 .filter(value -> value != null && !value.isBlank())
@@ -126,7 +122,7 @@ public class ShareController {
             g.setColor(new Color(232, 191, 100));
             String price = listing.getPreco() == null || listing.getPreco().signum() == 0
                     ? "Preço a combinar"
-                    : ("diamonds".equals(listing.getMoeda()) ? "◆ " : "R$ ")
+                    : ("diamonds".equals(listing.getMoeda()) ? "DIAMONDS " : "R$ ")
                         + NumberFormat.getNumberInstance(new Locale("pt", "BR")).format(listing.getPreco());
             drawClipped(g, price, 64, 480, 900);
             g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 23));

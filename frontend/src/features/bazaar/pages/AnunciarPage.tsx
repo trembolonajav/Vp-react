@@ -178,7 +178,7 @@ export function AnunciarPage() {
     resumo.push({ rotulo: "Quantidade", valor: (st.quantidade || "1") + " unidades", cor: "#f7eee7" });
     resumo.push({ rotulo: "Venda", valor: st.lote === "lote" ? "Só o lote inteiro" : "Aceita por unidade", cor: "#f7eee7" });
   }
-  resumo.push({ rotulo: "Preço", valor: (st.moeda === "dia" ? "◆ " : "R$ ") + (precoNum ? precoNum.toLocaleString("pt-BR") : "—") + (st.propostas === "sim" ? " · aceita propostas" : " · fechado"), cor: "#e5b34f" });
+  resumo.push({ rotulo: "Preço", valor: (st.moeda === "dia" ? "💎 " : "R$ ") + (precoNum ? precoNum.toLocaleString("pt-BR") : "—") + (st.propostas === "sim" ? " · aceita propostas" : " · fechado"), cor: "#e5b34f" });
   if (st.descricao.trim()) resumo.push({ rotulo: "Descrição", valor: st.descricao.trim(), cor: "#b5a196" });
 
   const avancar = async () => {

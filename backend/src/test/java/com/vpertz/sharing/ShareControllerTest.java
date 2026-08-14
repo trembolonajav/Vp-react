@@ -50,7 +50,7 @@ class ShareControllerTest {
     }
 
     @Test
-    void usaSpriteRealComoMiniaturaCompacta() {
+    void usaImagemSocialGrandeEmVezDoSpritePequeno() {
         Listing listing = listing();
         listing.setImgUrl("https://sprites.example/flareon.png");
         when(listingRepository.findByPublicId("gyarados")).thenReturn(Optional.of(listing));
@@ -58,9 +58,10 @@ class ShareControllerTest {
         String html = controller.share("gyarados").getBody();
 
         assertThat(html)
-                .contains("property=\"og:image\" content=\"https://sprites.example/flareon.png\"")
-                .contains("name=\"twitter:card\" content=\"summary\"")
-                .doesNotContain("og:image:width");
+                .contains("property=\"og:image\" content=\"https://vpertz.example/api/v1/share/gyarados/image.png?v=2\"")
+                .contains("name=\"twitter:card\" content=\"summary_large_image\"")
+                .contains("og:image:width\" content=\"1200", "og:image:height\" content=\"630")
+                .doesNotContain("https://sprites.example/flareon.png");
     }
 
     @Test
