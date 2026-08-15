@@ -1,18 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useConfig } from "../../hooks/useConfig";
 import { Socials } from "./Contatos";
+import { SupportModal } from "./SupportModal";
 
 export function PlatformFooter({ vplabActions = false }: { vplabActions?: boolean }) {
   const { config } = useConfig();
   const [supportOpen, setSupportOpen] = useState(false);
-
-  useEffect(() => {
-    if (!supportOpen) return;
-    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setSupportOpen(false); };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [supportOpen]);
 
   return (
     <footer className={vplabActions ? "platform-footer platform-footer--vplab" : "platform-footer"}>
@@ -47,18 +41,7 @@ export function PlatformFooter({ vplabActions = false }: { vplabActions?: boolea
           <span>© 2026 VPertsz — todos os direitos reservados.</span>
         </div>
       </div>
-      {supportOpen && (
-        <div className="support-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSupportOpen(false); }}>
-          <section className="support-modal" role="dialog" aria-modal="true" aria-labelledby="support-title">
-            <button className="support-modal__close" type="button" onClick={() => setSupportOpen(false)} aria-label="Fechar">×</button>
-            <span>Apoio opcional</span>
-            <h2 id="support-title">Apoie o streamer</h2>
-            <p>Se o conteúdo e as ferramentas do VPLab ajudam você, é possível apoiar diretamente o trabalho do streamer com uma contribuição voluntária.</p>
-            <div className="support-modal__qr" role="img" aria-label="QR Code para contribuição voluntária" />
-            <small>O apoio é 100% opcional e não oferece benefícios, vantagens ou acesso exclusivo. Antes de confirmar, confira no aplicativo bancário se os dados do destinatário estão corretos.</small>
-          </section>
-        </div>
-      )}
+      <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
     </footer>
   );
 }

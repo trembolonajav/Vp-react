@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { SupportModal } from "./SupportModal";
 import "./platform-header.css";
 
 export type PlatformArea = "hub" | "vplab" | "store" | "bazaar";
@@ -20,10 +21,11 @@ const brands:Record<PlatformArea,{href:string;asset:string;alt:string;width:numb
 
 export function PlatformHeader({ activeArea, children, subnavLabel = "Navegação da seção" }:{activeArea:PlatformArea;children?:ReactNode;subnavLabel?:string}) {
   const brand = brands[activeArea];
+  const [supportOpen, setSupportOpen] = useState(false);
   return <>
     <div className="platform-topbar"><span aria-hidden="true" />Live todos os dias, das 18h às 22h, na&nbsp;<a href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer">twitch.tv/vpertsz</a></div>
     <header className="platform-header">
-      <nav className="container platform-header__main" aria-label="Navegação principal">
+      <nav className="container platform-header__main platform-header__main--with-support" aria-label="Navegação principal">
         {brand.href.endsWith("/") && activeArea !== "hub"
           ? <a className={`platform-header__brand platform-header__brand--${activeArea}`} href={brand.href} aria-label={`Ir para ${brand.alt}`}><img src={brand.asset} alt={brand.alt} width={brand.width} height={brand.height} /></a>
           : <Link className={`platform-header__brand platform-header__brand--${activeArea}`} to={brand.href} aria-label={`Ir para ${brand.alt}`}><img src={brand.asset} alt={brand.alt} width={brand.width} height={brand.height} /></Link>}
@@ -32,9 +34,16 @@ export function PlatformHeader({ activeArea, children, subnavLabel = "Navegaçã
             ? <a className={activeArea===area.id?"active":""} href={area.href} key={area.id} aria-label={`Acessar ${area.label}`}><img src={area.asset} alt="" width={area.width} height={area.height}/><span>{area.label}</span></a>
             : <Link className={activeArea===area.id?"active":""} to={area.href} key={area.id} aria-label={`Acessar ${area.label}`}><img src={area.asset} alt="" width={area.width} height={area.height}/><span>{area.label}</span></Link>)}
         </div>
-        <a className="platform-header__live" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" aria-label="Assistir à live do VPertsz"><img src="/assets/btn-assistir-live.webp" alt="" width="800" height="200" /></a>
+        <div className="platform-header__ctas">
+          <a className="platform-header__live" href="https://www.twitch.tv/vpertsz" target="_blank" rel="noreferrer" aria-label="Assistir à live do VPertsz"><img src="/assets/btn-assistir-live.webp" alt="" width="800" height="200" /></a>
+          <div className="platform-header__support-wrap">
+            <span>Fortaleça o projeto</span>
+            <button className="platform-header__support" type="button" onClick={() => setSupportOpen(true)} aria-label="Apoiar o streamer"><i /></button>
+          </div>
+        </div>
       </nav>
     </header>
     {children && <nav className="platform-subnav" aria-label={subnavLabel}><div className="container">{children}</div></nav>}
+    <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
   </>;
 }
